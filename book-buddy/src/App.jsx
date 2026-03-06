@@ -3,9 +3,8 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import Header from './components/Header/Header.jsx'
-import Register from './components/Register/Register.jsx'
-
-import Footer from './components/Footer/Footer.jsx'
+import AddNewBookForm from './components/AddNewBookForm.jsx'
+import LoginForm from './components/LoginForm.jsx'
 
 
 function App() {
@@ -13,9 +12,7 @@ function App() {
 
   return (
     <>
-      <Header />
-      <Register />
-      <Footer />
+      <LoginForm/>
       
     </>
   )
