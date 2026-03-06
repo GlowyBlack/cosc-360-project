@@ -4,7 +4,8 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import Header from './components/Header/Header.jsx'
 import AddNewBookForm from './components/AddNewBookForm.jsx'
-import LoginForm from './components/LoginForm.jsx'
+import Register from './components/Register/Register.jsx'
+import Footer from './components/Footer/Footer.jsx'
 
 
 function App() {
@@ -12,8 +13,10 @@ function App() {
 
   return (
     <>
-      <LoginForm/>
-      
+      {/* <LoginForm/> */}
+      <Header />
+      <Register />
+      <Footer />
     </>
   )
 }

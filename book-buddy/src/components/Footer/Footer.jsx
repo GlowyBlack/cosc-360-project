@@ -15,19 +15,19 @@ function Footer(){
     }, [isUser]);
     return <>
         <div id="footer" >
-            <button className="footer_buttons">Home</button>
+            <button className="footer-buttons">Home</button>
             {isUser ? ( 
                 //Show when logged in
                 <>
-                    <button className="footer_buttons">Library</button>
-                    <button className="footer_buttons">Messages</button>
-                    <button className="footer_buttons">Requests</button>
-                    <button className="footer_buttons" onClick={toggleUser}>Profile</button>
+                    <button className="footer-buttons">Library</button>
+                    <button className="footer-buttons">Messages</button>
+                    <button className="footer-buttons">Requests</button>
+                    <button className="footer-buttons" onClick={toggleUser}>Profile</button>
                 </>
                 ) : ( 
                 //Show when logged in
                 <>
-                    <button className="footer_buttons" onClick={toggleUser}>Login</button>
+                    <button className="footer-buttons" onClick={toggleUser}>Login</button>
 
                 </>
                 )

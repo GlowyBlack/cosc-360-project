@@ -1,6 +1,7 @@
 #header{
+
     padding: 2em;
-    background-color: #99AFAD;
+    background-color: #99AF99;
     text-align: left;
     width: 100vw;
     margin-left: 0;
@@ -11,7 +12,7 @@
     /* font-size: 3em; 
 } */
 
-#search_bar{
+#search-bar{
     font-family: 'Dancing Script', cursive;
     padding: 1.5em 0.5em;
     text-align: left;
