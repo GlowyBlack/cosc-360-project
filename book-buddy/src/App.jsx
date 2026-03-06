@@ -5,6 +5,7 @@ import './App.css'
 import Header from './components/Header/Header.jsx'
 import Register from './components/Register/Register.jsx'
 
+import Footer from './components/Footer/Footer.jsx'
 
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
     <>
       <Header />
       <Register />
+      <Footer />
       
     </>
   )
