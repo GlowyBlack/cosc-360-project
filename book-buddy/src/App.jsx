@@ -4,10 +4,8 @@ import viteLogo from '/vite.svg'
 import './App.css'
 
 import Header from './components/Header/Header.jsx'
-import AddNewBookForm from './components/AddNewBookForm.jsx'
+import AddNewBookForm from './components/AddNewBook/AddNewBookForm.jsx'
 import Register from './components/Register/Register.jsx'
-import Footer from './components/Footer/Footer.jsx'
-
 import Footer from './components/Footer/Footer.jsx'
 import PopularCard from './components/PopularCard/PopularCard.jsx'
 
