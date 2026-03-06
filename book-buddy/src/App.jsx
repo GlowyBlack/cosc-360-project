@@ -12,7 +12,6 @@ import Footer from './components/Footer/Footer.jsx'
 import PopularCard from './components/PopularCard/PopularCard.jsx'
 
 function App() {
-  const [count, setCount] = useState(0)
   const books = [
     {
       title: 'The Three-Body Problem',
