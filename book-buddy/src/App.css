@@ -40,3 +40,12 @@
 .read-the-docs {
   color: #888;
 }
+
+.popularGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  padding: 50px 0;
+  row-gap: 1em;
+  justify-items: center;
+  align-items: center;
+}
