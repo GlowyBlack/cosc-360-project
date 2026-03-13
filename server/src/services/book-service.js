@@ -1,4 +1,4 @@
-const bookRepository = require('../repositories/bookRepository');
+import bookRepository from "../repositories/book-repository.js"
 
 const getAllBooks = async () => {
     const books = await bookRepository.findAll();
@@ -6,4 +6,4 @@ const getAllBooks = async () => {
     return books;
 };
 
-module.exports = { getAllBooks };
+export default { getAllBooks };

@@ -1,4 +1,4 @@
-// const Book = require('../models/Book');
+import Book from "../models/book.js"
 
 const findAll = async () => {
     return [
@@ -8,4 +8,4 @@ const findAll = async () => {
     
 };
 
-module.exports = { findAll };
+export default {findAll}
