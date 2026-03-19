@@ -1,11 +1,36 @@
-import Book from "../models/book.js"
+import Book from "../models/book.js";
+import mongoose from "mongoose";
 
-const findAll = async () => {
-    return [
-        { id: 1, title: "The Great Gatsby", author: "F. Scott Fitzgerald", owner:"Jovan Kalirai",  status: "Available" },
-        { id: 2, title: "1984", author: "George Orwell", owner: "Armaan Cheema", status: "Borrowed" }
-    ];
-    
+const BookRepository = {
+    async createBook(data) {
+        return await Book.create(data); 
+    },
+
+    async findBook(){
+
+    },
+
+    async findAll(){
+
+    }
 };
 
-export default {findAll}
+// const findAll = async () => {
+//     return [
+//         {
+//             title: "The Great Gatsby",
+//             author: "F. Scott Fitzgerald",
+//             owner: "Jovan Kalirai",
+//             status: "Available",
+//         },
+//         {
+//             title: "1984",
+//             author: "George Orwell",
+//             owner: "Armaan Cheema",
+//             status: "Borrowed",
+
+//         },
+//     ];
+// };
+
+export default {BookRepository };

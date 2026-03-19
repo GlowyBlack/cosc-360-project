@@ -1,9 +1,16 @@
-import bookRepository from "../repositories/book-repository.js"
+import BookRepository from "../repositories/book-repository.js"
 
-const getAllBooks = async () => {
-    const books = await bookRepository.findAll();
-    
-    return books;
-};
+const BookService= {
+    async getAllBooks(){
+        return await BookRepository.findAll();
+    },
 
-export default { getAllBooks };
+    async createBook(data){
+        if(!data.book_title || !data.book_author){
+            throw new Error("Title and author are required");
+        }
+        return await BookRepository.createBook(data);
+    }
+}
+
+export default { BookService };
