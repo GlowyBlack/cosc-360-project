@@ -8,7 +8,7 @@ function BookDetails() {
   const tabs = ['About', 'Reviews', 'Owner']
 
   return (
-    <>
+    <div className="book-details-wrapper">
       <Header />
 
       <div className="book-image-banner">
@@ -75,7 +75,7 @@ function BookDetails() {
         </div>
 
       </div>
-    </>
+    </div>
   )
 }
 
