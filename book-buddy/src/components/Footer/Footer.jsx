@@ -22,7 +22,9 @@ function Footer(){
             {isUser ? ( 
                 //Show when logged in
                 <>
+                <Link to="/library">
                     <button className="footer-buttons">Library</button>
+                </Link>
                     <button className="footer-buttons">Messages</button>
                     <button className="footer-buttons">Requests</button>
                     <button className="footer-buttons" onClick={toggleUser}>Profile</button>
@@ -30,8 +32,8 @@ function Footer(){
                 ) : ( 
                 //Show when logged in
                 <>  
-                <Link to="/auth">
-                    <button className="footer-buttons">Login</button>
+                <Link to="">
+                    <button className="footer-buttons" onClick={toggleUser}>Login</button>
                 </Link>
                 </>
                 )
