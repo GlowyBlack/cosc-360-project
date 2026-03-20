@@ -1,4 +1,5 @@
 import {useState, useEffect} from "react"
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import "./Footer.css"
 
 function Footer(){
@@ -15,7 +16,9 @@ function Footer(){
     }, [isUser]);
     return <>
         <div id="footer" >
+            <Link to="/">
             <button className="footer-buttons">Home</button>
+            </Link>
             {isUser ? ( 
                 //Show when logged in
                 <>
@@ -26,9 +29,10 @@ function Footer(){
                 </>
                 ) : ( 
                 //Show when logged in
-                <>
-                    <button className="footer-buttons" onClick={toggleUser}>Login</button>
-
+                <>  
+                <Link to="/auth">
+                    <button className="footer-buttons">Login</button>
+                </Link>
                 </>
                 )
             }

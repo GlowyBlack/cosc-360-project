@@ -45,3 +45,18 @@
     max-width: 15px;
     max-height: 15px;
 }
+
+.popularGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  row-gap: 2em;
+  justify-items: center;
+  align-items: center;
+  padding-left: 20px;
+  padding-right: 50px;
+}
+
+.popularHeader{
+  padding: 0 1.5em;
+
+}
