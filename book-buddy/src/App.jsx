@@ -6,6 +6,7 @@ import AddNewBookForm from "./components/AddNewBook/AddNewBookForm.jsx";
 import Register from "./pages/Register/Register.jsx";
 import YourLibraryPage from "./pages/YourLibrary/YourLibraryPage.jsx";
 import Footer from "./components/Footer/Footer.jsx";
+import BookDetails from "./pages/BookDetails/BookDetails.jsx";
 
 function AppContent() {
   const location = useLocation();
@@ -19,6 +20,7 @@ function AppContent() {
         <Route path="/add-book" element={<AddNewBookForm />} />
         <Route path="/auth" element={<Register />} />
         <Route path="/library" element={<YourLibraryPage />} />
+        <Route path="/book-details" element={<BookDetails />} />
       </Routes>
       
       {!hideFooterPaths.includes(location.pathname) && <Footer />}
