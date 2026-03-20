@@ -21,6 +21,7 @@ function Register() {
   }
 
   return <>
+  <div className='register-page-wrapper'>
     {registering ? ( 
       <div className="register-container">
         <h1>Create an Account</h1>
@@ -73,6 +74,7 @@ function Register() {
         </div>
       )
     }
+  </div>
   </>
 }
 

@@ -3,7 +3,9 @@ import PopularCard from "./PopularCard.jsx";
 
 export default function PopularList({ books }) {
   return (
-    <div className="popular-list">
+    <>
+    <h2 className="popularHeader">Popular</h2>
+    <div className="popularGrid">
       {books.slice(0, 4).map((book, index) => (
         <PopularCard
           key={index}          // unique key for React lists
@@ -14,5 +16,6 @@ export default function PopularList({ books }) {
         />
       ))}
     </div>
+    </>
   );
 }
