@@ -1,12 +1,14 @@
-import { useState } from 'react'
 import './PopularCard.css'
+
+const FALLBACK_IMAGE =
+  "https://cdn.vectorstock.com/i/1000v/32/45/no-image-symbol-missing-available-icon-gallery-vector-45703245.jpg";
 
 function PopularCard({ title, author, distance, image}) {
   return (
     <div className="popular-card">
       <img
         className="popular-card-image"
-        src={image}
+        src={image || FALLBACK_IMAGE}
         alt="Book cover"
       />
 
@@ -27,5 +29,3 @@ function PopularCard({ title, author, distance, image}) {
 }
 
 export default PopularCard
-
-

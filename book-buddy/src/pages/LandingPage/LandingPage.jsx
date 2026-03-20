@@ -1,7 +1,11 @@
+import { useState } from "react";
 import PopularList from "../../components/PopularCard/PopularList.jsx";
 import Header from "../../components/Header/Header.jsx";
 
 function LandingPage() {
+  const [searchResults, setSearchResults] = useState([]);
+  const [hasSearched, setHasSearched] = useState(false);
+
   const books = [
     {
       title: "The Three-Body Problem",
@@ -32,10 +36,42 @@ function LandingPage() {
     },
   ];
 
+  async function handleSearch(term) {
+    const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:5001";
+    try {
+      const response = await fetch(`${baseUrl}/books/search?term=${encodeURIComponent(term)}`);
+      if (!response.ok) {
+        throw new Error("Search request failed");
+      }
+      const data = await response.json();
+      const mapped = (data ?? []).map((book) => ({
+        title: book.title,
+        author: book.author,
+        distance: book.genre ?? "",
+        image:
+          "https://m.media-amazon.com/images/I/71m-MxdJ2WL._AC_UF1000,1000_QL80_.jpg",
+      }));
+      setSearchResults(mapped);
+      setHasSearched(true);
+    } catch (error) {
+      console.error(error);
+      setSearchResults([]);
+      setHasSearched(true);
+    }
+  }
+
+  const displayBooks = hasSearched ? searchResults : books;
+
   return (
     <>
-      <Header />
-      <PopularList books={books} />
+      <Header onSearch={handleSearch} />
+      {hasSearched && searchResults.length === 0 ? (
+        <p style={{ textAlign: "center", marginTop: "2rem", fontSize: "1.2rem" }}>
+          No results found
+        </p>
+      ) : (
+        <PopularList books={displayBooks} limit={hasSearched ? displayBooks.length : 4} />
+      )}
     </>
   );
 }
