@@ -1,0 +1,119 @@
+.your-library-page {
+  min-height: 100vh;
+  background: #e5e5e5;
+  padding: 0 0 3rem;
+}
+
+.your-library-header {
+  border: 3px solid #1e94f0;
+  border-left: 3px solid #1e94f0;
+  border-right: 3px solid #1e94f0;
+  background: #9cad9d;
+  padding: 0.9rem 1.1rem 1.1rem;
+}
+
+.your-library-header h1 {
+  margin: 0 0 0.9rem;
+  text-align: left;
+  color: #101010;
+  font-size: 2rem;
+}
+
+.library-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  gap: 5rem;
+  padding: 0 1.8rem;
+}
+
+.library-tab {
+  border: none;
+  background: #82a581;
+  color: #1f1f1f;
+  border-radius: 8px;
+  font-weight: 700;
+  padding: 0.9rem 0.5rem 0.8rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  min-height: 74px;
+}
+
+.library-tab span {
+  font-size: 0.92rem;
+}
+
+.library-tab strong {
+  font-size: 1.7rem;
+  line-height: 1;
+}
+
+.library-tab.active {
+  background: #7aa178;
+  color: #141414;
+}
+
+.your-library-content {
+  border-top: 3px solid #3d92df;
+  padding: 0.8rem 0.4rem 0;
+}
+
+.library-section-labels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  margin-bottom: 0.8rem;
+}
+
+.library-section-labels h2 {
+  margin: 0;
+  text-align: center;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #505050;
+  border-bottom: 2px solid #7a7a7a;
+  line-height: 1.3;
+}
+
+.add-book-cta {
+  display: block;
+  width: min(1250px, calc(100% - 1.6rem));
+  margin: 0 auto;
+  border: none;
+  border-radius: 8px;
+  padding: 0.68rem;
+  font-weight: 700;
+  background: #9ab698;
+  cursor: pointer;
+  font-size: 0.98rem;
+}
+
+.library-book-grid {
+  margin-top: 1.1rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.4rem 2.2rem;
+  justify-content: center;
+  justify-items: center;
+}
+
+@media (max-width: 900px) {
+  .library-tabs {
+    gap: 0.8rem;
+    padding: 0;
+  }
+
+  .library-tab strong {
+    font-size: 1.35rem;
+  }
+
+  .library-section-labels h2 {
+    font-size: 1.4rem;
+  }
+
+  .library-book-grid {
+    grid-template-columns: 1fr;
+  }
+}

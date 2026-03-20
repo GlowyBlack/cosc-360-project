@@ -1,36 +1,16 @@
 import Book from "../models/book.js";
-import mongoose from "mongoose";
 
 const BookRepository = {
     async createBook(data) {
-        return await Book.create(data); 
+        return await Book.create(data);
     },
 
-    async findBook(){
-
+    async findAll() {
+        return await Book.find().sort({ createdAt: -1 });
     },
 
-    async findAll(){
-
-    }
+    async findUserBooks(userID) {
+        return await Book.find({ book_owner: userID }).sort({ createdAt: -1 });
+    },
 };
-
-// const findAll = async () => {
-//     return [
-//         {
-//             title: "The Great Gatsby",
-//             author: "F. Scott Fitzgerald",
-//             owner: "Jovan Kalirai",
-//             status: "Available",
-//         },
-//         {
-//             title: "1984",
-//             author: "George Orwell",
-//             owner: "Armaan Cheema",
-//             status: "Borrowed",
-
-//         },
-//     ];
-// };
-
-export default {BookRepository };
+export default BookRepository;
