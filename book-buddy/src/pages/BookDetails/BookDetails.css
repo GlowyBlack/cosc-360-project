@@ -1,0 +1,142 @@
+.book-image-banner {
+    background-color: #3a3a3a;
+    width: 100%;
+    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .book-image {
+    height: 220px;
+    width: 160px;
+    object-fit: cover;
+  }
+  
+  .book-details-container {
+    padding: 1.5rem 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  
+  .book-title {
+    font-size: 1.8rem;
+    margin-bottom: 0.2rem;
+    color: #fff;
+  }
+  
+  .book-author {
+    color: #aaa;
+    margin-bottom: 1rem;
+  }
+  
+  .tag-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .tag {
+    background-color: #3a3a3a;
+    color: #fff;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+  }
+  
+  .availability-bar {
+    background-color: #3a3a3a;
+    border-radius: 12px;
+    padding: 0.8rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+    color: #fff;
+  }
+  
+  .dot {
+    width: 12px;
+    height: 12px;
+    background-color: #888;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  
+  .tab-row {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .tab {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.3rem 0;
+  }
+  
+  .active-tab {
+    color: #fff;
+    border-bottom: 2px solid maroon;
+  }
+  
+  .description-section {
+    margin: 1.5rem 0;
+    color: #fff;
+  }
+  
+  .timeline-section {
+    margin: 1.5rem 0;
+    color: #fff;
+  }
+  
+  .timeline-section ul {
+    list-style: disc;
+    padding-left: 1.2rem;
+    color: #aaa;
+  }
+  
+  .owner-card {
+    background-color: #3a3a3a;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0;
+    color: #fff;
+  }
+  
+  .owner-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 0.5rem 0;
+  }
+  
+  .profile-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    background-color: #555;
+  }
+  
+  .profile-label {
+    color: #aaa;
+    font-size: 0.85rem;
+  }
+  
+  .borrow-btn-container {
+    display: flex;
+    justify-content: center;
+    margin: 2rem 0;
+  }
+  
+  .borrow-btn {
+    background-color: #3a3a3a;
+    color: #fff;
+    padding: 0.8rem 3rem;
+    border-radius: 12px;
+    font-size: 1rem;
+  }
