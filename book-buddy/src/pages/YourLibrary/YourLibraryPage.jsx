@@ -113,7 +113,7 @@ function YourLibraryPage() {
   const [activeTab, setActiveTab] = useState("myBooks");
   const [libraryBooks, setLibraryBooks] = useState(fallbackLibraryBooks);
 
-  const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
+  const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:5001";
 
   const mapDbTypeToTab = (book) => {
     const rawType = String(

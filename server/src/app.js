@@ -20,7 +20,7 @@ app.get('/', (req, res) => {res.send('Book Buddy API is running...');});
 app.use('/books', bookRoute);
 app.use('/user', userRoute);
 
-const PORT = 5000;
+const PORT = 5001;
 
 app.listen(PORT, () => {
     console.log(`Server started on http://localhost:${PORT}`);
