@@ -1,0 +1,72 @@
+[
+  {
+    "id": "s1",
+    "title": "The Three-Body Problem",
+    "author": "Cixin Liu",
+    "genre": "Sci-Fi",
+    "description": "First contact science fiction with deep cosmic stakes."
+  },
+  {
+    "id": "s2",
+    "title": "The Way of Kings",
+    "author": "Brandon Sanderson",
+    "genre": "Fantasy",
+    "description": "Epic fantasy with intertwined character arcs and worldbuilding."
+  },
+  {
+    "id": "s3",
+    "title": "Tomorrow, and Tomorrow, and Tomorrow",
+    "author": "Gabrielle Zevin",
+    "genre": "Fiction",
+    "description": "A story about friendship, creativity, and game design."
+  },
+  {
+    "id": "s4",
+    "title": "The Fellowship of the Ring",
+    "author": "J.R.R. Tolkien",
+    "genre": "Fantasy",
+    "description": "The opening journey of the One Ring adventure."
+  },
+  {
+    "id": "s5",
+    "title": "Atomic Habits",
+    "author": "James Clear",
+    "genre": "Non-Fiction",
+    "description": "Practical advice for behavior change through small habits."
+  },
+  {
+    "id": "s6",
+    "title": "Dune",
+    "author": "Frank Herbert",
+    "genre": "Sci-Fi",
+    "description": "Political intrigue and survival on the desert planet Arrakis."
+  },
+  {
+    "id": "s7",
+    "title": "The Hobbit",
+    "author": "J.R.R. Tolkien",
+    "genre": "Fantasy",
+    "description": "A classic quest story following Bilbo Baggins."
+  },
+  {
+    "id": "s8",
+    "title": "Project Hail Mary",
+    "author": "Andy Weir",
+    "genre": "Sci-Fi",
+    "description": "A lone astronaut attempts to save Earth."
+  },
+  {
+    "id": "s9",
+    "title": "Normal People",
+    "author": "Sally Rooney",
+    "genre": "Fiction",
+    "description": "An intimate look at relationships and emotional growth."
+  },
+  {
+    "id": "s10",
+    "title": "The Midnight Library",
+    "author": "Matt Haig",
+    "genre": "Fiction",
+    "description": "A woman explores alternate versions of her life."
+  }
+]
