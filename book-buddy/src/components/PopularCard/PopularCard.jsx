@@ -21,7 +21,7 @@ function PopularCard({ title, author, distance, image}) {
                 alt="Distance: "
                 className="pin-icon"
             />
-            {distance}
+            {distance + " km away"}
         </p>
       </div>
     </div>

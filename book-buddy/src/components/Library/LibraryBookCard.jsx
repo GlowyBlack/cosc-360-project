@@ -1,12 +1,17 @@
 import "./LibraryBookCard.css";
 
+const FALLBACK_IMAGE =
+  "https://cdn.vectorstock.com/i/1000v/32/45/no-image-symbol-missing-available-icon-gallery-vector-45703245.jpg";
+
 function LibraryBookCard({ title, author, availability, image, showEdit = false }) {
   return (
     <article className="library-book-card">
       <div className="library-book-card-image-wrap">
-        {image ? (
-          <img className="library-book-card-image" src={image} alt={`${title} cover`} />
-        ) : null}
+        <img
+          className="library-book-card-image"
+          src={image || FALLBACK_IMAGE}
+          alt={`${title} cover`}
+        />
       </div>
 
       <div className="library-book-card-info">

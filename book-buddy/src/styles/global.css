@@ -1,12 +1,34 @@
+/* Design tokens — source of truth: src/styles/colors.md */
 :root {
-  --color-primary: #000000;
-  --color-primary-terracotta: #c25c2a;
+  /* Background */
   --color-background: #faf8f4;
-  --color-surface: #faf8f4;
-  --color-surface-oatmeal: #F2EDE6;
-  --color-on-surface: #1a1c1c;
-  --color-on-surface-variant: #444748;
-  --color-outline: #747878;
+  --color-surface: #f2ede6;
+  --color-surface-oatmeal: #f2ede6;
+  --color-surface-dark: #e8e2da;
+
+  /* Text */
+  --color-on-surface: #1c1b18;
+  --color-on-surface-variant: #6b6760;
+  --color-outline: #9e9a95;
+
+  /* Accent & primary actions (buttons, highlights, links) */
+  --color-accent: #c25c2a;
+  --color-primary-terracotta: #c25c2a;
+  --color-primary: #c25c2a;
+  --color-accent-hover: #a84a1f;
+  --color-accent-light: #edd9cc;
+
+  /* Borders & dividers */
+  --color-border: #d9d4ce;
+
+  /* Status */
+  --color-success: #2d6a4f;
+  --color-warning: #b57d1a;
+  --color-danger: #9b2c2c;
+  --color-success-bg: #d8f0e8;
+  --color-warning-bg: #fdf1d6;
+  --color-danger-bg: #f9e0e0;
+
   --font-sans: "DM Sans", system-ui, sans-serif;
   --font-serif: "DM Serif Display", Georgia, serif;
   --radius-md: 1rem;
