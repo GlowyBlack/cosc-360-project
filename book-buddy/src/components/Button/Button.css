@@ -1,0 +1,58 @@
+.btn {
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.15s ease, filter 0.2s ease, color 0.2s ease;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: #fff;
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.btn-primary:hover {
+  opacity: 0.92;
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-terracotta {
+  background-color: var(--color-primary-terracotta);
+  color: #fff;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.btn-terracotta:hover {
+  filter: brightness(1.08);
+}
+
+.btn-terracotta:active {
+  transform: scale(0.98);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-on-surface);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+.btn-ghost:hover {
+  color: var(--color-primary);
+}
