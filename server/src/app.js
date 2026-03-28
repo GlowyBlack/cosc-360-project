@@ -11,7 +11,7 @@ const app = express();
 db.startup()
 
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173","http://localhost:4000"],
     credentials: true
 }));
 app.use(express.json());
@@ -22,6 +22,6 @@ app.use('/user', userRoute);
 
 const PORT = 5001;
 
-app.listen(PORT, () => {
-    console.log(`Server started on http://localhost:${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server started on http://localhost:${PORT}`);
 });
