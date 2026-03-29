@@ -1,25 +1,25 @@
-import BookRepository from "../repositories/book-repository.js"
+import bookRepository from "../repositories/bookRepository.js"
 import fs from "fs";
 
 const BookService = {
     async getAllBooks() {
-        return await BookRepository.findAll();
+        return await bookRepository.findAll();
     },
 
     async createBook(data) {
         if (!data.book_title || !data.book_author) {
             throw new Error("Title and author are required");
         }
-        return await BookRepository.createBook(data);
+        return await bookRepository.createBook(data);
     },
 
     async findBooksByUserId(userID) {
         if (!userID) {
             throw new Error("User ID is required");
         }
-        return await BookRepository.findUserBooks(userID);
+        return await bookRepository.findUserBooks(userID);
     },
-    
+
     searchBooksFromMock(searchTerm) {
         const normalizedTerm = String(searchTerm ?? "").trim().toLowerCase();
         const filePath = new URL("../mock/books.json", import.meta.url);

@@ -2,8 +2,9 @@ import db from './config/db.js'
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
-import bookRoute from './routes/book-route.js';
-import userRoute from './routes/book-route.js';
+import bookRoute from './routes/bookRoute.js';
+import userRoute from './routes/userRoute.js';
+import requestRoute from './routes/requestRoute.js';
 
 dotenv.config()
 
@@ -19,6 +20,7 @@ app.use(express.json());
 app.get('/', (req, res) => {res.send('Book Buddy API is running...');});
 app.use('/books', bookRoute);
 app.use('/user', userRoute);
+app.use('/request', requestRoute);
 
 const PORT = 5001;
 
