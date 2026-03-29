@@ -1,46 +1,22 @@
-import {useState, useEffect} from "react"
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import "./Footer.css"
+import MaterialIcon from "../MaterialIcon/MaterialIcon.jsx";
+import "./Footer.css";
 
-function Footer(){
-    const [isUser, setIsUser] = useState(false);
-
-
-
-    function toggleUser(){
-        setIsUser(!isUser);
-    }
-
-    useEffect(() => {
-        console.log("Working")
-    }, [isUser]);
-    return <>
-        <div id="footer" >
-            <Link to="/">
-            <button className="footer-buttons">Home</button>
-            </Link>
-            {isUser ? ( 
-                //Show when logged in
-                <>
-                <Link to="/library">
-                    <button className="footer-buttons">Library</button>
-                </Link>
-                    <button className="footer-buttons">Messages</button>
-                    <button className="footer-buttons">Requests</button>
-                    <button className="footer-buttons" onClick={toggleUser}>Profile</button>
-                </>
-                ) : ( 
-                //Show when logged in
-                <>  
-                <Link to="">
-                    <button className="footer-buttons" onClick={toggleUser}>Login</button>
-                </Link>
-                </>
-                )
-            }
-
+export default function Footer({ year = new Date().getFullYear() }) {
+  return (
+    <footer className="footer">
+      <div className="footer-inner">
+        <p className="footer-copy">
+          Â© {year} Book Buddy.
+        </p>
+        <div className="footer-icons">
+          <a className="footer-icon-link" href="#" aria-label="Language">
+            <MaterialIcon name="language" className="footer-icon" />
+          </a>
+          <a className="footer-icon-link" href="#" aria-label="Contact">
+            <MaterialIcon name="mail" className="footer-icon" />
+          </a>
         </div>
-    </>
+      </div>
+    </footer>
+  );
 }
-
-export default Footer;
