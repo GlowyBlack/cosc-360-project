@@ -7,6 +7,7 @@ import Register from "./pages/Register/Register.jsx";
 import YourLibraryPage from "./pages/YourLibrary/YourLibraryPage.jsx";
 import Footer from "./components/Footer/Footer.jsx";
 import BookDetails from "./pages/BookDetails/BookDetails.jsx";
+import DiscoverPage from "./pages/DiscoverPage/DiscoverPage.jsx"
 
 function AppContent() {
   const location = useLocation();
@@ -16,13 +17,13 @@ function AppContent() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<DiscoverPage />} />
         <Route path="/add-book" element={<AddNewBookForm />} />
         <Route path="/auth" element={<Register />} />
         <Route path="/library" element={<YourLibraryPage />} />
         <Route path="/book-details" element={<BookDetails />} />
       </Routes>
-      
+
       {!hideFooterPaths.includes(location.pathname) && <Footer />}
     </>
   );
