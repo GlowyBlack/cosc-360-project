@@ -4,6 +4,7 @@ import "./App.css";
 import LandingPage from "./pages/LandingPage/LandingPage.jsx";
 import AddNewBookForm from "./components/AddNewBook/AddNewBookForm.jsx";
 import Register from "./pages/Register/Register.jsx";
+import LoginPage from "./pages/Login/LoginPage.jsx";
 import YourLibraryPage from "./pages/YourLibrary/YourLibraryPage.jsx";
 import Footer from "./components/Footer/Footer.jsx";
 import BookDetails from "./pages/BookDetails/BookDetails.jsx";
@@ -11,7 +12,7 @@ import BookDetails from "./pages/BookDetails/BookDetails.jsx";
 function AppContent() {
   const location = useLocation();
 
-  const hideFooterPaths = ["/auth"];
+  const hideFooterPaths = ["/auth", "/login"];
 
   return (
     <>
@@ -19,6 +20,7 @@ function AppContent() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/add-book" element={<AddNewBookForm />} />
         <Route path="/auth" element={<Register />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/library" element={<YourLibraryPage />} />
         <Route path="/book-details" element={<BookDetails />} />
       </Routes>

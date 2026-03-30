@@ -1,6 +1,7 @@
 import { useState } from "react";
 import PopularList from "../../components/PopularCard/PopularList.jsx";
 import Header from "../../components/Header/Header.jsx";
+import API, { authHeader } from "../../api.js";
 
 function LandingPage() {
   const [searchResults, setSearchResults] = useState([]);
@@ -37,9 +38,11 @@ function LandingPage() {
   ];
 
   async function handleSearch(term) {
-    const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:5001";
     try {
-      const response = await fetch(`${baseUrl}/books/search?term=${encodeURIComponent(term)}`);
+      const response = await fetch(
+        `${API}/books/search?term=${encodeURIComponent(term)}`,
+        { headers: authHeader() }
+      );
       if (!response.ok) {
         throw new Error("Search request failed");
       }
