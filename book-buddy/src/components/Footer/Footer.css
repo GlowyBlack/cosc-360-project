@@ -37,12 +37,6 @@
   color: var(--color-outline);
   text-decoration: none;
   transition: color 0.2s ease;
-.footer {
-  flex-shrink: 0;
-  width: 100%;
-  padding: 1.25rem 2.5rem;
-  border-top: 1px solid var(--color-surface-oatmeal);
-  background-color: var(--color-background);
 }
 
 .footer-inner {
@@ -78,12 +72,6 @@
   transition: color 0.2s ease;
 }
 
-.footer-icon-link:hover {
-  color: var(--color-on-surface);
-}
-
-.footer-icon {
-  font-size: 1.25rem;
 .footer-icon-link:hover {
   color: var(--color-on-surface);
 }

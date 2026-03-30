@@ -19,7 +19,4 @@ export default function Footer({ year = new Date().getFullYear() }) {
       </div>
     </footer>
   );
-      </div>
-    </footer>
-  );
 }
