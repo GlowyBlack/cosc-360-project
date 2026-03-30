@@ -11,6 +11,13 @@ function LibraryBookCard({ title, author, availability, image, showEdit = false 
           className="library-book-card-image"
           src={image || FALLBACK_IMAGE}
           alt={`${title} cover`}
+          onError={(e) => {
+            const el = e.currentTarget;
+            if (!el.dataset.usedFallback) {
+              el.dataset.usedFallback = "1";
+              el.src = FALLBACK_IMAGE;
+            }
+          }}
         />
       </div>
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { API_BASE_URL } from "../../config/api.js";
 import PopularList from "../../components/PopularCard/PopularList.jsx";
 import Header from "../../components/Header/Header.jsx";
 
@@ -37,9 +38,10 @@ function LandingPage() {
   ];
 
   async function handleSearch(term) {
-    const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:5001";
     try {
-      const response = await fetch(`${baseUrl}/books/search?term=${encodeURIComponent(term)}`);
+      const response = await fetch(
+        `${API_BASE_URL}/books/search?term=${encodeURIComponent(term)}`,
+      );
       if (!response.ok) {
         throw new Error("Search request failed");
       }
@@ -47,9 +49,10 @@ function LandingPage() {
       const mapped = (data ?? []).map((book) => ({
         title: book.title,
         author: book.author,
-        distance: book.genre ?? "",
+        distance: book.distance ?? "",
         image:
-          "https://m.media-amazon.com/images/I/71m-MxdJ2WL._AC_UF1000,1000_QL80_.jpg",
+          book.image ??
+          "https://cdn.vectorstock.com/i/1000v/32/45/no-image-symbol-missing-available-icon-gallery-vector-45703245.jpg",
       }));
       setSearchResults(mapped);
       setHasSearched(true);
@@ -66,11 +69,16 @@ function LandingPage() {
     <>
       <Header onSearch={handleSearch} />
       {hasSearched && searchResults.length === 0 ? (
-        <p style={{ textAlign: "center", marginTop: "2rem", fontSize: "1.2rem" }}>
+        <p
+          style={{ textAlign: "center", marginTop: "2rem", fontSize: "1.2rem" }}
+        >
           No results found
         </p>
       ) : (
-        <PopularList books={displayBooks} limit={hasSearched ? displayBooks.length : 4} />
+        <PopularList
+          books={displayBooks}
+          limit={hasSearched ? displayBooks.length : 4}
+        />
       )}
     </>
   );

@@ -10,19 +10,28 @@ function PopularCard({ title, author, distance, image}) {
         className="popular-card-image"
         src={image || FALLBACK_IMAGE}
         alt="Book cover"
+        onError={(e) => {
+          const el = e.currentTarget;
+          if (!el.dataset.usedFallback) {
+            el.dataset.usedFallback = "1";
+            el.src = FALLBACK_IMAGE;
+          }
+        }}
       />
 
       <div className="popular-card-info">
         <h3>{title}</h3>
         <p className="author">{author}</p>
-        <p className="distance">
+        {distance && (
+          <p className="distance">
             <img
-                src="https://www.iconpacks.net/icons/1/free-pin-icon-48-thumb.png"
-                alt="Distance: "
-                className="pin-icon"
+              src="https://www.iconpacks.net/icons/1/free-pin-icon-48-thumb.png"
+              alt="Distance: "
+              className="pin-icon"
             />
             {distance + " km away"}
-        </p>
+          </p>
+        )}
       </div>
     </div>
   )

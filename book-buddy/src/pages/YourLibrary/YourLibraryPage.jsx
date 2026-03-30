@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../../config/api.js";
 import LibraryBookCard from "../../components/Library/LibraryBookCard.jsx";
 import "./YourLibraryPage.css";
 
@@ -113,7 +114,7 @@ function YourLibraryPage() {
   const [activeTab, setActiveTab] = useState("myBooks");
   const [libraryBooks, setLibraryBooks] = useState(fallbackLibraryBooks);
 
-  const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:5001";
+  const baseUrl = API_BASE_URL;
 
   const mapDbTypeToTab = (book) => {
     const rawType = String(
@@ -137,17 +138,19 @@ function YourLibraryPage() {
           : "Unavailable"
         : null) ??
       book.availability ??
-      book.status ??
-      "Available",
-    image: book.image ?? book.coverImage ?? book.book_image ?? "",
+      book.status ?? "Available",
+      image: book.image ?? book.coverImage ?? book.book_image ?? "https://cdn.vectorstock.com/i/1000v/32/45/no-image-symbol-missing-available-icon-gallery-vector-45703245.jpg",
     type: mapDbTypeToTab(book),
   });
 
   useEffect(() => {
     async function loadLibraryBooks() {
       try {
-        const response = await fetch(`${baseUrl}/books`);
-        if (!response.ok) return;
+        const userId = localStorage.getItem("userId"); // get logged-in user
+        if (!userId) throw new Error("No user logged in");
+
+        const response = await fetch(`${API_BASE_URL}/books/user/${userId}`);
+        if (!response.ok) throw new Error("Failed to fetch books");;
 
         const payload = await response.json();
         const rawBooks = Array.isArray(payload) ? payload : payload.books;
@@ -155,7 +158,7 @@ function YourLibraryPage() {
 
         setLibraryBooks(rawBooks.map(mapDbBook));
       } catch {
-        // Keep fallback UI data when API is unavailable.
+        console.error("Error fetching user books:", error);
       }
     }
 
@@ -214,7 +217,7 @@ function YourLibraryPage() {
               title={book.title}
               author={book.author}
               availability={book.availability}
-              image={book.image}
+              image={book.image ?? "https://cdn.vectorstock.com/i/1000v/32/45/no-image-symbol-missing-available-icon-gallery-vector-45703245.jpg"}
               showEdit={activeTab === "myBooks"}
             />
           ))}
