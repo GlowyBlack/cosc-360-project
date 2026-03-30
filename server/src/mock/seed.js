@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 import User from "../models/user.js";
 
 dotenv.config();
@@ -8,7 +9,7 @@ const tempUsers = [
   {
     username: "alexm",
     email: "alex.temp@bookbuddy.dev",
-    password: "temp1234",
+    password_plain: "temp1234",
     profile_image: null,
     bio: "Temp seeded user Alex",
     role: "Registered",
@@ -17,7 +18,7 @@ const tempUsers = [
   {
     username: "riyash",
     email: "riya.temp@bookbuddy.dev",
-    password: "temp1234",
+    password_plain: "temp1234",
     profile_image: null,
     bio: "Temp seeded user Riya",
     role: "Registered",
@@ -26,7 +27,7 @@ const tempUsers = [
   {
     username: "noahk",
     email: "noah.temp@bookbuddy.dev",
-    password: "temp1234",
+    password_plain: "temp1234",
     profile_image: null,
     bio: "Temp seeded user Noah",
     role: "Registered",
@@ -39,7 +40,14 @@ async function seed() {
     await mongoose.connect(process.env.MONGO_URI);
 
     await User.deleteMany({ email: { $in: tempUsers.map((u) => u.email) } });
-    const inserted = await User.insertMany(tempUsers);
+    const docs = await Promise.all(
+      tempUsers.map(async (u) => {
+        const { password_plain, ...rest } = u;
+        const password_hash = await bcrypt.hash(password_plain, 10);
+        return { ...rest, password_hash };
+      })
+    );
+    const inserted = await User.insertMany(docs);
 
     console.log(`Seeded ${inserted.length} temp users.`);
     inserted.forEach((user) => {

@@ -1,8 +1,6 @@
 import bcrypt from "bcryptjs";
 import User from "../models/user.js";
 
-const SALT_ROUNDS = 10;
-
 function sanitizeUser(userDoc) {
   return {
     id: userDoc._id,
@@ -36,11 +34,11 @@ const UserService = {
       throw new Error("user_exists");
     }
 
-    const passwordHash = await bcrypt.hash(passwordRaw, SALT_ROUNDS);
+    const password_hash = await bcrypt.hash(passwordRaw, 10);
     const created = await User.create({
       username: usernameNorm,
       email: emailNorm,
-      password: passwordHash,
+      password_hash,
       role: "Registered",
     });
 
@@ -58,8 +56,8 @@ const UserService = {
     const user = await User.findOne({ username: usernameNorm });
     if (!user) throw new Error("invalid_credentials");
 
-    const ok = await bcrypt.compare(passwordRaw, user.password);
-    if (!ok) throw new Error("invalid_credentials");
+    const isValid = await bcrypt.compare(passwordRaw, user.password_hash);
+    if (!isValid) throw new Error("invalid_credentials");
 
     if (user.is_suspended) {
       throw new Error("account_suspended");
