@@ -11,27 +11,27 @@ function LandingPage() {
     {
       title: "The Three-Body Problem",
       author: "Cixin Liu",
-      distance: "1.2km away",
+      distance: "1.2",
       image:
         "https://m.media-amazon.com/images/I/91DUejN+hAL._AC_UF1000,1000_QL80_.jpg",
     },
     {
       title: "The Way of Kings",
       author: "Brandon Sanderson",
-      distance: "2.4km away",
+      distance: "2.4",
       image:
         "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1659905828i/7235533.jpg",
     },
     {
       title: "Tomorrow, and Tomorrow, and Tomorrow",
       author: "Gabrielle Zevin",
-      distance: "0.8km away",
+      distance: "0.8",
       image: "https://m.media-amazon.com/images/I/91HY8gaU8pL.jpg",
     },
     {
       title: "The Fellowship of the Ring",
       author: "J.R.R. Tolkien",
-      distance: "3.1km away",
+      distance: "3.1",
       image:
         "https://m.media-amazon.com/images/I/71Ep7UNeTtL._AC_UF1000,1000_QL80_.jpg",
     },

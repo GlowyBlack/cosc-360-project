@@ -7,7 +7,7 @@ const UserSchema = new mongoose.Schema({
     profileImage: { type: String, default: null },
     bio: { type: String, default: "" },
     role: { type: String, enum: ["Registered", "Admin"], default: "Registered" },
-    is_suspended: { type: Boolean, default: false },
+    isSuspended: { type: Boolean, default: false },
 }, { timestamps: true });
 
 export default mongoose.model("User", UserSchema);

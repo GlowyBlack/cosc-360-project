@@ -1,0 +1,79 @@
+/* Design tokens — source of truth: src/styles/colors.md */
+:root {
+  /* Background */
+  --color-background: #faf8f4;
+  --color-surface: #f2ede6;
+  --color-surface-oatmeal: #f2ede6;
+  --color-surface-dark: #e8e2da;
+
+  /* Text */
+  --color-on-surface: #1c1b18;
+  --color-on-surface-variant: #6b6760;
+  --color-outline: #9e9a95;
+
+  /* Accent & primary actions (buttons, highlights, links) */
+  --color-accent: #c25c2a;
+  --color-primary-terracotta: #c25c2a;
+  --color-primary: #c25c2a;
+  --color-accent-hover: #a84a1f;
+  --color-accent-light: #edd9cc;
+
+  /* Borders & dividers */
+  --color-border: #d9d4ce;
+
+  /* Status */
+  --color-success: #2d6a4f;
+  --color-warning: #b57d1a;
+  --color-danger: #9b2c2c;
+  --color-success-bg: #d8f0e8;
+  --color-warning-bg: #fdf1d6;
+  --color-danger-bg: #f9e0e0;
+
+  --font-sans: "DM Sans", system-ui, sans-serif;
+  --font-serif: "DM Serif Display", Georgia, serif;
+  --radius-md: 1rem;
+  --radius-lg: 2rem;
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background-color: var(--color-background);
+  color: var(--color-on-surface);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+.serifText {
+  font-family: var(--font-serif);
+}

@@ -53,10 +53,37 @@ const tempUsers = [
     is_suspended: false,
   },
 ];
+const tempBooks = [
+  { bookTitle: "Dune", bookAuthor: "Frank Herbert", genre: "Sci-Fi" },
+  { bookTitle: "1984", bookAuthor: "George Orwell", genre: "Fiction" },
+  { bookTitle: "The Hobbit", bookAuthor: "J.R.R. Tolkien", genre: "Fantasy" },
+  { bookTitle: "To Kill a Mockingbird", bookAuthor: "Harper Lee", genre: "Fiction" },
+  { bookTitle: "The Great Gatsby", bookAuthor: "F. Scott Fitzgerald", genre: "Fiction" },
+  { bookTitle: "Moby Dick", bookAuthor: "Herman Melville", genre: "Adventure" },
+  { bookTitle: "War and Peace", bookAuthor: "Leo Tolstoy", genre: "Historical Fiction" },
+  { bookTitle: "The Catcher in the Rye", bookAuthor: "J.D. Salinger", genre: "Fiction" },
+  { bookTitle: "Brave New World", bookAuthor: "Aldous Huxley", genre: "Sci-Fi" },
+  { bookTitle: "The Alchemist", bookAuthor: "Paulo Coelho", genre: "Fiction" },
+  { bookTitle: "Harry Potter", bookAuthor: "J.K. Rowling", genre: "Fantasy" },
+  { bookTitle: "Percy Jackson", bookAuthor: "Rick Riordan", genre: "Fantasy" },
+  { bookTitle: "The Odyssey", bookAuthor: "Homer", genre: "Adventure" },
+  { bookTitle: "Crime and Punishment", bookAuthor: "Fyodor Dostoevsky", genre: "Thriller" },
+  { bookTitle: "The Book Thief", bookAuthor: "Markus Zusak", genre: "Historical Fiction" },
+  { bookTitle: "The Lord of the Rings", bookAuthor: "J.R.R. Tolkien", genre: "Fantasy" },
+  { bookTitle: "Fahrenheit 451", bookAuthor: "Ray Bradbury", genre: "Fiction" },
+  { bookTitle: "Jane Eyre", bookAuthor: "Charlotte Brontë", genre: "Romance" },
+  { bookTitle: "The Chronicles of Narnia", bookAuthor: "C.S. Lewis", genre: "Fantasy" },
+  { bookTitle: "Animal Farm", bookAuthor: "George Orwell", genre: "Fiction" },
+  { bookTitle: "The Kite Runner", bookAuthor: "Khaled Hosseini", genre: "Fiction" },
+  { bookTitle: "The Hunger Games", bookAuthor: "Suzanne Collins", genre: "Fiction" },
+  { bookTitle: "The Da Vinci Code", bookAuthor: "Dan Brown", genre: "Thriller" },
+  { bookTitle: "Ender's Game", bookAuthor: "Orson Scott Card", genre: "Sci-Fi" },
+];
 
 async function seed() {
   try {
     await mongoose.connect(process.env.MONGO_URI);
+    console.log("Connected to MongoDB");
 
     await User.deleteMany({ email: { $in: tempUsers.map(u => u.email) } });
     await Book.deleteMany({});
@@ -111,10 +138,8 @@ async function seed() {
     });
   } catch (error) {
     console.error("Seed failed:", error.message);
-    process.exitCode = 1;
   } finally {
     await mongoose.disconnect();
   }
 }
-
 seed();
