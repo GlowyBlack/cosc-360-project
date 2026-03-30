@@ -4,7 +4,7 @@ import MaterialIcon from "../../MaterialIcon/MaterialIcon.jsx";
 import "./RegisteredNav.css";
 
 const mainNavItems = [
-  { to: "/home", label: "Home", icon: "home", badgeKey: null },
+  { to: "/", label: "Home", icon: "home", badgeKey: null },
   { to: "/library", label: "My Library", icon: "menu_book", badgeKey: null },
   { to: "/messages", label: "Messages", icon: "chat_bubble", badgeKey: "messages" },
   { to: "/requests", label: "Requests", icon: "sync_alt", badgeKey: "requests" },

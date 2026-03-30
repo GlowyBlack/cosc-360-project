@@ -10,6 +10,10 @@ const BookService = {
         if (!data.book_title || !data.book_author) {
             throw new Error("Title and author are required");
         }
+        if(!data.description){
+            throw new Error("Please provide the summary of the book");
+        }
+
         return await bookRepository.createBook(data);
     },
 
