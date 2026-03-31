@@ -8,7 +8,6 @@ import MaterialIcon from "../MaterialIcon/MaterialIcon.jsx";
 import "./RegisterForm.css";
 
 export default function RegisterForm({
-  onSubmit,
   isSubmitting = false,
   error = "",
   loginHref = "/login",
@@ -20,10 +19,7 @@ export default function RegisterForm({
   const [password, setPassword] = useState("");
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    if (typeof onSubmit === "function") {
-      onSubmit({ firstName, lastName, email, password });
-    }
+
   };
 
   return (

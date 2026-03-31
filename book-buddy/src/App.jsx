@@ -7,6 +7,7 @@ import BookDetails from "./pages/BookDetails/BookDetails.jsx";
 import DiscoverPage from "./pages/DiscoverPage/DiscoverPage.jsx";
 
 function AppContent() {
+ 
   return (
     <>
       <Routes>

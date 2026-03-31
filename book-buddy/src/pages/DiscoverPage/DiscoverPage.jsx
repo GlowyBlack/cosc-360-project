@@ -3,7 +3,7 @@ import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import BookCard from "../../components/BookCard/BookCard.jsx";
 import { DISCOVER_FILTERS } from "../../data/discoverBooks.js";
-import { API_BASE_URL } from "../../config/api.js";
+import API from "../../config/api.js";
 
 import "./DiscoverPage.css";
 
@@ -63,7 +63,7 @@ export default function DiscoverPage() {
   useEffect(()=> {
     async function loadBooks(params) {
       try{
-        const response = await fetch(`${API_BASE_URL}/books/`);
+        const response = await fetch(`${API}/books/`);
         const data = await response.json();
         setBooks(Array.isArray(data) ? data : []);
       }catch(error){

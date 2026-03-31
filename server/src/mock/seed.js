@@ -87,7 +87,11 @@ const tempBooks = [
 
 async function seed() {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    const mongoURI = process.env.MONGO_URI;
+    if(!mongoURI){
+      throw new Error("MONGO_URI is missing")
+    }
+    await mongoose.connect(mongoURI);
     console.log("Connected to MongoDB");
 
     await User.deleteMany({ email: { $in: tempUsers.map((u) => u.email) } });
