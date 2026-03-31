@@ -1,7 +1,7 @@
 import "./AddNewBookForm.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import API, { authHeader } from "../../api.js";
+import API, { authHeader } from "../../config/api.js";
 
 function AddNewBookForm() {
   const navigate = useNavigate();
@@ -68,7 +68,11 @@ function AddNewBookForm() {
   return (
     <section className="add-book-page">
       <div className="top-bar">
-        <button type="button" className="back-arrow" onClick={() => navigate("/library")}>
+        <button
+          type="button"
+          className="back-arrow"
+          onClick={() => navigate("/library")}
+        >
           ← Add New Book
         </button>
         <h2>Add New Book</h2>
@@ -126,7 +130,9 @@ function AddNewBookForm() {
         </div>
 
         <div className="form-group">
-          <label className="field-label">Condition: {conditionMap[conditionValue]}</label>
+          <label className="field-label">
+            Condition: {conditionMap[conditionValue]}
+          </label>
           <input
             type="range"
             min="1"
@@ -155,7 +161,9 @@ function AddNewBookForm() {
         <div className="borrow-section">
           <div>
             <p className="borrow-title">Available for borrowing</p>
-            <p className="borrow-subtext">Make this book available immediately</p>
+            <p className="borrow-subtext">
+              Make this book available immediately
+            </p>
           </div>
 
           <label className="switch">
@@ -168,10 +176,16 @@ function AddNewBookForm() {
           </label>
         </div>
 
-        <button type="submit" className="submit-book-btn" disabled={isSubmitting}>
+        <button
+          type="submit"
+          className="submit-book-btn"
+          disabled={isSubmitting}
+        >
           {isSubmitting ? "Adding Book..." : "Add Book"}
         </button>
-        {submitError ? <p className="submit-book-error">{submitError}</p> : null}
+        {submitError ? (
+          <p className="submit-book-error">{submitError}</p>
+        ) : null}
       </form>
     </section>
   );

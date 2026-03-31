@@ -8,7 +8,6 @@ import MaterialIcon from "../MaterialIcon/MaterialIcon.jsx";
 import "./LoginForm.css";
 
 export default function LoginForm({
-  onSubmit,
   isSubmitting = false,
   error = "",
   signUpHref = "/register",
@@ -17,10 +16,17 @@ export default function LoginForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (typeof onSubmit === "function") {
-      onSubmit({ email, password });
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setError("");
+    setIsSubmitting(true);
+    try {
+
+      navigate("/");
+    } catch (err) {
+      setError(err.message ?? "Something went wrong");
+    } finally {
+      
     }
   };
 

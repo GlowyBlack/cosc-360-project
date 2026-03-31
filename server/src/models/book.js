@@ -15,6 +15,7 @@ const BookSchema = new mongoose.Schema({
     condition: {type: String, enum: ["Worn", "Fair", "Good", "Like New", "New"], default: "Good"},
     onwerNote: {type: String, default: "", trim: true},
     isAvailable: {type: Boolean, default: true},
+    pendingRequestCount: {type: Number, default: 0}
 }, { timestamps: true });
 
 export default mongoose.model("Book", BookSchema);

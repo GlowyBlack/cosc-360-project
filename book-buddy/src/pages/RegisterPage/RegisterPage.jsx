@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import API from "../../api.js";
+import API from "../../config/api.js";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import RegisterForm from "../../components/RegisterForm/RegisterForm.jsx";

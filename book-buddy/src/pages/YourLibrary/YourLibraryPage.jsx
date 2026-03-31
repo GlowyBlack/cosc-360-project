@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LibraryBookCard from "../../components/Library/LibraryBookCard.jsx";
-import API, { authHeader } from "../../api.js";
+import API, { authHeader } from "../../config/api.js";
 import "./YourLibraryPage.css";
 
 const fallbackLibraryBooks = [
@@ -10,7 +10,8 @@ const fallbackLibraryBooks = [
     title: "The Three-Body Problem",
     author: "Cixin Liu",
     availability: "Available",
-    image: "https://m.media-amazon.com/images/I/91DUejN+hAL._AC_UF1000,1000_QL80_.jpg",
+    image:
+      "https://m.media-amazon.com/images/I/91DUejN+hAL._AC_UF1000,1000_QL80_.jpg",
     type: "myBooks",
   },
   {
@@ -18,7 +19,8 @@ const fallbackLibraryBooks = [
     title: "The Way of Kings",
     author: "Brandon Sanderson",
     availability: "Available",
-    image: "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1659905828i/7235533.jpg",
+    image:
+      "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1659905828i/7235533.jpg",
     type: "myBooks",
   },
   {
@@ -34,7 +36,8 @@ const fallbackLibraryBooks = [
     title: "The Fellowship of the Ring",
     author: "J.R.R. Tolkien",
     availability: "Available",
-    image: "https://m.media-amazon.com/images/I/71Ep7UNeTtL._AC_UF1000,1000_QL80_.jpg",
+    image:
+      "https://m.media-amazon.com/images/I/71Ep7UNeTtL._AC_UF1000,1000_QL80_.jpg",
     type: "myBooks",
   },
   {
@@ -116,12 +119,16 @@ function YourLibraryPage() {
 
   const mapDbTypeToTab = (book) => {
     const rawType = String(
-      book.type ?? book.listType ?? book.category ?? book.bucket ?? ""
+      book.type ?? book.listType ?? book.category ?? book.bucket ?? "",
     ).toLowerCase();
-    const rawStatus = String(book.status ?? book.availability ?? "").toLowerCase();
+    const rawStatus = String(
+      book.status ?? book.availability ?? "",
+    ).toLowerCase();
 
-    if (rawType.includes("exchange") || rawStatus.includes("exchange")) return "exchanges";
-    if (rawType.includes("borrow") || rawStatus.includes("borrow")) return "borrowed";
+    if (rawType.includes("exchange") || rawStatus.includes("exchange"))
+      return "exchanges";
+    if (rawType.includes("borrow") || rawStatus.includes("borrow"))
+      return "borrowed";
     return "myBooks";
   };
 
@@ -138,7 +145,11 @@ function YourLibraryPage() {
       book.availability ??
       book.status ??
       "Available",
-    image: book.image ?? book.coverImage ?? book.book_image ?? "",
+    image:
+      book.image ??
+      book.coverImage ??
+      book.book_image ??
+      "https://cdn.vectorstock.com/i/1000v/32/45/no-image-symbol-missing-available-icon-gallery-vector-45703245.jpg",
     type: mapDbTypeToTab(book),
   });
 
@@ -165,14 +176,15 @@ function YourLibraryPage() {
     () => ({
       myBooks: libraryBooks.filter((book) => book.type === "myBooks").length,
       borrowed: libraryBooks.filter((book) => book.type === "borrowed").length,
-      exchanges: libraryBooks.filter((book) => book.type === "exchanges").length,
+      exchanges: libraryBooks.filter((book) => book.type === "exchanges")
+        .length,
     }),
-    [libraryBooks]
+    [libraryBooks],
   );
 
   const visibleBooks = useMemo(
     () => libraryBooks.filter((book) => book.type === activeTab),
-    [activeTab, libraryBooks]
+    [activeTab, libraryBooks],
   );
 
   return (
@@ -195,7 +207,6 @@ function YourLibraryPage() {
       </section>
 
       <section className="your-library-content">
-
         {activeTab === "myBooks" && (
           <button
             type="button"
@@ -213,7 +224,10 @@ function YourLibraryPage() {
               title={book.title}
               author={book.author}
               availability={book.availability}
-              image={book.image}
+              image={
+                book.image ??
+                "https://cdn.vectorstock.com/i/1000v/32/45/no-image-symbol-missing-available-icon-gallery-vector-45703245.jpg"
+              }
               showEdit={activeTab === "myBooks"}
             />
           ))}
