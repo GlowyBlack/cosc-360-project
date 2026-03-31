@@ -9,33 +9,41 @@ import MaterialIcon from "../MaterialIcon/MaterialIcon.jsx";
 import "./LoginForm.css";
 
 export default function LoginForm({
-  isSubmitting = false,
-  error = "",
   signUpHref = "/register",
   backHref = "/",
 }) {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [internalError, setInternalError] = useState("");
-  const [internalSubmitting, setInternalSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  async function handleSubmit(event) {
-    event.preventDefault();
+  async function handleLogin() {
     setError("");
-    setIsSubmitting(true);
+    setSubmitting(true);
     try {
+      const response = await fetch(`${API}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: String(email || "").trim(), password }),
+      });
 
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.detail ?? data.message ?? "Login failed");
+      }
+      if (!data.access_token) {
+        throw new Error("No access token in response");
+      }
+
+      localStorage.setItem("token", data.access_token);
       navigate("/");
-    } catch (err) {
-      setError(err.message ?? "Something went wrong");
+    } catch (e) {
+      setError(e.message ?? "Something went wrong");
     } finally {
-      
+      setSubmitting(false);
     }
-  };
-
-  const displayError = error || internalError;
-  const submitting = isSubmitting || internalSubmitting;
+  }
 
   return (
     <div className="login-form-card">
@@ -43,10 +51,10 @@ export default function LoginForm({
         <h1 className="login-form-title">Welcome back</h1>
         <p className="login-form-subtitle">Continue your literary journey.</p>
       </header>
-      <form className="login-form-form" onSubmit={handleSubmit} noValidate>
-        {displayError ? (
+      <form className="login-form-form" onSubmit={handleLogin} noValidate>
+        {error ? (
           <p className="login-form-error" role="alert">
-            {displayError}
+            {error}
           </p>
         ) : null}
         <TextField
