@@ -9,8 +9,6 @@ import MaterialIcon from "../MaterialIcon/MaterialIcon.jsx";
 import "./RegisterForm.css";
 
 export default function RegisterForm({
-  isSubmitting = false,
-  error = "",
   loginHref = "/login",
   backHref = "/",
 }) {
@@ -19,13 +17,13 @@ export default function RegisterForm({
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [internalError, setInternalError] = useState("");
-  const [internalSubmitting, setInternalSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    setInternalError("");
-    setInternalSubmitting(true);
+    setError("");
+    setSubmitting(true);
     try {
       const response = await fetch(`${API}/auth/register`, {
         method: "POST",
@@ -43,14 +41,11 @@ export default function RegisterForm({
       }
       navigate(loginHref);
     } catch (err) {
-      setInternalError(err.message ?? "Something went wrong");
+      setError(err.message ?? "Something went wrong");
     } finally {
-      setInternalSubmitting(false);
+      setSubmitting(false);
     }
   };
-
-  const displayError = error || internalError;
-  const submitting = isSubmitting || internalSubmitting;
 
   return (
     <div className="register-form-card">
@@ -60,10 +55,10 @@ export default function RegisterForm({
           Start swapping stories with fellow readers.
         </p>
       </header>
-      <form className="register-form-form" onSubmit={handleSubmit} noValidate>
-        {displayError ? (
+      <form className="register-form-form" onSubmit={handleRegister} noValidate>
+        {error ? (
           <p className="register-form-error" role="alert">
-            {displayError}
+            {error}
           </p>
         ) : null}
         <TextField
