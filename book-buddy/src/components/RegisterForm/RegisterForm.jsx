@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import API from "../../config/api.js";
 import TextField from "../TextField/TextField.jsx";
 import PasswordField from "../PasswordField/PasswordField.jsx";
 import Button from "../Button/Button.jsx";
@@ -13,14 +14,43 @@ export default function RegisterForm({
   loginHref = "/login",
   backHref = "/",
 }) {
+  const navigate = useNavigate();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [internalError, setInternalError] = useState("");
+  const [internalSubmitting, setInternalSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
-
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setInternalError("");
+    setInternalSubmitting(true);
+    try {
+      const response = await fetch(`${API}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: String(firstName || "").trim(),
+          lastName: String(lastName || "").trim(),
+          email: String(email || "").trim(),
+          password,
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.detail ?? data.message ?? "Registration failed");
+      }
+      navigate(loginHref);
+    } catch (err) {
+      setInternalError(err.message ?? "Something went wrong");
+    } finally {
+      setInternalSubmitting(false);
+    }
   };
+
+  const displayError = error || internalError;
+  const submitting = isSubmitting || internalSubmitting;
 
   return (
     <div className="register-form-card">
@@ -31,9 +61,9 @@ export default function RegisterForm({
         </p>
       </header>
       <form className="register-form-form" onSubmit={handleSubmit} noValidate>
-        {error ? (
+        {displayError ? (
           <p className="register-form-error" role="alert">
-            {error}
+            {displayError}
           </p>
         ) : null}
         <TextField
@@ -81,10 +111,10 @@ export default function RegisterForm({
           variant="terracotta"
           type="submit"
           className="register-form-submit"
-          disabled={isSubmitting}
+          disabled={submitting}
         >
           <span className="register-form-submit-inner">
-            {isSubmitting ? "Creating…" : "Create account"}
+            {submitting ? "Creating…" : "Create account"}
             <MaterialIcon
               name="arrow_forward"
               className="register-form-submit-icon"

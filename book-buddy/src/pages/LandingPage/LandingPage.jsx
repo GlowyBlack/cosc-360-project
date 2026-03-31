@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { API_BASE_URL } from "../../config/api.js";
 import PopularList from "../../components/PopularCard/PopularList.jsx";
 import Header from "../../components/Header/Header.jsx";
-import API, { authHeader } from "../../api.js";
+import API, { authHeader } from "../../config/api.js";
 
 function LandingPage() {
   const [searchResults, setSearchResults] = useState([]);
