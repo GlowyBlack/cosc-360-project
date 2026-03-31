@@ -127,11 +127,11 @@ function YourLibraryPage() {
 
   const mapDbBook = (book, index) => ({
     id: book.id ?? book._id ?? `db-book-${index}`,
-    title: book.title ?? book.book_title ?? "Untitled Book",
-    author: book.author ?? book.book_author ?? "Unknown Author",
+    title: book.title ?? book.bookTitle ?? "Untitled Book",
+    author: book.author ?? book.bookAuthor ?? "Unknown Author",
     availability:
-      (typeof book.is_available === "boolean"
-        ? book.is_available
+      (typeof book.isAvailable === "boolean"
+        ? book.isAvailable
           ? "Available"
           : "Unavailable"
         : null) ??

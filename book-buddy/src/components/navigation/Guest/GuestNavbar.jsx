@@ -3,7 +3,7 @@ import MaterialIcon from "../../MaterialIcon/MaterialIcon.jsx";
 import "./GuestNavbar.css";
 
 const defaultLinks = [
-  { to: "/discover", label: "Discover" },
+  { to: "/", label: "Discover" },
   { to: "/browse", label: "Browse" },
   { to: "/blog", label: "Blog" },
   { to: "/about", label: "About" },
