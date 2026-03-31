@@ -7,6 +7,9 @@ const mongoURI = process.env.MONGO_URI
 
 async function startup() {
     try {
+        if (!mongoURI) {
+            throw new Error("MONGO_URI is missing. Create a .env file (see .env.example).");
+        }
         await mongoose.connect(mongoURI);
         console.log("Connected to MongoDB");
     } catch (error) {

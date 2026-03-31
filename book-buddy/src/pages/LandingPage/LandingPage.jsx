@@ -2,6 +2,7 @@ import { useState } from "react";
 import { API_BASE_URL } from "../../config/api.js";
 import PopularList from "../../components/PopularCard/PopularList.jsx";
 import Header from "../../components/Header/Header.jsx";
+import API, { authHeader } from "../../api.js";
 
 function LandingPage() {
   const [searchResults, setSearchResults] = useState([]);
@@ -40,7 +41,8 @@ function LandingPage() {
   async function handleSearch(term) {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/books/search?term=${encodeURIComponent(term)}`,
+        `${API}/books/search?term=${encodeURIComponent(term)}`,
+        { headers: authHeader() }
       );
       if (!response.ok) {
         throw new Error("Search request failed");

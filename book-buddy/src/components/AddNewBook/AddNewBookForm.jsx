@@ -1,7 +1,7 @@
 import "./AddNewBookForm.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { API_BASE_URL } from "../../config/api.js";
+import API, { authHeader } from "../../api.js";
 
 function AddNewBookForm() {
   const navigate = useNavigate();
@@ -41,12 +41,14 @@ function AddNewBookForm() {
         description: description.trim(),
         condition: conditionMap[conditionValue],
         is_available: isAvailable,
-        book_owner: ownerId,
       };
 
-      const response = await fetch(`${API_BASE_URL}/books`, {
+      const response = await fetch(`${API}/books`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          ...authHeader(),
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(payload),
       });
 

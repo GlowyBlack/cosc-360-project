@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../../config/api.js";
 import LibraryBookCard from "../../components/Library/LibraryBookCard.jsx";
+import API, { authHeader } from "../../api.js";
 import "./YourLibraryPage.css";
 
 const fallbackLibraryBooks = [
@@ -114,8 +115,6 @@ function YourLibraryPage() {
   const [activeTab, setActiveTab] = useState("myBooks");
   const [libraryBooks, setLibraryBooks] = useState(fallbackLibraryBooks);
 
-  const baseUrl = API_BASE_URL;
-
   const mapDbTypeToTab = (book) => {
     const rawType = String(
       book.type ?? book.listType ?? book.category ?? book.bucket ?? ""
@@ -146,11 +145,8 @@ function YourLibraryPage() {
   useEffect(() => {
     async function loadLibraryBooks() {
       try {
-        const userId = localStorage.getItem("userId"); // get logged-in user
-        if (!userId) throw new Error("No user logged in");
-
-        const response = await fetch(`${API_BASE_URL}/books/user/${userId}`);
-        if (!response.ok) throw new Error("Failed to fetch books");;
+        const response = await fetch(`${API}/books`, { headers: authHeader() });
+        if (!response.ok) return;
 
         const payload = await response.json();
         const rawBooks = Array.isArray(payload) ? payload : payload.books;
@@ -163,7 +159,7 @@ function YourLibraryPage() {
     }
 
     loadLibraryBooks();
-  }, [baseUrl]);
+  }, []);
 
   const counts = useMemo(
     () => ({
