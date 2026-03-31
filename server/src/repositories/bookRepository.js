@@ -33,6 +33,14 @@ const BookRepository = {
 
     async updateStatus({id, session = null}){
         
+    },
+
+    async updateBook(data, bookId){
+        book.findByIdAndUpdate(bookId,data)
+    },
+
+    async deleteBook(bookId){
+        book.findByIdAndDelete(bookId);
     }
 };
 export default BookRepository;

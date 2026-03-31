@@ -28,6 +28,7 @@ const BookController = {
 
     async findBooksByUserId(req, res) {
         try {
+            // _id
             const { userId } = req.params;
             const books = await bookService.findBooksByUserId(userId);
             res.status(200).json(books);
@@ -38,11 +39,41 @@ const BookController = {
 
     async searchBooks(req, res) {
         try {
-            const { term } = req.query;
+            const { req } = req.query;
             const results = bookService.searchBooksFromMock(term);
             res.status(200).json(results);
         } catch (error) {
             res.status(500).json({ message: "Server Error", error: error.message });
+        }
+    },
+
+    async getBookByBookId(req, res){
+        try{
+            const { id } = req.params;
+            const book = await bookService.getBookByBookId(id);
+        } catch (error){
+            res.status(500).json({ message: "Server Error", error: error.message })
+        }
+    },
+
+    async updateDetails(req, res){
+        try{
+            const data = req.body;
+            const book = await bookService.updateDetails(data)
+            res.status(201).json(book)
+        } catch (error){
+            res.status(500).json({ message: "Server Error", error: error.message })
+        }
+    },
+
+    async deleteBook(req, res){
+        try{
+            const { id } = req.params;
+            const userId = req.user?._id
+            const book = await bookService.deleteBook(id, userId);
+            res.status(201).json(book)
+        } catch (error){
+            res.status(500).json({ message: "Server Error", error: error.message })
         }
     },
 };

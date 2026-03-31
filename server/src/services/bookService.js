@@ -1,3 +1,4 @@
+import user from "../models/user.js";
 import bookRepository from "../repositories/bookRepository.js"
 import fs from "fs";
 
@@ -24,6 +25,40 @@ const BookService = {
         return await bookRepository.findUserBooks(userID);
     },
 
+
+    async getBookByBookId(id) {
+        if (!id) {
+            throw new Error("Book ID is required");
+        }
+        return await bookRepository.findByID(id);
+    },
+
+    async updateDetails(data) {
+        if(!data.id){
+            throw new Error("Book ID is required.");
+        }
+        if(!data.userId) {
+            throw new Error("User ID is required");
+        }
+        const book = bookRepository.findByID(id);
+        if(book.bookOwner != data.userId){
+            throw new Error("You can't edit a book that doesn't belong to you.");
+        }
+        const { id } = data;
+        return await bookRepository.updateBook(data, id);
+    },
+
+    async deleteBook(bookId, userId){
+        if (!bookId) {
+            throw new Error("Book ID is required");
+        }
+        const book = bookRepository.findByID(bookId);
+        if(book.bookOwner != userId /* or if not admin */){
+            throw new Error("You can't edit a book that doesn't belong to you.");
+        }
+        return await bookRepository.delete(bookId);
+    },
+
     searchBooksFromMock(searchTerm) {
         const normalizedTerm = String(searchTerm ?? "").trim().toLowerCase();
         const filePath = new URL("../mock/books.json", import.meta.url);
@@ -46,5 +81,6 @@ const BookService = {
             return haystack.includes(normalizedTerm);
         });
     },
+
 };
 export default BookService;
