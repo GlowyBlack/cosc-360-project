@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import API from "../../config/api.js";
 import TextField from "../TextField/TextField.jsx";
 import PasswordField from "../PasswordField/PasswordField.jsx";
 import Button from "../Button/Button.jsx";
@@ -13,8 +14,11 @@ export default function LoginForm({
   signUpHref = "/register",
   backHref = "/",
 }) {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [internalError, setInternalError] = useState("");
+  const [internalSubmitting, setInternalSubmitting] = useState(false);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -30,6 +34,9 @@ export default function LoginForm({
     }
   };
 
+  const displayError = error || internalError;
+  const submitting = isSubmitting || internalSubmitting;
+
   return (
     <div className="login-form-card">
       <header className="login-form-header">
@@ -37,9 +44,9 @@ export default function LoginForm({
         <p className="login-form-subtitle">Continue your literary journey.</p>
       </header>
       <form className="login-form-form" onSubmit={handleSubmit} noValidate>
-        {error ? (
+        {displayError ? (
           <p className="login-form-error" role="alert">
-            {error}
+            {displayError}
           </p>
         ) : null}
         <TextField
@@ -63,10 +70,10 @@ export default function LoginForm({
           variant="terracotta"
           type="submit"
           className="login-form-submit"
-          disabled={isSubmitting}
+          disabled={submitting}
         >
           <span className="login-form-submit-inner">
-            {isSubmitting ? "Logging in…" : "Log In"}
+            {submitting ? "Logging in…" : "Log In"}
             <MaterialIcon name="arrow_forward" className="login-form-submit-icon" />
           </span>
         </Button>

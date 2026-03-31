@@ -5,7 +5,7 @@ const UserSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true, trim: true },
     passwordHash: { type: String, required: true },
     profileImage: { type: String, default: null },
-    bio: { type: String, default: "" },
+    bio: { type: String, default: "Hey there! I'm new here." },
     role: { type: String, enum: ["Registered", "Admin"], default: "Registered" },
     isSuspended: { type: Boolean, default: false },
 }, { timestamps: true });
