@@ -1,7 +1,5 @@
 import GuestNavbar from "../navigation/Guest/GuestNavbar.jsx";
 import RegisteredNav from "../navigation/Registered/RegisteredNav.jsx";
-import GuestNavbar from "../navigation/Guest/GuestNavbar.jsx";
-import RegisteredNav from "../navigation/Registered/RegisteredNav.jsx";
 import "./Header.css";
 
 export default function Header({
