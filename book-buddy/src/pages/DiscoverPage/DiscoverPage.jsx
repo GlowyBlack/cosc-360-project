@@ -3,7 +3,9 @@ import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import BookCard from "../../components/BookCard/BookCard.jsx";
 import { DISCOVER_FILTERS } from "../../data/discoverBooks.js";
+
 import API from "../../config/api.js";
+import { useAuth } from "../../context/AuthContext.jsx";
 
 import "./DiscoverPage.css";
 
@@ -50,6 +52,7 @@ function toCardBook(raw) {
 }
 
 export default function DiscoverPage() {
+  const { user } = useAuth();
   const [activeFilter, setActiveFilter] = useState("All");
   const [books, setBooks] = useState([]);
 
@@ -76,7 +79,7 @@ export default function DiscoverPage() {
 
   return (
     <div className="discover-page">
-      <Header variant="guest" />
+      <Header variant={user ? "user" : "guest"} />
       <main className="discover-page-main">
         <header className="discover-page-intro">
           <h1 className="discover-page-title">Discover</h1>

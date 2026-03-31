@@ -31,6 +31,11 @@ const BookRepository = {
         );
     },
 
+    async decreaseRequestCount({}){},
+    
+    async increaseRequestCount({}){},
+    
+
     async updateStatus({id, session = null}){
         
     },

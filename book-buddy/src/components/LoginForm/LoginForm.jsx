@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../../config/api.js";
+import { useAuth } from "../../context/AuthContext.jsx";
 import TextField from "../TextField/TextField.jsx";
 import PasswordField from "../PasswordField/PasswordField.jsx";
 import Button from "../Button/Button.jsx";
@@ -13,12 +14,14 @@ export default function LoginForm({
   backHref = "/",
 }) {
   const navigate = useNavigate();
+  const { setSessionUser } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  async function handleLogin() {
+  async function handleLogin(e) {
+    e.preventDefault();
     setError("");
     setSubmitting(true);
     try {
@@ -37,6 +40,9 @@ export default function LoginForm({
       }
 
       localStorage.setItem("token", data.access_token);
+      if (data.user) {
+        setSessionUser(data.user);
+      }
       navigate("/");
     } catch (e) {
       setError(e.message ?? "Something went wrong");

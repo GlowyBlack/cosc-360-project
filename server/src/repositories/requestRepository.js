@@ -23,6 +23,15 @@ const RequestRepository = {
         )
     },
 
+    async declineExchange({id, session = null}){
+                return await request.findByIdAndUpdate(
+            id,
+            { $set: {status: 'Rejected'}},
+            {new: true},
+            {session}
+        )
+    },
+
     async createBorrow({book, owner, requester}){
         return await request.create({bookId: book, bookOwner: owner, 
                                     requesterId: requester, type: "Borrow", 

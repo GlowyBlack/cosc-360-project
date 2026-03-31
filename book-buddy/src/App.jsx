@@ -6,8 +6,7 @@ import YourLibraryPage from "./pages/YourLibrary/YourLibraryPage.jsx";
 import BookDetails from "./pages/BookDetails/BookDetails.jsx";
 import DiscoverPage from "./pages/DiscoverPage/DiscoverPage.jsx";
 
-function AppContent() {
- 
+function App() {
   return (
     <>
       <Routes>
@@ -20,14 +19,6 @@ function AppContent() {
         <Route path="/book-details" element={<BookDetails />} />
       </Routes>
     </>
-  );
-}
-
-function App() {
-  return (
-    <BrowserRouter>
-      <AppContent />
-    </BrowserRouter>
   );
 }
 

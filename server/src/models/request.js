@@ -7,7 +7,7 @@ const RequestSchema = new mongoose.Schema({
     type: {type: String, enum: ["Borrow", "Exchange",], required: true},
     offeredBookId: { type: mongoose.Schema.Types.ObjectId, ref: 'Book', required: function() { return this.type === 'Exchange'; }},
     returnBy: {type: Date, required: function () { return this.type === 'Borrow'}},
-    status: {type: String, enum: ["Pending", "Accepted", "Declined", "Returned"], default: "Pending"},
+    status: {type: String, enum: ["Pending", "Accepted", "Declined", "Returned", "Cancelled"], default: "Pending"},
 }, { timestamps: true });
 
 export default mongoose.model("Request", RequestSchema);
