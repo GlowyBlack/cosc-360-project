@@ -5,7 +5,7 @@ import "../Register/Register.css";
 
 function LoginPage() {
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -18,7 +18,7 @@ function LoginPage() {
       const response = await fetch(`${API}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: username.trim(), password }),
+        body: JSON.stringify({ email: email.trim(), password }),
       });
 
       const data = await response.json().catch(() => ({}));
@@ -47,14 +47,14 @@ function LoginPage() {
         <h1>Login</h1>
         <form className="form-card" onSubmit={handleSubmit}>
           <div className="input-group">
-            <label htmlFor="login-username">Username</label>
+            <label htmlFor="login-email">Email</label>
             <input
-              id="login-username"
-              type="text"
-              autoComplete="username"
-              placeholder="Enter username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              id="login-email"
+              type="email"
+              autoComplete="email"
+              placeholder="Enter email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>

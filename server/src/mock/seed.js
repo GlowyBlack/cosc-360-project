@@ -11,46 +11,46 @@ const tempUsers = [
     username: "alice123",
     email: "alice@example.com",
     password_plain: "password123",
-    profile_image: null,
+    profileImage: null,
     bio: "Temporary seeded user Alice",
     role: "Registered",
-    is_suspended: false,
-  },  
+    isSuspended: false,
+  },
   {
     username: "John Doe",
     email: "john.doe@example.com",
     password_plain: "password123",
-    profile_image: null,
+    profileImage: null,
     bio: "Temporary seeded user John Doe",
     role: "Registered",
-    is_suspended: false,
+    isSuspended: false,
   },
   {
     username: "Jane Smith",
     email: "jane.smith@example.com",
     password_plain: "password123",
-    profile_image: null,
+    profileImage: null,
     bio: "Temporary seeded user Jane Smith",
     role: "Registered",
-    is_suspended: false,
-  },  
+    isSuspended: false,
+  },
   {
     username: "Emily Davis",
     email: "emily.davis@example.com",
     password_plain: "password123",
-    profile_image: null,
+    profileImage: null,
     bio: "Temporary seeded user Emily Davis",
     role: "Registered",
-    is_suspended: false,
+    isSuspended: false,
   },
   {
     username: "Robert Brown",
     email: "robert.brown@example.com",
     password_plain: "password123",
-    profile_image: null,
+    profileImage: null,
     bio: "Temporary seeded user Robert Brown",
     role: "Registered",
-    is_suspended: false,
+    isSuspended: false,
   },
 ];
 const tempBooks = [
@@ -91,10 +91,10 @@ async function seed() {
     const userDocs = await Promise.all(
       tempUsers.map(async (u) => {
         const { password_plain, ...rest } = u;
-        const password_hash = await bcrypt.hash(password_plain, 10);
+        const passwordHash = await bcrypt.hash(password_plain, 10);
         return {
           ...rest,
-          password_hash,
+          passwordHash,
         };
       })
     );
