@@ -1,0 +1,128 @@
+.register-form-card {
+  width: 100%;
+  max-width: 540px;
+  background-color: #fff;
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
+  border: 1px solid var(--color-surface-oatmeal);
+  box-shadow: var(--shadow-card);
+}
+
+@media (min-width: 480px) {
+  .register-form-card {
+    padding: 2.5rem;
+  }
+}
+
+.register-form-header {
+  margin-bottom: 2.5rem;
+  text-align: center;
+}
+
+.register-form-title {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-serif);
+  font-size: 2.25rem;
+  font-weight: 400;
+  color: var(--color-on-surface);
+  line-height: 1.2;
+}
+
+.register-form-subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-outline);
+  font-style: italic;
+}
+
+.register-form-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.register-form-error {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  color: var(--color-danger);
+  background-color: var(--color-danger-bg);
+  border: 1px solid color-mix(in srgb, var(--color-danger) 25%, transparent);
+}
+
+.register-form-submit {
+  width: 100%;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.register-form-submit-inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.register-form-submit-icon {
+  font-size: 1.125rem;
+}
+
+.register-form-login {
+  text-align: center;
+}
+
+.register-form-login-text {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-outline);
+}
+
+.register-form-login-link {
+  color: var(--color-primary-terracotta);
+  font-weight: 700;
+  text-decoration: none;
+  margin-left: 0.25rem;
+  text-underline-offset: 4px;
+}
+
+.register-form-login-link:hover {
+  text-decoration: underline;
+}
+
+.register-form-back {
+  margin-top: 3rem;
+  text-align: center;
+}
+
+.register-form-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-outline);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.register-form-back-link:hover {
+  color: var(--color-primary);
+}
+
+.register-form-back-link:hover .register-form-back-icon {
+  transform: translateX(-4px);
+}
+
+.register-form-back-icon {
+  font-size: 1.125rem;
+  transition: transform 0.2s ease;
+}
+
+.register-form-back-text {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}

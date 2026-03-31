@@ -1,10 +1,10 @@
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AddNewBookForm from "./components/AddNewBook/AddNewBookForm.jsx";
 import RegisterPage from "./pages/RegisterPage/RegisterPage.jsx";
 import LoginPage from "./pages/LoginPage/LoginPage.jsx";
 import YourLibraryPage from "./pages/YourLibrary/YourLibraryPage.jsx";
 import BookDetails from "./pages/BookDetails/BookDetails.jsx";
-import DiscoverPage from "./pages/DiscoverPage/DiscoverPage.jsx"
+import DiscoverPage from "./pages/DiscoverPage/DiscoverPage.jsx";
 
 function AppContent() {
  

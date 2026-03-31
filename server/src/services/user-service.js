@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import User from "../models/user.js";
+import UserRepository from "../repositories/userRepository.js";
 
 function sanitizeUser(userDoc) {
   return {
@@ -7,59 +7,63 @@ function sanitizeUser(userDoc) {
     username: userDoc.username,
     email: userDoc.email,
     role: userDoc.role,
-    profile_image: userDoc.profile_image,
-    bio: userDoc.bio,
-    is_suspended: userDoc.is_suspended,
+    profileImage: userDoc.profileImage ?? null,
+    bio: userDoc.bio ?? "",
+    isSuspended: userDoc.isSuspended ?? false,
     createdAt: userDoc.createdAt,
     updatedAt: userDoc.updatedAt,
   };
 }
 
 const UserService = {
-  async register({ username, email, password }) {
-    const usernameNorm = String(username || "").trim();
+  async register({ firstName, lastName, email, password }) {
+    const first = String(firstName || "").trim();
+    const last = String(lastName || "").trim();
     const emailNorm = String(email || "").trim().toLowerCase();
     const passwordRaw = String(password || "");
 
-    if (!usernameNorm || !emailNorm || !passwordRaw) {
-      throw new Error("username_email_password_required");
+    if (!first || !last || !emailNorm || !passwordRaw) {
+      throw new Error("registration_fields_required");
     }
 
-    const existing = await User.findOne({
-      $or: [{ username: usernameNorm }, { email: emailNorm }],
-    }).lean();
+    const usernameNorm = `${first} ${last}`;
+
+    const existing = await UserRepository.findOneByUsernameOrEmail(
+      usernameNorm,
+      emailNorm
+    );
     if (existing) {
       if (existing.username === usernameNorm) throw new Error("username_taken");
       if (existing.email === emailNorm) throw new Error("email_taken");
       throw new Error("user_exists");
     }
 
-    const password_hash = await bcrypt.hash(passwordRaw, 10);
-    const created = await User.create({
+    const passwordHash = await bcrypt.hash(passwordRaw, 10);
+    const created = await UserRepository.createUser({
       username: usernameNorm,
       email: emailNorm,
-      password_hash,
+      passwordHash,
       role: "Registered",
     });
 
     return sanitizeUser(created);
   },
 
-  async login({ username, password }) {
-    const usernameNorm = String(username || "").trim();
+  async login({ email, password }) {
+    const emailNorm = String(email || "").trim().toLowerCase();
     const passwordRaw = String(password || "");
 
-    if (!usernameNorm || !passwordRaw) {
-      throw new Error("username_password_required");
+    if (!emailNorm || !passwordRaw) {
+      throw new Error("email_password_required");
     }
 
-    const user = await User.findOne({ username: usernameNorm });
+    const user = await UserRepository.findByEmail(emailNorm);
     if (!user) throw new Error("invalid_credentials");
 
-    const isValid = await bcrypt.compare(passwordRaw, user.password_hash);
+    const isValid = await bcrypt.compare(passwordRaw, user.passwordHash);
     if (!isValid) throw new Error("invalid_credentials");
 
-    if (user.is_suspended) {
+    if (user.isSuspended) {
       throw new Error("account_suspended");
     }
 
@@ -67,11 +71,10 @@ const UserService = {
   },
 
   async getById(id) {
-    const user = await User.findById(id);
+    const user = await UserRepository.findById(id);
     if (!user) return null;
     return sanitizeUser(user);
   },
 };
 
 export default UserService;
-
