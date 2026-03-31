@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../../config/api.js";
 import LibraryBookCard from "../../components/Library/LibraryBookCard.jsx";
 import API, { authHeader } from "../../api.js";
 import "./YourLibraryPage.css";
@@ -136,9 +137,8 @@ function YourLibraryPage() {
           : "Unavailable"
         : null) ??
       book.availability ??
-      book.status ??
-      "Available",
-    image: book.image ?? book.coverImage ?? book.book_image ?? "",
+      book.status ?? "Available",
+      image: book.image ?? book.coverImage ?? book.book_image ?? "https://cdn.vectorstock.com/i/1000v/32/45/no-image-symbol-missing-available-icon-gallery-vector-45703245.jpg",
     type: mapDbTypeToTab(book),
   });
 
@@ -154,7 +154,7 @@ function YourLibraryPage() {
 
         setLibraryBooks(rawBooks.map(mapDbBook));
       } catch {
-        // Keep fallback UI data when API is unavailable.
+        console.error("Error fetching user books:", error);
       }
     }
 
@@ -213,7 +213,7 @@ function YourLibraryPage() {
               title={book.title}
               author={book.author}
               availability={book.availability}
-              image={book.image}
+              image={book.image ?? "https://cdn.vectorstock.com/i/1000v/32/45/no-image-symbol-missing-available-icon-gallery-vector-45703245.jpg"}
               showEdit={activeTab === "myBooks"}
             />
           ))}
