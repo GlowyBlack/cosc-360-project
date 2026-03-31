@@ -39,6 +39,39 @@
   transition: color 0.2s ease;
 }
 
+.footer-inner {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.footer-copy {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--color-outline);
+}
+
+.footer-icons {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.footer-icon-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-outline);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
 .footer-icon-link:hover {
   color: var(--color-on-surface);
 }

@@ -20,6 +20,19 @@ const BookRepository = {
     async findByID(id){
         return await book.findById(id)
                          .populate({path: "bookOwner", select: "username"});
+    },
+
+    async updateBookOwner({id, newOwner, session=null}){
+        return await book.findByIdAndUpdate(
+            id,
+           { $set: {bookOwner: newOwner}},
+           {new: true},
+           {session}
+        );
+    },
+
+    async updateStatus({id, session = null}){
+        
     }
 };
 export default BookRepository;
