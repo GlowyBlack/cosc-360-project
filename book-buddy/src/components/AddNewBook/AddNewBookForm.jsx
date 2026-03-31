@@ -1,6 +1,7 @@
 import "./AddNewBookForm.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import API, { authHeader } from "../../api.js";
 
 function AddNewBookForm() {
   const navigate = useNavigate();
@@ -31,8 +32,6 @@ function AddNewBookForm() {
     setIsSubmitting(true);
     setSubmitError("");
     try {
-      const ownerId = localStorage.getItem("userId") ?? "demo-user-1";
-      const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
       const payload = {
         book_title: bookTitle.trim(),
         book_author: bookAuthor.trim(),
@@ -41,12 +40,14 @@ function AddNewBookForm() {
         description: description.trim(),
         condition: conditionMap[conditionValue],
         is_available: isAvailable,
-        book_owner: ownerId,
       };
 
-      const response = await fetch(`${baseUrl}/books`, {
+      const response = await fetch(`${API}/books`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          ...authHeader(),
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(payload),
       });
 

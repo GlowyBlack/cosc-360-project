@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LibraryBookCard from "../../components/Library/LibraryBookCard.jsx";
+import API, { authHeader } from "../../api.js";
 import "./YourLibraryPage.css";
 
 const fallbackLibraryBooks = [
@@ -113,8 +114,6 @@ function YourLibraryPage() {
   const [activeTab, setActiveTab] = useState("myBooks");
   const [libraryBooks, setLibraryBooks] = useState(fallbackLibraryBooks);
 
-  const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:5001";
-
   const mapDbTypeToTab = (book) => {
     const rawType = String(
       book.type ?? book.listType ?? book.category ?? book.bucket ?? ""
@@ -146,7 +145,7 @@ function YourLibraryPage() {
   useEffect(() => {
     async function loadLibraryBooks() {
       try {
-        const response = await fetch(`${baseUrl}/books`);
+        const response = await fetch(`${API}/books`, { headers: authHeader() });
         if (!response.ok) return;
 
         const payload = await response.json();
@@ -160,7 +159,7 @@ function YourLibraryPage() {
     }
 
     loadLibraryBooks();
-  }, [baseUrl]);
+  }, []);
 
   const counts = useMemo(
     () => ({
