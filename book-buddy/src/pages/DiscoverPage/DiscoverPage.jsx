@@ -5,6 +5,7 @@ import BookCard from "../../components/BookCard/BookCard.jsx";
 import { DISCOVER_FILTERS } from "../../data/discoverBooks.js";
 
 import API from "../../config/api.js";
+import { FALLBACK_BOOK_COVER_IMAGE } from "../../config/images.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 
 import "./DiscoverPage.css";
@@ -15,11 +16,10 @@ function toCardBook(raw) {
   const title = raw.bookTitle ?? raw.title ?? "Untitled";
   const author = raw.bookAuthor ?? raw.author ?? "Unknown author";
   const imageUrl = raw.bookImage ?? raw.cover?.src ?? null;
+  const trimmed = imageUrl != null ? String(imageUrl).trim() : "";
   const cover = {
-    src:
-      imageUrl ||
-      `https://picsum.photos/seed/${encodeURIComponent(id || title)}/220/330`,
-    alt: imageUrl ? `Cover: ${title}` : "",
+    src: trimmed || FALLBACK_BOOK_COVER_IMAGE,
+    alt: trimmed ? `Cover: ${title}` : "No cover image",
   };
   const status =
     raw.status ??
@@ -60,7 +60,7 @@ export default function DiscoverPage() {
 
   const filteredBooks = useMemo(() => {
     if (activeFilter === "All") return cardBooks;
-    return cardBooks.filter((b) => b.genre === activeFilter);
+    return cardBooks.filter((b) => b.genre.includes(activeFilter));
   }, [activeFilter, cardBooks]);
 
   useEffect(()=> {

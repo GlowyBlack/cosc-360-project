@@ -1,5 +1,7 @@
+import { useEffect, useRef, useState } from "react";
 import StatusBadge from "../StatusBadge/StatusBadge.jsx";
 import MaterialIcon from "../MaterialIcon/MaterialIcon.jsx";
+import { FALLBACK_BOOK_COVER_IMAGE } from "../../config/images.js";
 import "./BookCard.css";
 
 export default function BookCard({
@@ -14,6 +16,23 @@ export default function BookCard({
   onClick,
 }) {
   const interactive = typeof onClick === "function";
+  const rawSrc =
+    typeof cover === "string" ? cover : cover?.src;
+  const trimmed = rawSrc != null ? String(rawSrc).trim() : "";
+  const coverSrc = trimmed ? trimmed : FALLBACK_BOOK_COVER_IMAGE;
+  const coverAlt =
+    typeof cover === "string"
+      ? trimmed
+        ? ""
+        : "No cover image"
+      : cover?.alt ?? (trimmed ? "" : "No cover image");
+
+  const [displaySrc, setDisplaySrc] = useState(coverSrc);
+  const fallbackOnce = useRef(false);
+  useEffect(() => {
+    setDisplaySrc(coverSrc);
+    fallbackOnce.current = false;
+  }, [coverSrc]);
 
   return (
     <article
@@ -30,7 +49,16 @@ export default function BookCard({
       }}
     >
       <div className="book-card-cover-wrap">
-        <img src={cover.src} alt={cover.alt} className="book-card-cover" />
+        <img
+          src={displaySrc}
+          alt={coverAlt}
+          className="book-card-cover"
+          onError={() => {
+            if (fallbackOnce.current) return;
+            fallbackOnce.current = true;
+            setDisplaySrc(FALLBACK_BOOK_COVER_IMAGE);
+          }}
+        />
         <button
           type="button"
           className="book-card-wishlist"

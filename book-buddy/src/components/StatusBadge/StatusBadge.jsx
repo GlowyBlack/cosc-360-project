@@ -8,6 +8,7 @@ const modifierByStatus = {
   Returned: "status-badge--returned",
   Declined: "status-badge--declined",
   Exchanged: "status-badge--exchanged",
+  Cancelled: "status-badge--cancelled",
 };
 
 export default function StatusBadge({ status, className = "" }) {

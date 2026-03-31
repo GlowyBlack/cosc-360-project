@@ -20,6 +20,9 @@ export default function RegisterForm({
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const validEmail = "";
+  const validPassword = "";
+
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
