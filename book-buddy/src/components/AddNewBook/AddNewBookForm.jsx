@@ -32,7 +32,6 @@ function AddNewBookForm() {
     setIsSubmitting(true);
     setSubmitError("");
     try {
-      const ownerId = localStorage.getItem("userId") ?? "demo-user-1";
       const payload = {
         book_title: bookTitle.trim(),
         book_author: bookAuthor.trim(),

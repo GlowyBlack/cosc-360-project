@@ -6,7 +6,7 @@ export default function Footer({ year = new Date().getFullYear() }) {
     <footer className="footer">
       <div className="footer-inner">
         <p className="footer-copy">
-          Â© {year} Book Buddy.
+          © {year} Book Buddy.
         </p>
         <div className="footer-icons">
           <a className="footer-icon-link" href="#" aria-label="Language">

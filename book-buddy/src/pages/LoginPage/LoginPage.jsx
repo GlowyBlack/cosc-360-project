@@ -22,7 +22,7 @@ export default function LoginPage() {
           backHref="/"
         />
       </main>
-      <Footer year={2026} />
+      <Footer />
     </div>
   );
 }

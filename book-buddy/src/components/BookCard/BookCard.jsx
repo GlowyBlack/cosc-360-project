@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from "react";
 import StatusBadge from "../StatusBadge/StatusBadge.jsx";
 import MaterialIcon from "../MaterialIcon/MaterialIcon.jsx";
-import { FALLBACK_BOOK_COVER_IMAGE } from "../../config/images.js";
+import { resolveCoverAlt, useBookCoverDisplaySrc } from "../../commons/bookShared.js";
 import "./BookCard.css";
 
 export default function BookCard({
@@ -16,23 +15,9 @@ export default function BookCard({
   onClick,
 }) {
   const interactive = typeof onClick === "function";
-  const rawSrc =
-    typeof cover === "string" ? cover : cover?.src;
-  const trimmed = rawSrc != null ? String(rawSrc).trim() : "";
-  const coverSrc = trimmed ? trimmed : FALLBACK_BOOK_COVER_IMAGE;
-  const coverAlt =
-    typeof cover === "string"
-      ? trimmed
-        ? ""
-        : "No cover image"
-      : cover?.alt ?? (trimmed ? "" : "No cover image");
-
-  const [displaySrc, setDisplaySrc] = useState(coverSrc);
-  const fallbackOnce = useRef(false);
-  useEffect(() => {
-    setDisplaySrc(coverSrc);
-    fallbackOnce.current = false;
-  }, [coverSrc]);
+  const rawSrc = typeof cover === "string" ? cover : cover?.src;
+  const coverAlt = resolveCoverAlt(cover, rawSrc);
+  const { displaySrc, onImgError } = useBookCoverDisplaySrc(rawSrc);
 
   return (
     <article
@@ -53,11 +38,7 @@ export default function BookCard({
           src={displaySrc}
           alt={coverAlt}
           className="book-card-cover"
-          onError={() => {
-            if (fallbackOnce.current) return;
-            fallbackOnce.current = true;
-            setDisplaySrc(FALLBACK_BOOK_COVER_IMAGE);
-          }}
+          onError={onImgError}
         />
         <button
           type="button"

@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import API, { authHeader } from "../../config/api.js";
-
-
-import { FALLBACK_BOOK_COVER_IMAGE } from "../../config/images.js";
+import { toLibraryPageCardBook } from "../../commons/bookShared.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 
 import LibraryBookCard from "./LibraryBookCard.jsx";
@@ -17,29 +15,8 @@ const TABS = [
   { id: "lent", label: "LENT OUT" },
 ];
 
-function toCardBook(raw, currentUser) {
-  const id = raw._id != null ? String(raw._id) : raw.id != null ? String(raw.id) : "";
-  const title = raw.bookTitle ?? raw.title ?? "Untitled";
-  const author = raw.bookAuthor ?? raw.author ?? "Unknown author";
-  const imageUrl = raw.bookImage ?? raw.cover?.src ?? null;
-  const trimmed = imageUrl != null ? String(imageUrl).trim() : "";
-  const isAvailable = raw.isAvailable === true;
-
-  return {
-    id,
-    title,
-    author,
-    owner: currentUser?.username ?? "You",
-    location: raw.location ?? null,
-    isAvailable,
-    cover: {
-      src: trimmed || FALLBACK_BOOK_COVER_IMAGE,
-      alt: trimmed ? `Cover: ${title}` : "No cover image",
-    },
-  };
-}
-
 export default function LibraryPage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -71,7 +48,10 @@ export default function LibraryPage() {
     loadMyBooks();
   }, []);
 
-  const cardBooks = useMemo(() => books.map((b) => toCardBook(b, user)), [books, user]);
+  const cardBooks = useMemo(
+    () => books.map((b) => toLibraryPageCardBook(b, user)),
+    [books, user],
+  );
 
   if (!user) return <Navigate to="/login" replace />;
 
@@ -89,7 +69,11 @@ export default function LibraryPage() {
               community is reading.
             </p>
           </div>
-          <button type="button" className="library-add-book-btn">
+          <button
+            type="button"
+            className="library-add-book-btn"
+            onClick={() => navigate("/add-book")}
+          >
             + Add New Book
           </button>
         </section>
@@ -160,7 +144,7 @@ export default function LibraryPage() {
           </section>
         ) : null}
       </main>
-      <Footer year={2026} />
+      <Footer />
     </div>
   );
 }

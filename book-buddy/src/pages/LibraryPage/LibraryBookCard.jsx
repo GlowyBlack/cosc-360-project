@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from "react";
 import MaterialIcon from "../../components/MaterialIcon/MaterialIcon.jsx";
-import { FALLBACK_BOOK_COVER_IMAGE } from "../../config/images.js";
+import { useBookCoverDisplaySrc } from "../../commons/bookShared.js";
 
 export default function LibraryBookCard({
   title,
@@ -12,16 +11,7 @@ export default function LibraryBookCard({
   likeCount = 0,
 }) {
   const badgeLabel = isAvailable ? "AVAILABLE" : "ON LOAN";
-  const [displaySrc, setDisplaySrc] = useState(
-    coverSrc?.trim() ? coverSrc : FALLBACK_BOOK_COVER_IMAGE,
-  );
-  const fallbackOnce = useRef(false);
-
-  useEffect(() => {
-    const next = coverSrc?.trim() ? coverSrc : FALLBACK_BOOK_COVER_IMAGE;
-    setDisplaySrc(next);
-    fallbackOnce.current = false;
-  }, [coverSrc]);
+  const { displaySrc, onImgError } = useBookCoverDisplaySrc(coverSrc);
 
   return (
     <article className="library-book-card">
@@ -31,11 +21,7 @@ export default function LibraryBookCard({
           alt={coverAlt || "No cover image"}
           className="library-book-card-cover"
           loading="lazy"
-          onError={() => {
-            if (fallbackOnce.current) return;
-            fallbackOnce.current = true;
-            setDisplaySrc(FALLBACK_BOOK_COVER_IMAGE);
-          }}
+          onError={onImgError}
         />
         <span
           className={`library-book-card-badge ${
