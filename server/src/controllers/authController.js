@@ -31,8 +31,7 @@ const AuthController = {
     try {
       const user = await userService.login(req.body);
       const token = signAccessToken({
-        _id: user.id,
-        username: user.username,
+        id: user.id,
         role: user.role,
       });
       return res.json({ access_token: token, token_type: "bearer", user });
@@ -58,7 +57,7 @@ const AuthController = {
   },
 
   async me(req, res) {
-    const user = await userService.getById(req.user._id);
+    const user = await userService.getById(req.user._id || req.user.id);
     if (!user) return res.status(404).json({ detail: "User not found" });
     return res.json(user);
   },
