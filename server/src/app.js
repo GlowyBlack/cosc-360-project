@@ -7,6 +7,8 @@ import userRoute from './routes/userRoute.js';
 import requestRoute from './routes/requestRoute.js';
 import authRoute from './routes/authRoute.js';
 import adminRoute from './routes/adminRoute.js';
+import messageRoute from './routes/messageRoute.js';
+
 dotenv.config()
 
 const app = express();
@@ -24,6 +26,8 @@ app.use('/admin', adminRoute);
 app.use('/books', bookRoute);
 app.use('/user', userRoute);
 app.use('/request', requestRoute);
+app.use('/messages', messageRoute);
+
 
 const PORT = 5001;
 
