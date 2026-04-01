@@ -43,7 +43,7 @@ const BookController = {
     async searchBooks(req, res) {
         try {
             const { req } = req.query;
-            const results = bookService.searchBooksFromMock(term);
+            const results = bookService.searchBooks(term);
             res.status(200).json(results);
         } catch (error) {
             res.status(500).json({ message: "Server Error", error: error.message });
