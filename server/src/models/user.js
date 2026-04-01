@@ -8,6 +8,7 @@ const UserSchema = new mongoose.Schema({
     bio: { type: String, default: "Hey there! I'm new here." },
     role: { type: String, enum: ["Registered", "Admin"], default: "Registered" },
     isSuspended: { type: Boolean, default: false },
+    isBanned: { type: Boolean, default: false },
 }, { timestamps: true });
 
 export default mongoose.model("User", UserSchema);

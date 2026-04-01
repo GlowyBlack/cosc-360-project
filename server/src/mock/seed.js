@@ -16,6 +16,18 @@ const tempUsers = [
     bio: "Temporary seeded user Alice",
     role: "Registered",
     isSuspended: false,
+    isBanned: false,
+  },
+  {
+    firstName: "Admin",
+    lastName: "User",
+    email: "admin@example.com",
+    password: "passwordAdmin",
+    profileImage: null,
+    bio: "Admin user",
+    role: "Admin",
+    isSuspended: false,
+    isBanned: false,
   },
   {
     firstName: "John",
@@ -26,6 +38,7 @@ const tempUsers = [
     bio: "Temporary seeded user John Doe",
     role: "Registered",
     isSuspended: false,
+    isBanned: false,
   },
   {
     firstName: "Jane",
@@ -36,6 +49,7 @@ const tempUsers = [
     bio: "Temporary seeded user Jane Smith",
     role: "Registered",
     isSuspended: false,
+    isBanned: false,
   },
   {
     firstName: "Emily",
@@ -46,6 +60,7 @@ const tempUsers = [
     bio: "Temporary seeded user Emily Davis",
     role: "Registered",
     isSuspended: false,
+    isBanned: false,
   },
   {
     firstName: "Robert",
@@ -56,8 +71,10 @@ const tempUsers = [
     bio: "Temporary seeded user Robert Brown",
     role: "Registered",
     isSuspended: false,
+    isBanned: false,
   },
 ];
+
 const tempBooks = [
   { bookTitle: "Dune", bookAuthor: "Frank Herbert", genre: ["Sci-Fi", "Adventure"] },
   { bookTitle: "1984", bookAuthor: "George Orwell", genre: ["Fiction", "Thriller"] },
