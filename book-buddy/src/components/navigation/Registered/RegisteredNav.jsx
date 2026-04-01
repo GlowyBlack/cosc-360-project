@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import MaterialIcon from "../../MaterialIcon/MaterialIcon.jsx";
-// import { useAuth } from "../../../context/AuthContext.jsx";
+import { useAuth } from "../../../context/AuthContext.jsx";
 import "./RegisteredNav.css";
 
 const mainNavItems = [
@@ -17,12 +17,12 @@ export default function RegisteredNav({
   requestPendingCount = 0,
 }) {
   const navigate = useNavigate();
-  // const { logout } = useAuth();
+  const { logout } = useAuth();
   const counts = { messages: messageUnreadCount, requests: requestPendingCount };
 
   const handleLogout = () => {
-    // logout();
-    // navigate("/discover", { replace: true });
+    logout();
+    navigate("/", { replace: true });
   };
 
   return (

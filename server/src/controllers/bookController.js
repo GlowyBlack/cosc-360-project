@@ -25,11 +25,14 @@ const BookController = {
             res.status(500).json({ message: "Server Error", error: error.message })
         }
     },
-
+    
     async findBooksByUserId(req, res) {
         try {
-            // _id
-            const { userId } = req.params;
+            const rawUserId = req.params.userId ?? req.user?._id ?? req.user?.id;
+            if (!rawUserId) {
+                return res.status(401).json({ message: "Not authenticated" });
+            }
+            const userId = String(rawUserId);
             const books = await bookService.findBooksByUserId(userId);
             res.status(200).json(books);
         } catch (error) {

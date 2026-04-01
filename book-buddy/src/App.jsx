@@ -1,8 +1,8 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import AddNewBookForm from "./components/AddNewBook/AddNewBookForm.jsx";
 import RegisterPage from "./pages/RegisterPage/RegisterPage.jsx";
 import LoginPage from "./pages/LoginPage/LoginPage.jsx";
-import YourLibraryPage from "./pages/YourLibrary/YourLibraryPage.jsx";
+import LibraryPage from "./pages/LibraryPage/LibraryPage.jsx";
 import BookDetails from "./pages/BookDetails/BookDetails.jsx";
 import DiscoverPage from "./pages/DiscoverPage/DiscoverPage.jsx";
 
@@ -11,11 +11,10 @@ function App() {
     <>
       <Routes>
         <Route path="/" element={<DiscoverPage />} />
-        {/* <Route path="/discover" element={<Navigate to="/" replace />} /> */}
         <Route path="/add-book" element={<AddNewBookForm />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/library" element={<YourLibraryPage />} />
+        <Route path="/library" element={<LibraryPage />} />
         <Route path="/book-details" element={<BookDetails />} />
       </Routes>
     </>

@@ -1,5 +1,6 @@
 import StatusBadge from "../StatusBadge/StatusBadge.jsx";
 import MaterialIcon from "../MaterialIcon/MaterialIcon.jsx";
+import { resolveCoverAlt, useBookCoverDisplaySrc } from "../../commons/bookShared.js";
 import "./BookCard.css";
 
 export default function BookCard({
@@ -14,6 +15,9 @@ export default function BookCard({
   onClick,
 }) {
   const interactive = typeof onClick === "function";
+  const rawSrc = typeof cover === "string" ? cover : cover?.src;
+  const coverAlt = resolveCoverAlt(cover, rawSrc);
+  const { displaySrc, onImgError } = useBookCoverDisplaySrc(rawSrc);
 
   return (
     <article
@@ -30,7 +34,12 @@ export default function BookCard({
       }}
     >
       <div className="book-card-cover-wrap">
-        <img src={cover.src} alt={cover.alt} className="book-card-cover" />
+        <img
+          src={displaySrc}
+          alt={coverAlt}
+          className="book-card-cover"
+          onError={onImgError}
+        />
         <button
           type="button"
           className="book-card-wishlist"

@@ -4,24 +4,24 @@ import {
   useContext,
   useMemo,
   useState,
-  useEffect,
 } from "react";
 
 const STORAGE_KEY = "bookbuddy:user";
 
 const AuthContext = createContext(null);
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+function readStoredUser() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+  return null;
+}
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setUser(JSON.parse(raw));
-    } catch {
-      localStorage.removeItem(STORAGE_KEY);
-    }
-  }, []);
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(readStoredUser);
 
   const setSessionUser = useCallback((sessionUser) => {
     if (!sessionUser) return;
@@ -32,6 +32,7 @@ export function AuthProvider({ children }) {
   const logout = useCallback(() => {
     setUser(null);
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem("token");
   }, []);
 
   const value = useMemo(

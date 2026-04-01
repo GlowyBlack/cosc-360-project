@@ -1,5 +1,6 @@
 .login-page {
-  min-height: 100vh;
+  flex: 1 1 auto;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background-color: var(--color-background);
@@ -7,7 +8,7 @@
 }
 
 .login-page-main {
-  flex: 1;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
