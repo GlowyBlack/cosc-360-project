@@ -1,3 +1,4 @@
+import { serialize } from "v8";
 import user from "../models/user.js";
 import bookRepository from "../repositories/bookRepository.js"
 import fs from "fs";
@@ -59,28 +60,38 @@ const BookService = {
         return await bookRepository.delete(bookId);
     },
 
-    searchBooksFromMock(searchTerm) {
-        const normalizedTerm = String(searchTerm ?? "").trim().toLowerCase();
-        const filePath = new URL("../mock/books.json", import.meta.url);
-        const mockBooks = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    async searchBooks(searchTerm) {
 
-        if (!normalizedTerm) {
-            return mockBooks;
+        const term = searchTerm.trim();
+
+        if(!searchTerm){
+            this.getAllBooks();
         }
-
-        return mockBooks.filter((book) => {
-            const haystack = [
-                book.title,
-                book.author,
-                book.genre,
-                book.description,
-            ]
-                .join(" ")
-                .toLowerCase();
-
-            return haystack.includes(normalizedTerm);
-        });
+        return await bookRepository.searchBooks(searchTerm);
     },
+
+    // searchBooksFromMock(searchTerm) {
+    //     const normalizedTerm = String(searchTerm ?? "").trim().toLowerCase();
+    //     const filePath = new URL("../mock/books.json", import.meta.url);
+    //     const mockBooks = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+
+    //     if (!normalizedTerm) {
+    //         return mockBooks;
+    //     }
+
+    //     return mockBooks.filter((book) => {
+    //         const haystack = [
+    //             book.title,
+    //             book.author,
+    //             book.genre,
+    //             book.description,
+    //         ]
+    //             .join(" ")
+    //             .toLowerCase();
+
+    //         return haystack.includes(normalizedTerm);
+    //     });
+    // },
 
 };
 export default BookService;

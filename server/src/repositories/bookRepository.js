@@ -37,7 +37,7 @@ const BookRepository = {
     
 
     async updateStatus({id, session = null}){
-        
+
     },
 
     async updateBook(data, bookId){
@@ -46,6 +46,22 @@ const BookRepository = {
 
     async deleteBook(bookId){
         book.findByIdAndDelete(bookId);
+    },
+
+    async searchBook(searchTerm){
+        const safeTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const query = {
+            isAvailable: true,
+            $or: [
+            { bookTitle: { $regex: safeTerm, $options: "i" } },
+            { bookAuthor: { $regex: safeTerm, $options: "i" } },
+            { description: { $regex: safeTerm, $options: "i" } },
+            { genre: { $regex: safeTerm, $options: "i" } },
+            { onwerNote: { $regex: safeTerm, $options: "i" } }
+            ]
+        };
+
+        return book.find(query);
     }
 };
 export default BookRepository;
