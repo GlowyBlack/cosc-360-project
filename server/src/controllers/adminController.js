@@ -19,7 +19,7 @@ const AdminController = {
       const user = await User.findByIdAndUpdate(
         req.params.id,
         { isSuspended: true },
-        { new: true }
+        { returnDocument: "after" }
       )
         .select("-passwordHash")
         .lean();
@@ -35,7 +35,7 @@ const AdminController = {
       const user = await User.findByIdAndUpdate(
         req.params.id,
         { isSuspended: false },
-        { new: true }
+        { returnDocument: "after" }
       )
         .select("-passwordHash")
         .lean();
@@ -51,7 +51,7 @@ const AdminController = {
       const user = await User.findByIdAndUpdate(
         req.params.id,
         { isBanned: true },
-        { new: true }
+        { returnDocument: "after" }
       )
         .select("-passwordHash")
         .lean();
