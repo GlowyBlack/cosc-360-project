@@ -46,11 +46,10 @@ export default function DiscoverPage() {
       <Header variant={user ? "user" : "guest"} />
       <main className="discover-page-main">
         <header className="discover-page-intro">
-          <h1 className="discover-page-title">Discover</h1>
-          <p className="discover-page-lede">
+          <h3 className="discover-page-lede">
             Browse books shared by readers near you. Filter by genre to find
             your next swap.
-          </p>
+          </h3>
         </header>
 
         <div

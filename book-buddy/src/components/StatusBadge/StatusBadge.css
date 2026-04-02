@@ -10,6 +10,12 @@
   letter-spacing: 0.03em;
 }
 
+.status-badge--new {
+  background-color: var(--color-signal-red);
+  color: #ffffff;
+  border-color: transparent;
+}
+
 .status-badge--available {
   background-color: #d1fae5;
   color: #065f46;
@@ -46,12 +52,6 @@
   border-color: #fecdd3;
 }
 
-.status-badge--cancelled {
-  background-color: #f1f5f9;
-  color: #64748b;
-  border-color: #e2e8f0;
-}
-
 .status-badge--exchanged {
   background-color: #ede9fe;
   color: #5b21b6;
@@ -59,7 +59,7 @@
 }
 
 .status-badge--fallback {
-  background-color: var(--color-surface-oatmeal);
+  background-color: var(--color-surface-container);
   color: var(--color-on-surface);
-  border-color: var(--color-surface-oatmeal);
+  border-color: var(--color-border);
 }

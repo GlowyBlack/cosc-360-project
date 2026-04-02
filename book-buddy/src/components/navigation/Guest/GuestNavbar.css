@@ -9,7 +9,7 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  background-color: color-mix(in srgb, var(--color-background) 90%, transparent);
+  background-color: color-mix(in srgb, var(--color-footer) 90%, transparent);
   backdrop-filter: blur(12px);
 }
 
@@ -21,9 +21,10 @@
 }
 
 .guest-navbar-logo {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 1.5rem;
-  font-style: italic;
+  font-weight: 700;
+  font-style: normal;
   color: var(--color-on-surface);
   text-decoration: none;
   flex-shrink: 0;
@@ -88,7 +89,7 @@
   background-color: var(--color-primary);
   color: #fff;
   padding: 0.5rem 1.5rem;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-pill);
   font-weight: 500;
   font-size: 10px;
   letter-spacing: 0.2em;

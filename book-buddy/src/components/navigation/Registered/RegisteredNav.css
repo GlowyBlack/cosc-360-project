@@ -1,8 +1,8 @@
 .reg-nav-desktop-bar {
   display: none;
-  background-color: color-mix(in srgb, var(--color-background) 90%, transparent);
+  background-color: color-mix(in srgb, var(--color-footer) 90%, transparent);
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--color-surface-oatmeal);
+  border-bottom: 1px solid var(--color-border);
   position: sticky;
   top: 0;
   z-index: 50;
@@ -63,9 +63,10 @@
 }
 
 .reg-nav-brand {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 1.25rem;
-  font-style: italic;
+  font-weight: 700;
+  font-style: normal;
 }
 
 .reg-nav-desktop-nav {
@@ -95,7 +96,7 @@
 }
 
 .reg-nav-link--active {
-  color: var(--color-primary-terracotta);
+  color: var(--color-on-surface);
   opacity: 1;
 }
 
@@ -105,7 +106,7 @@
 }
 
 .reg-nav-link--profile:hover {
-  background-color: color-mix(in srgb, var(--color-surface-oatmeal) 80%, transparent);
+  background-color: color-mix(in srgb, var(--color-surface-container) 80%, transparent);
 }
 
 .reg-nav-icon {
@@ -133,7 +134,7 @@
   height: 18px;
   padding: 0 4px;
   border-radius: 9999px;
-  background-color: var(--color-primary-terracotta);
+  background-color: var(--color-on-surface);
   color: #fff;
   font-size: 10px;
   font-weight: 700;
@@ -150,7 +151,7 @@
   padding: 0.75rem 1rem;
   background-color: color-mix(in srgb, var(--color-background) 95%, transparent);
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--color-surface-oatmeal);
+  border-bottom: 1px solid var(--color-border);
 }
 
 @media (min-width: 768px) {
@@ -167,9 +168,10 @@
 }
 
 .reg-nav-mobile-brand {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 1.125rem;
-  font-style: italic;
+  font-weight: 700;
+  font-style: normal;
 }
 
 .reg-nav-bottom {
@@ -181,7 +183,7 @@
   z-index: 50;
   background-color: color-mix(in srgb, var(--color-background) 95%, transparent);
   backdrop-filter: blur(12px);
-  border-top: 1px solid var(--color-surface-oatmeal);
+  border-top: 1px solid var(--color-border);
   padding: 0.25rem 0.25rem calc(0.5rem + env(safe-area-inset-bottom, 0px));
 }
 
@@ -215,7 +217,7 @@
 }
 
 .reg-nav-bottom-link--active {
-  color: var(--color-primary-terracotta);
+  color: var(--color-on-surface);
   opacity: 1;
 }
 
@@ -243,7 +245,7 @@
   height: 16px;
   padding: 0 2px;
   border-radius: 9999px;
-  background-color: var(--color-primary-terracotta);
+  background-color: var(--color-on-surface);
   color: #fff;
   font-size: 9px;
   font-weight: 700;

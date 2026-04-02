@@ -10,7 +10,8 @@ const BookRepository = {
     async findAll() {
         return await book.find()
             .sort({ createdAt: -1 })
-            .populate({ path: "bookOwner", select: "username" });
+            .populate({ path: "bookOwner", select: "username location" },
+                    );
     },
 
     async findUserBooks(userID) {
@@ -19,7 +20,9 @@ const BookRepository = {
 
     async findByID(id){
         return await book.findById(id)
-                         .populate({path: "bookOwner", select: "username"});
+                         .populate(
+                            {path: "bookOwner", select: "username location"},
+                         );
     },
 
     async updateBookOwner({id, newOwner, session=null}){

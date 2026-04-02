@@ -1,39 +1,48 @@
-/* Design tokens — source of truth: src/styles/colors.md */
 :root {
-  /* Background */
-  --color-background: #faf8f4;
-  --color-surface: #f2ede6;
-  --color-surface-oatmeal: #f2ede6;
-  --color-surface-dark: #e8e2da;
+  /* Background/Surfaces */
+  --color-surface: #ffffff;
+  --color-surface-container: #f5f5f5;
+  --color-background: #ffffff;
+  --color-surface-oatmeal: #f5f5f5;
+  --color-surface-dark: #eeeeee;
 
   /* Text */
-  --color-on-surface: #1c1b18;
-  --color-on-surface-variant: #6b6760;
-  --color-outline: #9e9a95;
+  --color-on-surface: #121212;
+  --color-on-surface-variant: #666666;
+  --color-outline: #666666;
 
   /* Accent & primary actions (buttons, highlights, links) */
-  --color-accent: #c25c2a;
-  --color-primary-terracotta: #c25c2a;
-  --color-primary: #c25c2a;
-  --color-accent-hover: #a84a1f;
-  --color-accent-light: #edd9cc;
+  --color-primary: #121212;
+  --color-primary-terracotta: #121212;
+  --color-accent: #121212;
+  --color-accent-hover: #000000;
+  --color-accent-light: #eeeeee;
 
   /* Borders & dividers */
-  --color-border: #d9d4ce;
+  --color-border: #e0e0e0;
+
+  /* Reserved for status like 'New" and urgents things like notifications */
+  --color-signal-red: #ff3b30;
+
+  /* Nav/Footer */
+  --color-footer: #ffffff;
 
   /* Status */
   --color-success: #2d6a4f;
   --color-warning: #b57d1a;
   --color-danger: #9b2c2c;
-  --color-success-bg: #d8f0e8;
+  --color-success-bg: #e8f5ef;
   --color-warning-bg: #fdf1d6;
   --color-danger-bg: #f9e0e0;
 
   --font-sans: "DM Sans", system-ui, sans-serif;
-  --font-serif: "DM Serif Display", Georgia, serif;
-  --radius-md: 1rem;
-  --radius-lg: 2rem;
+  --font-serif: "DM Sans", system-ui, sans-serif;
+  --radius-md: 0.75em;
+  --radius-lg: 1rem;
+  --radius-pill: 9999px;
+  --radius-image: 12px;
   --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.03);
+  --shadow-nav: 0 4px 24px rgba(0, 0, 0, 0.06);
 }
 
 *,
@@ -85,5 +94,5 @@ textarea {
 }
 
 .serifText {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
 }

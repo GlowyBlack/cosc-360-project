@@ -6,6 +6,7 @@ function sanitizeUser(userDoc) {
     id: userDoc._id,
     username: userDoc.username,
     email: userDoc.email,
+    location: userDoc.location,
     role: userDoc.role,
     profileImage: userDoc.profileImage ?? null,
     bio: userDoc.bio ?? "",
@@ -16,15 +17,21 @@ function sanitizeUser(userDoc) {
 }
 
 const UserService = {
-  async register({ firstName, lastName, email, password }) {
+  async register({ firstName, lastName, email, password, city, provinceState }) {
     const first = String(firstName || "").trim();
     const last = String(lastName || "").trim();
     const emailNorm = String(email || "").trim().toLowerCase();
     const passwordRaw = String(password || "");
+    const cityTrim = String(city || "").trim();
+    const provinceTrim = String(provinceState || "").trim();
 
     if (!first || !last || !emailNorm || !passwordRaw) {
       throw new Error("registration_fields_required");
     }
+    if (!cityTrim || !provinceTrim) {
+      throw new Error("location_required");
+    }
+    const location = `${cityTrim}, ${provinceTrim}`;
 
     const usernameNorm = `${first} ${last}`;
 
@@ -44,6 +51,7 @@ const UserService = {
       email: emailNorm,
       passwordHash,
       role: "Registered",
+      location,
     });
 
     return sanitizeUser(created);

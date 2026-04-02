@@ -1,0 +1,16 @@
+export const BOOK_GENRES = [
+  "Action",
+  "Adventure",
+  "Biography",
+  "Fantasy",
+  "Fiction",
+  "Graphic Novel",
+  "Historical Fiction",
+  "Horror",
+  "Mystery",
+  "Non-Fiction",
+  "Romance",
+  "Sci-Fi",
+  "Thriller",
+  "Young Adult",
+];
