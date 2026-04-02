@@ -114,6 +114,7 @@ export default function LibraryPage() {
               cardBooks.map((book) => (
                 <LibraryBookCard
                   key={book.id}
+                  bookId={book.id}
                   title={book.title}
                   author={book.author}
                   coverSrc={book.cover.src}
@@ -121,6 +122,28 @@ export default function LibraryPage() {
                   isAvailable={book.isAvailable}
                   requestCount={0}
                   likeCount={0}
+                  onEdit={() => navigate(`/library/edit/${book.id}`)}
+                  onDelete={async () => {
+                    const ok = window.confirm(
+                      `Remove “${book.title}” from your library? This cannot be undone.`,
+                    );
+                    if (!ok) return;
+                    try {
+                      const response = await fetch(`${API}/books/${book.id}`, {
+                        method: "DELETE",
+                        headers: { ...authHeader() },
+                      });
+                      if (!response.ok) {
+                        const data = await response.json().catch(() => ({}));
+                        throw new Error(
+                          data.message ?? data.detail ?? "Failed to delete book",
+                        );
+                      }
+                      setBooks((prev) => prev.filter((b) => String(b._id ?? b.id) !== String(book.id)));
+                    } catch (e) {
+                      setError(e.message ?? "Failed to delete book");
+                    }
+                  }}
                 />
               ))
             )}
