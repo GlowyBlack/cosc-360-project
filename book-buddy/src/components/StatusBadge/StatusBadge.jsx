@@ -1,6 +1,7 @@
 import "./StatusBadge.css";
 
 const modifierByStatus = {
+  New: "status-badge--new",
   Available: "status-badge--available",
   Unavailable: "status-badge--unavailable",
   Pending: "status-badge--pending",

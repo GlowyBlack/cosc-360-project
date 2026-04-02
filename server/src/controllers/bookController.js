@@ -1,7 +1,15 @@
-import bookService from "../services/bookService.js"
-
+import bookService from "../services/bookService.js";
+import { BOOK_GENRES } from "../constants/bookGenres.js";
 
 const BookController = {
+    async getBookGenres(req, res) {
+        try {
+            res.status(200).json({ genres: [...BOOK_GENRES] });
+        } catch (error) {
+            res.status(500).json({ message: "Server Error", error: error.message });
+        }
+    },
+
     async getAllBooks(req, res) {
         try {
             const books = await bookService.getAllBooks();
@@ -13,16 +21,26 @@ const BookController = {
 
     async createBook(req, res) {
         try {
-            const data = req.body;
-            const userID = req.user?._id ?? data.book_owner;
+            const data = { ...req.body };
+            const userID = req.user?._id ?? req.user?.id;
             if (!userID) {
                 return res.status(400).json({ message: "Unauthorized" });
             }
-            data.book_owner = userID;
+            data.bookOwner = userID;
             const book = await bookService.createBook(data);
             res.status(201).json(book);
         } catch (error) {
-            res.status(500).json({ message: "Server Error", error: error.message })
+            const msg = error.message;
+            const badRequest = [
+                "Title and author are required",
+                "Please provide the summary of the book",
+                "Select at least one genre",
+                "Book owner is required",
+            ];
+            if (badRequest.includes(msg)) {
+                return res.status(400).json({ message: msg });
+            }
+            res.status(500).json({ message: "Server Error", error: msg });
         }
     },
     

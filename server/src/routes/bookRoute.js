@@ -7,7 +7,8 @@ const router = express.Router();
 router.post('/', requireAuth, bookController.createBook);
 
 router.get('/', bookController.getAllBooks);
-router.get('/me', bookController.findBooksByUserId);
+router.get('/meta/genres', bookController.getBookGenres);
+router.get('/me', requireAuth, bookController.findBooksByUserId);
 router.get('/search', bookController.searchBooks);
 router.get('/user/:userId', bookController.findBooksByUserId);
 router.get('/:id', bookController.getBookByBookId);

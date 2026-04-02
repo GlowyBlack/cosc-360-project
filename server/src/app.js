@@ -3,7 +3,6 @@ import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import bookRoute from './routes/bookRoute.js';
-import userRoute from './routes/userRoute.js';
 import requestRoute from './routes/requestRoute.js';
 import authRoute from './routes/authRoute.js';
 import adminRoute from './routes/adminRoute.js';
@@ -24,7 +23,6 @@ app.get('/', (req, res) => {res.send('Book Buddy API is running...');});
 app.use('/auth', authRoute);
 app.use('/admin', adminRoute);
 app.use('/books', bookRoute);
-app.use('/user', userRoute);
 app.use('/request', requestRoute);
 app.use('/messages', messageRoute);
 

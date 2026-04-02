@@ -9,14 +9,43 @@ const BookService = {
     },
 
     async createBook(data) {
-        if (!data.book_title || !data.book_author) {
+        const bookTitle = String(data.bookTitle ?? "").trim();
+        const bookAuthor = String(data.bookAuthor ?? data.bookAuthor ?? "").trim();
+        if (!bookTitle || !bookAuthor) {
             throw new Error("Title and author are required");
         }
-        if(!data.description){
+        const description = String(data.description ?? "").trim();
+        if (!description) {
             throw new Error("Please provide the summary of the book");
         }
+        const rawGenre = data.genre ?? data.genres;
+        const genre = Array.isArray(rawGenre)
+            ? rawGenre.map((g) => String(g).trim()).filter(Boolean)
+            : [];
+        if (genre.length < 1) {
+            throw new Error("Select at least one genre");
+        }
+        const bookOwner = data.bookOwner ?? data.bookOwner;
+        if (!bookOwner) {
+            throw new Error("Book owner is required");
+        }
 
-        return await bookRepository.createBook(data);
+        const doc = {
+            bookTitle,
+            bookAuthor,
+            description,
+            genre,
+            bookOwner,
+            bookImage:
+                data.bookImage != null && data.bookImage !== ""
+                    ? String(data.bookImage)
+                    : null,
+            condition: data.condition ?? "Good",
+            ownerNote: String(data.ownerNote ?? "").trim(),
+            isAvailable: data.isAvailable !== false,
+        };
+
+        return await bookRepository.createBook(doc);
     },
 
     async findBooksByUserId(userID) {
@@ -35,26 +64,26 @@ const BookService = {
     },
 
     async updateDetails(data) {
-        if(!data.id){
+        if (!data.id) {
             throw new Error("Book ID is required.");
         }
-        if(!data.userId) {
+        if (!data.userId) {
             throw new Error("User ID is required");
         }
         const book = bookRepository.findByID(id);
-        if(book.bookOwner != data.userId){
+        if (book.bookOwner != data.userId) {
             throw new Error("You can't edit a book that doesn't belong to you.");
         }
         const { id } = data;
         return await bookRepository.updateBook(data, id);
     },
 
-    async deleteBook(bookId, userId){
+    async deleteBook(bookId, userId) {
         if (!bookId) {
             throw new Error("Book ID is required");
         }
         const book = bookRepository.findByID(bookId);
-        if(book.bookOwner != userId /* or if not admin */){
+        if (book.bookOwner != userId /* or if not admin */) {
             throw new Error("You can't edit a book that doesn't belong to you.");
         }
         return await bookRepository.delete(bookId);

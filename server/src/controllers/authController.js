@@ -1,4 +1,4 @@
-import userService from "../services/user-service.js";
+import userService from "../services/authService.js";
 import { signAccessToken } from "../middleware/auth.js";
 
 const AuthController = {
@@ -9,6 +9,7 @@ const AuthController = {
     } catch (e) {
       const status =
         e.message === "registration_fields_required" ||
+        e.message === "location_required" ||
         e.message === "username_taken" ||
         e.message === "email_taken"
           ? 400
@@ -17,6 +18,8 @@ const AuthController = {
       const detail =
         e.message === "registration_fields_required"
           ? "First name, last name, email, and password are required"
+          : e.message === "location_required"
+          ? "City and province or state are required"
           : e.message === "username_taken"
           ? "That display name is already taken"
           : e.message === "email_taken"
