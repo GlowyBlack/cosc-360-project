@@ -10,45 +10,50 @@ const BookRepository = {
     async findAll() {
         return await book.find()
             .sort({ createdAt: -1 })
-            .populate({ path: "bookOwner", select: "username location" },
-                    );
+            .populate({ path: "bookOwner", select: "username location" });
     },
 
     async findUserBooks(userID) {
         return await book.find({ bookOwner: userID }).sort({ createdAt: -1 });
     },
 
-    async findByID(id){
-        return await book.findById(id)
-                         .populate(
-                            {path: "bookOwner", select: "username location"},
-                         );
+    async findByID(id, { lean = false } = {}) {
+        const q = book
+            .findById(id)
+            .populate({ path: "bookOwner", select: "username location" });
+        if (lean) {
+            return q.lean();
+        }
+        return q;
     },
 
     async updateBookOwner({id, newOwner, session=null}){
         return await book.findByIdAndUpdate(
             id,
            { $set: {bookOwner: newOwner}},
-           {new: true},
-           {session}
+           { returnDocument: "after", session }
         );
     },
 
     async decreaseRequestCount({}){},
-    
+
     async increaseRequestCount({}){},
-    
+
 
     async updateStatus({id, session = null}){
 
     },
 
-    async updateBook(data, bookId){
-        book.findByIdAndUpdate(bookId,data)
+    async updateBook(bookId, updates) {
+        return book.findByIdAndUpdate(
+            bookId,
+            { $set: updates },
+            { returnDocument: "after", runValidators: true }
+        );
     },
 
-    async deleteBook(bookId){
-        book.findByIdAndDelete(bookId);
+    async deleteBook(bookId) {
+        return book.findByIdAndDelete(bookId);
     },
 
     async searchBook(searchTerm){
@@ -66,5 +71,7 @@ const BookRepository = {
 
         return book.find(query);
     }
+
+
 };
 export default BookRepository;

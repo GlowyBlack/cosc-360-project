@@ -9,8 +9,8 @@ const RequestRepository = {
     },
 
     async createExchange({book, owner, offeredBook, requester }){
-        return await request.create({bookId: book, bookOwner: owner, 
-                                    requesterId: requester, type: "Exchange", 
+        return await request.create({bookId: book, bookOwner: owner,
+                                    requesterId: requester, type: "Exchange",
                                     offeredBookId: offeredBook, status:"Pending"});
     },
 
@@ -18,8 +18,7 @@ const RequestRepository = {
         return await request.findByIdAndUpdate(
             id,
             { $set: {status: 'Accepted'}},
-            {new: true},
-            {session}
+            { returnDocument: "after", session }
         )
     },
 
@@ -27,16 +26,15 @@ const RequestRepository = {
                 return await request.findByIdAndUpdate(
             id,
             { $set: {status: 'Rejected'}},
-            {new: true},
-            {session}
+            { returnDocument: "after", session }
         )
     },
 
     async createBorrow({book, owner, requester}){
-        return await request.create({bookId: book, bookOwner: owner, 
-                                    requesterId: requester, type: "Borrow", 
+        return await request.create({bookId: book, bookOwner: owner,
+                                    requesterId: requester, type: "Borrow",
                                     status:"Pending"});
-    },    
+    },
 }
 
 export default RequestRepository;
