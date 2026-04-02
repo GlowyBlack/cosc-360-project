@@ -2,6 +2,7 @@ import MaterialIcon from "../../components/MaterialIcon/MaterialIcon.jsx";
 import { useBookCoverDisplaySrc } from "../../commons/bookShared.js";
 
 export default function LibraryBookCard({
+  bookId,
   title,
   author,
   coverSrc,
@@ -9,9 +10,12 @@ export default function LibraryBookCard({
   isAvailable,
   requestCount = 0,
   likeCount = 0,
+  onEdit,
+  onDelete,
 }) {
   const badgeLabel = isAvailable ? "AVAILABLE" : "ON LOAN";
   const { displaySrc, onImgError } = useBookCoverDisplaySrc(coverSrc);
+  const showActions = Boolean(bookId && (onEdit || onDelete));
 
   return (
     <article className="library-book-card">
@@ -23,6 +27,38 @@ export default function LibraryBookCard({
           loading="lazy"
           onError={onImgError}
         />
+        {showActions ? (
+          <div className="library-book-card-actions">
+            {typeof onEdit === "function" ? (
+              <button
+                type="button"
+                className="library-book-card-action-btn"
+                aria-label={`Edit ${title}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onEdit();
+                }}
+              >
+                <MaterialIcon name="edit" className="library-book-card-action-icon" />
+              </button>
+            ) : null}
+            {typeof onDelete === "function" ? (
+              <button
+                type="button"
+                className="library-book-card-action-btn library-book-card-action-btn--danger"
+                aria-label={`Delete ${title}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onDelete();
+                }}
+              >
+                <MaterialIcon name="delete" className="library-book-card-action-icon" />
+              </button>
+            ) : null}
+          </div>
+        ) : null}
         <span
           className={`library-book-card-badge ${
             isAvailable
@@ -42,7 +78,7 @@ export default function LibraryBookCard({
           </span>
         </div>
         <p className="library-book-card-author">
-          {String(author || "").toUpperCase()}
+          {(author ?? "").toUpperCase()}
         </p>
         <p className="library-book-card-meta">
           {requestCount} ACTIVE {requestCount === 1 ? "REQUEST" : "REQUESTS"}
