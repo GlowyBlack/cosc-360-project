@@ -1,7 +1,11 @@
 import { useMemo, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import BookCard from "../../components/BookCard/BookCard.jsx";
+import TextField from "../../components/TextField/TextField.jsx";
+import Button from "../../components/Button/Button.jsx";
+import MaterialIcon from "../../components/MaterialIcon/MaterialIcon.jsx";
 import { DISCOVER_FILTERS } from "../../data/discoverBooks.js";
 
 import API from "../../config/api.js";
@@ -14,9 +18,11 @@ import { useAuth } from "../../context/AuthContext.jsx";
 import "./DiscoverPage.css";
 
 export default function DiscoverPage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [activeFilter, setActiveFilter] = useState("All");
   const [books, setBooks] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const cardBooks = useMemo(() => books.map(toDiscoverCardBook), [books]);
 
@@ -41,6 +47,13 @@ export default function DiscoverPage() {
     loadBooks();
   }, []);
 
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    if (!q) return;
+    navigate(`/search?q=${encodeURIComponent(q)}`);
+  };
+
   return (
     <div className="discover-page">
       <Header variant={user ? "user" : "guest"} />
@@ -51,6 +64,36 @@ export default function DiscoverPage() {
             your next swap.
           </h3>
         </header>
+
+        <form
+          className="discover-page-search"
+          onSubmit={handleSearchSubmit}
+          role="search"
+          aria-label="Search books"
+        >
+          <TextField
+            id="discover-search"
+            name="q"
+            label="Search"
+            type="search"
+            placeholder="Search books, authors, genres…"
+            autoComplete="off"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="discover-page-search-field"
+          />
+          <Button
+            type="submit"
+            variant="terracotta"
+            className="discover-page-search-submit"
+            disabled={!searchQuery.trim()}
+          >
+            <span className="discover-page-search-submit-inner">
+              Search
+              <MaterialIcon name="search" className="discover-page-search-icon" />
+            </span>
+          </Button>
+        </form>
 
         <div
           className="discover-page-filters"

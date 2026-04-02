@@ -125,13 +125,12 @@ const BookService = {
     },
 
     async searchBooks(searchTerm) {
-
-        if(!searchTerm){
+        const raw = String(searchTerm ?? "").trim()
+        if(!raw){
             return this.getAllBooks();
         }
 
-        const term = searchTerm.trim();
-        return await bookRepository.searchBooks(term);
+        return await bookRepository.searchBook(raw);
     },
 
     // searchBooksFromMock(searchTerm) {

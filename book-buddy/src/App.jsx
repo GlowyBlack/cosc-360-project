@@ -5,6 +5,7 @@ import DiscoverPage from "./pages/DiscoverPage/DiscoverPage.jsx";
 import LibraryPage from "./pages/LibraryPage/LibraryPage.jsx";
 import AddBookPage from "./pages/AddBookPage/AddBookPage.jsx";
 import EditBookPage from "./pages/EditBookPage/EditBookPage.jsx";
+import SearchResultsPage from "./pages/SearchResultsPage/SearchResultsPage.jsx";
 import BookDetails from "./pages/BookDetails/BookDetails.jsx";
 
 function App() {
@@ -12,11 +13,13 @@ function App() {
     <>
       <Routes>
         <Route path="/" element={<DiscoverPage />} />
-        <Route path="/add-book" element={<AddBookPage />} />
+        <Route path="/search" element={<SearchResultsPage />} />
         <Route path="/library/edit/:bookId" element={<EditBookPage />} />
+        <Route path="/add-book" element={<AddBookPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/library" element={<LibraryPage />} />
+
         <Route path="/book-details" element={<BookDetails />} />
       </Routes>
     </>
