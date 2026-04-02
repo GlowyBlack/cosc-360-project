@@ -60,8 +60,8 @@ const BookController = {
 
     async searchBooks(req, res) {
         try {
-            const { req } = req.query;
-            const results = bookService.searchBooksFromMock(term);
+            const q = req.query.q ?? req.query.query ?? "";
+            const results = await bookService.searchBooks(String(q));
             res.status(200).json(results);
         } catch (error) {
             res.status(500).json({ message: "Server Error", error: error.message });

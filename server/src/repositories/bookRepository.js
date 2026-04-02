@@ -69,8 +69,11 @@ const BookRepository = {
             ]
         };
 
-        return book.find(query);
-    }
+        return book
+            .find(query)
+            .sort({ createdAt: -1 })
+            .populate({ path: "bookOwner", select: "username location" });
+    },
 
 
 };
