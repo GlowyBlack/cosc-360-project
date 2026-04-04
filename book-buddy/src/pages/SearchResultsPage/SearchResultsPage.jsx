@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import BookCard from "../../components/BookCard/BookCard.jsx";
@@ -12,6 +12,7 @@ import { useAuth } from "../../context/AuthContext.jsx";
 import "./SearchResultsPage.css";
 
 export default function SearchResultsPage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const q = searchParams.get("q")?.trim() ?? "";
@@ -161,6 +162,7 @@ export default function SearchResultsPage() {
                         owner={book.owner}
                         location={book.location}
                         status={book.status}
+                        onClick={() => navigate(`/book/${book.id}`)}
                       />
                     ))}
                   </div>

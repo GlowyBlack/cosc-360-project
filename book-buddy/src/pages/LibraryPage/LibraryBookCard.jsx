@@ -17,6 +17,10 @@ export default function LibraryBookCard({
   const { displaySrc, onImgError } = useBookCoverDisplaySrc(coverSrc);
   const showActions = Boolean(bookId && (onEdit || onDelete));
 
+  const toggleAvailability = () => {
+
+  }
+
   return (
     <article className="library-book-card">
       <div className="library-book-card-cover-wrap">
@@ -65,6 +69,7 @@ export default function LibraryBookCard({
               ? "library-book-card-badge--available"
               : "library-book-card-badge--loan"
           }`}
+          onClick={() => {}}
         >
           {badgeLabel}
         </span>

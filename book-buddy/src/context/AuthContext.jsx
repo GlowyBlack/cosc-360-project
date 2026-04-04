@@ -4,24 +4,43 @@ import {
   useContext,
   useMemo,
   useState,
+  useEffect,
 } from "react";
 
 const STORAGE_KEY = "bookbuddy:user";
 
-const AuthContext = createContext(null);
-
 function readStoredUser() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (!raw) return null;
+    return JSON.parse(raw);
   } catch {
     localStorage.removeItem(STORAGE_KEY);
+    return null;
   }
-  return null;
 }
 
+const AuthContext = createContext(null);
+
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(readStoredUser);
+  const [user, setUser] = useState(() => readStoredUser());
+
+  useEffect(() => {
+    function onStorage(e) {
+      if (e.key !== STORAGE_KEY) return;
+      if (e.newValue) {
+        try {
+          setUser(JSON.parse(e.newValue));
+        } catch {
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
+    }
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
   const setSessionUser = useCallback((sessionUser) => {
     if (!sessionUser) return;

@@ -119,7 +119,7 @@ export default function EditBookPage() {
       <main className="add-book-page-main">
         <header className="add-book-page-intro">
           <p className="add-book-page-kicker">Edit listing</p>
-          <h1 className="add-book-page-title">Update book details</h1>
+          <h1 className="add-book-page-title">Update Book Betails</h1>
         </header>
 
         {loadError ? (

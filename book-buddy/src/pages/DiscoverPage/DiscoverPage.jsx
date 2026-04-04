@@ -133,6 +133,7 @@ export default function DiscoverPage() {
                 owner={book.owner}
                 location={book.location}
                 status={book.status}
+                onClick={() => navigate(`/book/${book.id}`)}
               />
             ))
           )}

@@ -33,6 +33,20 @@ export function coverSrcOrFallback(url) {
   return String(url);
 }
 
+/** Mongo owner id for comparing with session user `id` / `_id`. */
+export function getBookOwnerId(raw) {
+  if (raw?.bookOwner == null) return "";
+  if (typeof raw.bookOwner === "object") {
+    return String(raw.bookOwner._id ?? raw.bookOwner.id ?? "");
+  }
+  return String(raw.bookOwner);
+}
+
+export function getSessionUserId(user) {
+  if (user == null) return "";
+  return String(user.id ?? user._id ?? "");
+}
+
 export function resolveDiscoverOwner(raw) {
   let owner = raw.owner;
   if (owner == null && raw.bookOwner != null) {
