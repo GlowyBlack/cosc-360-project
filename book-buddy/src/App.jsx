@@ -6,7 +6,8 @@ import LibraryPage from "./pages/LibraryPage/LibraryPage.jsx";
 import AddBookPage from "./pages/AddBookPage/AddBookPage.jsx";
 import EditBookPage from "./pages/EditBookPage/EditBookPage.jsx";
 import SearchResultsPage from "./pages/SearchResultsPage/SearchResultsPage.jsx";
-import BookDetails from "./pages/BookDetails/BookDetails.jsx";
+import BookDetailPage from "./pages/BookDetails/BookDetailPage.jsx";
+
 
 function App() {
   return (
@@ -19,8 +20,7 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/library" element={<LibraryPage />} />
-
-        <Route path="/book-details" element={<BookDetails />} />
+        <Route path="/book/:bookId" element={<BookDetailPage />} />
       </Routes>
     </>
   );
