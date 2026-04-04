@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
+import ExchangeProposalModal from "../../components/ExchangeProposalModal/ExchangeProposalModal.jsx";
 import MaterialIcon from "../../components/MaterialIcon/MaterialIcon.jsx";
 import API from "../../config/api.js";
 import {
@@ -24,6 +25,9 @@ export default function BookDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [ownerAvatarFailed, setOwnerAvatarFailed] = useState(false);
+  const [exchangeOpen, setExchangeOpen] = useState(false);
+
+  const closeExchange = useCallback(() => setExchangeOpen(false), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -64,12 +68,12 @@ export default function BookDetailPage() {
   const title = book ? getBookTitle(book) : "";
   const author = book ? getBookAuthor(book) : "";
   const coverUrl = book ? getCoverUrlFromRaw(book) : "";
-  const coverAlt =
-    coverUrl && title ? `Cover: ${title}` : "No cover image";
+  const coverAlt = coverUrl && title ? `Cover: ${title}` : "No cover image";
   const { displaySrc, onImgError } = useBookCoverDisplaySrc(coverUrl);
 
   useEffect(() => {
     setOwnerAvatarFailed(false);
+    setExchangeOpen(false);
   }, [bookId]);
 
   const ownerName = useMemo(() => {
@@ -107,24 +111,22 @@ export default function BookDetailPage() {
     navigate(-1);
   };
 
-  const actionsDisabled = !isAvailable;
+  const actionsDisabled = !isAvailable || !user;
 
   return (
     <div className="book-detail-page">
       <Header variant={user ? "user" : "guest"} />
       <main className="book-detail-page-main">
-        <button
-          type="button"
-          className="book-detail-back"
-          onClick={handleBack}
-        >
-          <MaterialIcon name="west" className="book-detail-back-icon" aria-hidden />
+        <button type="button" className="book-detail-back" onClick={handleBack}>
+          <MaterialIcon
+            name="west"
+            className="book-detail-back-icon"
+            aria-hidden
+          />
           <span>Back</span>
         </button>
 
-        {loading ? (
-          <p className="book-detail-state">Loading…</p>
-        ) : null}
+        {loading ? <p className="book-detail-state">Loading…</p> : null}
         {error ? (
           <p className="book-detail-state book-detail-state--error">{error}</p>
         ) : null}
@@ -221,6 +223,7 @@ export default function BookDetailPage() {
                       actionsDisabled ? "book-detail-action--disabled" : ""
                     }`.trim()}
                     disabled={actionsDisabled}
+                    onClick={() => setExchangeOpen(true)}
                   >
                     Propose exchange
                   </button>
@@ -257,6 +260,14 @@ export default function BookDetailPage() {
           </div>
         ) : null}
       </main>
+      {book ? (
+        <ExchangeProposalModal
+          open={exchangeOpen}
+          onClose={closeExchange}
+          targetBook={book}
+          ownerName={ownerName}
+        />
+      ) : null}
       <Footer />
     </div>
   );

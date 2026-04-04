@@ -10,7 +10,7 @@ const BookRepository = {
     async findAll() {
         return await book.find()
             .sort({ createdAt: -1 })
-            .populate({ path: "bookOwner", select: "username location" });
+            .populate({ path: "bookOwner", select: "username location profileImage" });
     },
 
     async findUserBooks(userID) {
@@ -20,7 +20,7 @@ const BookRepository = {
     async findByID(id, { lean = false } = {}) {
         const q = book
             .findById(id)
-            .populate({ path: "bookOwner", select: "username location" });
+            .populate({ path: "bookOwner", select: "username location profileImage" });
         if (lean) {
             return q.lean();
         }
@@ -44,6 +44,18 @@ const BookRepository = {
 
     },
 
+    async toggleAvailability(bookId) {
+        return book.findByIdAndUpdate(
+            bookId,
+            [{ $set: { isAvailable: { $not: "$isAvailable" } } }],
+            { 
+                new: true,
+                lean: true,
+                runValidators: false
+            }
+        );
+    },
+
     async updateBook(bookId, updates) {
         return book.findByIdAndUpdate(
             bookId,
@@ -65,7 +77,7 @@ const BookRepository = {
             { bookAuthor: { $regex: safeTerm, $options: "i" } },
             { description: { $regex: safeTerm, $options: "i" } },
             { genre: { $regex: safeTerm, $options: "i" } },
-            { onwerNote: { $regex: safeTerm, $options: "i" } }
+            { ownerNote: { $regex: safeTerm, $options: "i" } }
             ]
         };
 
