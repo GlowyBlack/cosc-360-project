@@ -1,6 +1,11 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 
+/* 
+TODO: 
+    - Renew user token for every call
+*/
+
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-me";
 
 export async function requireAuth(req, res, next) {

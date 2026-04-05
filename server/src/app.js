@@ -8,6 +8,15 @@ import authRoute from './routes/authRoute.js';
 import adminRoute from './routes/adminRoute.js';
 import messageRoute from './routes/messageRoute.js';
 
+/* 
+TODO: 
+    - Blogging
+    - Reviewing other users
+    - Follow List
+    - Notifications
+    - Commenting on Blogs
+*/
+
 dotenv.config()
 
 const app = express();

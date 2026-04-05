@@ -1,6 +1,12 @@
 import mongoose from 'mongoose';
 import bookRepository from '../repositories/bookRepository.js';
 import requestRepository from '../repositories/requestRepository.js';
+/* 
+TODO:
+    - Complete decline, cancel exchange
+    - Edit accept request to change availability of book to unavailable after exchange completed
+    - Potential ExchangeLog to keep track of exchange histories
+*/
 
 const ExchangeService = {
     async initiateExchange({ requesterId, ownerId, bookId, offeredBookId }) {

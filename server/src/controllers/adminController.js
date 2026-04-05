@@ -2,6 +2,12 @@ import User from "../models/user.js";
 import Book from "../models/book.js";
 import Request from "../models/request.js";
 
+/* 
+TODO: 
+  - Dataflow is Route -> Controller -> Service -> Repository
+  - Move db queries to Admin Repository
+*/
+
 const AdminController = {
   async listUsers(req, res) {
     try {
