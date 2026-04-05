@@ -5,6 +5,7 @@ import LoginPage from "./pages/LoginPage/LoginPage.jsx";
 import LibraryPage from "./pages/LibraryPage/LibraryPage.jsx";
 import BookDetails from "./pages/BookDetails/BookDetails.jsx";
 import DiscoverPage from "./pages/DiscoverPage/DiscoverPage.jsx";
+import AdminUserSearch from "./pages/AdminUserSearch.jsx";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/library" element={<LibraryPage />} />
         <Route path="/book-details" element={<BookDetails />} />
+        <Route path="/admin/users/search" element={<AdminUserSearch />} />
       </Routes>
     </>
   );

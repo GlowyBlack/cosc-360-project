@@ -25,6 +25,7 @@ export default function RegisterForm({
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
+    
     setSubmitting(true);
     try {
       const response = await fetch(`${API}/auth/register`, {

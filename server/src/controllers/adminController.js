@@ -14,6 +14,85 @@ const AdminController = {
     }
   },
 
+  async searchUsers(req, res) {
+    try {
+      const q = String(req.query.q ?? "").trim();
+      if (!q) {
+        return res.json([]);
+      }
+
+      const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const regex = new RegExp(escaped, "i");
+
+      const [directUsers, booksWithOwners] = await Promise.all([
+        User.find({
+          $or: [{ username: regex }, { email: regex }],
+        })
+          .select("_id username email role isSuspended isBanned")
+          .lean(),
+        Book.find({
+          $or: [{ bookTitle: regex }, { bookAuthor: regex }],
+        })
+          .populate({
+            path: "bookOwner",
+            select: "_id username email role isSuspended isBanned",
+          })
+          .lean(),
+      ]);
+
+      const byId = new Map();
+
+      for (const u of directUsers) {
+        byId.set(String(u._id), u);
+      }
+
+      for (const b of booksWithOwners) {
+        const owner = b.bookOwner;
+        if (owner && owner._id) {
+          const id = String(owner._id);
+          if (!byId.has(id)) {
+            byId.set(id, {
+              _id: owner._id,
+              username: owner.username,
+              email: owner.email,
+              role: owner.role,
+              isSuspended: owner.isSuspended,
+              isBanned: owner.isBanned,
+            });
+          }
+        }
+      }
+
+      const merged = [...byId.values()];
+      if (merged.length === 0) {
+        return res.json([]);
+      }
+
+      const userIds = merged.map((u) => u._id);
+      const counts = await Book.aggregate([
+        { $match: { bookOwner: { $in: userIds } } },
+        { $group: { _id: "$bookOwner", bookCount: { $sum: 1 } } },
+      ]);
+      const countMap = new Map(
+        counts.map((c) => [String(c._id), c.bookCount])
+      );
+
+      const result = merged.map((u) => ({
+        _id: u._id,
+        username: u.username,
+        email: u.email,
+        role: u.role,
+        isSuspended: u.isSuspended,
+        isBanned: u.isBanned,
+        bookCount: countMap.get(String(u._id)) ?? 0,
+      }));
+
+      return res.json(result);
+    } catch {
+      return res.status(500).json({ message: "Server Error" });
+    }
+  },
+
   async suspendUser(req, res) {
     try {
       const user = await User.findByIdAndUpdate(
