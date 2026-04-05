@@ -8,9 +8,19 @@ import bookRoute from './routes/bookRoute.js';
 import userRoute from './routes/userRoute.js';
 import requestRoute from './routes/requestRoute.js';
 import authRoute from './routes/authRoute.js';
+import adminRoute from './routes/adminRoute.js';
 import messageRoute from './routes/messageRoute.js';
 import messageService from './services/messageService.js';
 dotenv.config()
+
+/* 
+TODO: 
+    - Blogging
+    - Reviewing other users
+    - Follow List
+    - Notifications
+    - Commenting on Blogs
+*/
 
 const app = express();
 db.startup()
