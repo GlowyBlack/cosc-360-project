@@ -7,7 +7,12 @@ import { requireAuth } from "../middleware/auth.js"
 const router = express.Router();
 
 router.post("/borrow", requireAuth, borrowController.createBorrow)
+router.post("/borrow/:requestId/accept", requireAuth, borrowController.acceptBorrow)
+router.post("/borrow/:requestId/decline", requireAuth, borrowController.declineBorrow)
+
 router.post("/exchange", requireAuth, exchangeController.createExchange)
+router.post("/exchange/:requestId/accept", requireAuth, exchangeController.acceptExchange)
+router.post("/exchange/:requestId/decline", requireAuth, exchangeController.declineExchange)
 
 router.get("/", requireAuth, requestController.getAllRequest)
 router.get("/me", requireAuth, requestController.getUserRequests)

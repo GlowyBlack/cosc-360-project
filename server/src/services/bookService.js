@@ -87,6 +87,23 @@ const BookService = {
         if (body.isAvailable !== undefined) updates.isAvailable = Boolean(body.isAvailable);
         return await bookRepository.updateBook(bookId, updates);
     },
+    
+
+    async toggleAvailability(bookId, userId) {
+        if (!bookId) throw new Error("Book ID is required.");
+        if (!userId) throw new Error("User ID is required");
+
+        const existing = await bookRepository.findByID({ id: bookId });
+        if (!existing) throw new Error("Book not found");
+
+        const ownerId = String(existing.bookOwner?._id ?? existing.bookOwner);
+        if (ownerId !== String(userId)) throw new Error("You can't change availability for a book that doesn't belong to you.");
+
+        const updated = await bookRepository.toggleAvailability({ bookId });
+        if (!updated) throw new Error("Book not found");
+        return updated;
+    },
+
 
     async deleteBook(bookId, userId) {
         if (!bookId) throw new Error("Book ID is required");

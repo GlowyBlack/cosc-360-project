@@ -7,6 +7,7 @@ import AddBookPage from "./pages/AddBookPage/AddBookPage.jsx";
 import EditBookPage from "./pages/EditBookPage/EditBookPage.jsx";
 import SearchResultsPage from "./pages/SearchResultsPage/SearchResultsPage.jsx";
 import BookDetailPage from "./pages/BookDetailPage/BookDetailPage.jsx";
+import RequestPage from "./pages/RequestPage/RequestPage.jsx";
 
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
         <Route path="/library/edit/:bookId" element={<EditBookPage />} />
         <Route path="/add-book" element={<AddBookPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/requests" element={<RequestPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/library" element={<LibraryPage />} />
         <Route path="/book/:bookId" element={<BookDetailPage />} />

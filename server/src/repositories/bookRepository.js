@@ -45,17 +45,38 @@ const BookRepository = {
         );
     },
 
-    async decreaseRequestCount({id, session = null}){
-
+    async resetRequestCount({ id, session = null }) {
+        return await book.findByIdAndUpdate(
+            id,
+            { $set: { pendingRequestCount: 0 } },
+            {
+                returnDocument: "after",
+                session,
+                runValidators: true
+            }
+        );
     },
+
+    async decreaseRequestCount({id, session = null}){
+        return await book.findByIdAndUpdate(
+            id, 
+            { $inc: { pendingRequestCount: -1 } },
+            { 
+                returnDocument: "after",
+                session,
+                runValidators: true
+            }
+        );
+    },
+
     async increaseRequestCount({id, session = null}){
         return await book.findByIdAndUpdate(
             id, 
-            { $inc: { pendingRequestCount: 1 } }, 
+            { $inc: { pendingRequestCount: 1 } },
             { 
-                returnDocument: "after",        
-                session,          
-                runValidators: true 
+                returnDocument: "after",
+                session,
+                runValidators: true
             }
         );
     },
@@ -65,14 +86,16 @@ const BookRepository = {
 
     },
 
-    async toggleAvailability(bookId) {
+    async toggleAvailability({bookId, session = null}) {
         return book.findByIdAndUpdate(
             bookId,
             [{ $set: { isAvailable: { $not: "$isAvailable" } } }],
             { 
-                new: true,
+                returnDocument: "after",
                 lean: true,
-                runValidators: false
+                runValidators: false,
+                updatePipeline: true,
+                session
             }
         );
     },
