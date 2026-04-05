@@ -6,6 +6,8 @@ const ExchangeController = {
             const {bookId, ownerId, offeredBookId} = req.body;
             const requesterId = req.user.id;
 
+            if (!bookId || !ownerId) throw new Error("Book and owner are required.");
+
             if (!offeredBookId) throw new Error("Offered book is required for exchange.");
             let result = await exchangeService.initiateExchange({requesterId: requesterId, ownerId: ownerId,
                                                                  bookId: bookId, offeredBookId: offeredBookId});

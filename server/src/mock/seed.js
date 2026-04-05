@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import User from "../models/user.js";
 import Book from "../models/book.js";
+import Request from "../models/request.js";
 import userService from "../services/authService.js";
 
 dotenv.config();
@@ -125,6 +126,7 @@ async function seed() {
 
     await User.deleteMany({ email: { $in: tempUsers.map((u) => u.email) } });
     await Book.deleteMany({});
+    await Request.deleteMany({});
 
     // Create users through the same service used by auth (hashing + validation).
     await Promise.all(
@@ -184,6 +186,10 @@ async function seed() {
       }
 
       console.log(`${user.username} assigned ${count} unique books`);
+    }
+    for (let i = allBooks.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allBooks[i], allBooks[j]] = [allBooks[j], allBooks[i]];
     }
 
     await Book.insertMany(allBooks);

@@ -6,7 +6,7 @@ import LibraryPage from "./pages/LibraryPage/LibraryPage.jsx";
 import AddBookPage from "./pages/AddBookPage/AddBookPage.jsx";
 import EditBookPage from "./pages/EditBookPage/EditBookPage.jsx";
 import SearchResultsPage from "./pages/SearchResultsPage/SearchResultsPage.jsx";
-import BookDetailPage from "./pages/BookDetails/BookDetailPage.jsx";
+import BookDetailPage from "./pages/BookDetailPage/BookDetailPage.jsx";
 
 
 function App() {

@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
+import ExchangeProposalModal from "../../components/ExchangeProposalModal/ExchangeProposalModal.jsx";
 import MaterialIcon from "../../components/MaterialIcon/MaterialIcon.jsx";
-import API from "../../config/api.js";
+import API, { authHeader, flashSessionExpired } from "../../config/api.js";
 import {
   getBookAuthor,
   getBookRecordId,
@@ -19,11 +20,14 @@ import "./BookDetailPage.css";
 export default function BookDetailPage() {
   const { bookId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [ownerAvatarFailed, setOwnerAvatarFailed] = useState(false);
+  const [exchangeOpen, setExchangeOpen] = useState(false);
+
+  const closeExchange = useCallback(() => setExchangeOpen(false), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -70,6 +74,7 @@ export default function BookDetailPage() {
 
   useEffect(() => {
     setOwnerAvatarFailed(false);
+    setExchangeOpen(false);
   }, [bookId]);
 
   const ownerName = useMemo(() => {
@@ -107,7 +112,57 @@ export default function BookDetailPage() {
     navigate(-1);
   };
 
-  const actionsDisabled = !isAvailable;
+  const actionsDisabled = !isAvailable || !user;
+
+  const handleProposeExchange = useCallback(
+    async ({ offeredBookIds }) => {
+      const offeredBookId = offeredBookIds[0];
+      if (!book || !offeredBookId || !ownerId) {
+        throw new Error("Missing book or owner information.");
+      }
+      const targetBookId = String(getBookRecordId(book)).trim();
+      const oid = String(ownerId).trim();
+      const obid = String(offeredBookId).trim();
+      if (!/^[a-f\d]{24}$/i.test(targetBookId)) {
+        throw new Error("Invalid book.");
+      }
+      if (!/^[a-f\d]{24}$/i.test(oid)) {
+        throw new Error("Invalid owner.");
+      }
+      if (!/^[a-f\d]{24}$/i.test(obid)) {
+        throw new Error("Invalid offered book.");
+      }
+
+      const response = await fetch(`${API}/request/exchange`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: JSON.stringify({
+          bookId: targetBookId,
+          ownerId: oid,
+          offeredBookId: obid,
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.status === 401) {
+        flashSessionExpired();
+        logout();
+        throw new Error(
+          data.message ?? "Session expired. Please sign in again.",
+        );
+      }
+      if (!response.ok) {
+        throw new Error(
+          data.message ??
+            data.detail ??
+            "Could not send exchange proposal.",
+        );
+      }
+    },
+    [book, ownerId, logout],
+  );
 
   return (
     <div className="book-detail-page">
@@ -221,6 +276,7 @@ export default function BookDetailPage() {
                       actionsDisabled ? "book-detail-action--disabled" : ""
                     }`.trim()}
                     disabled={actionsDisabled}
+                    onClick={() => setExchangeOpen(true)}
                   >
                     Propose exchange
                   </button>
@@ -257,6 +313,15 @@ export default function BookDetailPage() {
           </div>
         ) : null}
       </main>
+      {book ? (
+        <ExchangeProposalModal
+          open={exchangeOpen}
+          onClose={closeExchange}
+          targetBook={book}
+          ownerName={ownerName}
+          onPropose={handleProposeExchange}
+        />
+      ) : null}
       <Footer />
     </div>
   );
