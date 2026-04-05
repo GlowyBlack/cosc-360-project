@@ -1,6 +1,9 @@
-// TODO
 import request from "../models/request.js";
 import "../models/user.js";
+
+/* 
+TODO: 
+*/
 
 const RequestRepository = {
 
