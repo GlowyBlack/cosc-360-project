@@ -120,7 +120,7 @@ export default function LibraryPage() {
                   coverSrc={book.cover.src}
                   coverAlt={book.cover.alt}
                   isAvailable={book.isAvailable}
-                  requestCount={0}
+                  requestCount={book.pendingRequestCount}
                   likeCount={0}
                   onEdit={() => navigate(`/library/edit/${book.id}`)}
                   onDelete={async () => {

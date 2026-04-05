@@ -14,14 +14,6 @@ import "./ExchangeProposalModal.css";
 
 const PAGE_SIZE = 4;
 
-/**
- * @param {object} props
- * @param {boolean} props.open
- * @param {() => void} props.onClose
- * @param {object | null} props.targetBook — API book document (the listing being requested)
- * @param {string} props.ownerName — display name of the book owner (e.g. "Julian")
- * @param {(payload: { offeredBookIds: string[] }) => void} [props.onPropose]
- */
 export default function ExchangeProposalModal({
   open,
   onClose,
@@ -36,6 +28,8 @@ export default function ExchangeProposalModal({
   const [shelfError, setShelfError] = useState("");
   const [page, setPage] = useState(0);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [proposing, setProposing] = useState(false);
+  const [proposeError, setProposeError] = useState("");
 
   const targetId = targetBook ? getBookRecordId(targetBook) : "";
   const targetTitle = targetBook ? getBookTitle(targetBook) : "";
@@ -44,7 +38,9 @@ export default function ExchangeProposalModal({
 
   const shelfBooks = useMemo(
     () =>
-      myBooks.filter((b) => String(getBookRecordId(b)) !== String(targetId)),
+      myBooks.filter(
+        (b) => String(getBookRecordId(b)) !== String(targetId),
+      ),
     [myBooks, targetId],
   );
 
@@ -90,6 +86,8 @@ export default function ExchangeProposalModal({
     if (!open) return undefined;
     setPage(0);
     setSelectedIds(new Set());
+    setProposeError("");
+    setProposing(false);
     loadShelf();
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -117,12 +115,22 @@ export default function ExchangeProposalModal({
     });
   };
 
-  const handlePropose = () => {
-    if (selectedIds.size === 0) return;
-    if (typeof onPropose === "function") {
-      onPropose({ offeredBookIds: [...selectedIds] });
+  const handlePropose = async () => {
+    if (selectedIds.size === 0 || proposing) return;
+    setProposeError("");
+    if (typeof onPropose !== "function") {
+      onClose();
+      return;
     }
-    onClose();
+    setProposing(true);
+    try {
+      await onPropose({ offeredBookIds: [...selectedIds] });
+      onClose();
+    } catch (e) {
+      setProposeError(e?.message ?? "Could not send your proposal.");
+    } finally {
+      setProposing(false);
+    }
   };
 
   if (!open || !targetBook) return null;
@@ -286,21 +294,30 @@ export default function ExchangeProposalModal({
           <p className="exchange-modal-hint">
             Choose one book to offer; selecting another replaces your choice.
           </p>
+          {proposeError ? (
+            <p
+              className="exchange-modal-propose-error"
+              role="alert"
+            >
+              {proposeError}
+            </p>
+          ) : null}
           <div className="exchange-modal-actions">
             <button
               type="button"
               className="exchange-modal-btn exchange-modal-btn--cancel"
               onClick={onClose}
+              disabled={proposing}
             >
               Cancel
             </button>
             <button
               type="button"
               className="exchange-modal-btn exchange-modal-btn--submit"
-              disabled={selectedIds.size === 0}
-              onClick={handlePropose}
+              disabled={selectedIds.size === 0 || proposing}
+              onClick={() => void handlePropose()}
             >
-              Propose exchange
+              {proposing ? "Sending…" : "Propose exchange"}
             </button>
           </div>
         </footer>

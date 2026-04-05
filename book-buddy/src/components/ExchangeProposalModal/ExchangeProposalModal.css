@@ -313,6 +313,14 @@
   color: var(--color-outline);
 }
 
+.exchange-modal-propose-error {
+  flex: 1 1 100%;
+  margin: -0.25rem 0 0.35rem;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--color-danger, #9b2c2c);
+}
+
 .exchange-modal-actions {
   display: flex;
   flex-wrap: wrap;
@@ -339,8 +347,13 @@
   color: var(--color-on-surface);
 }
 
-.exchange-modal-btn--cancel:hover {
+.exchange-modal-btn--cancel:hover:not(:disabled) {
   background: var(--color-surface-container);
+}
+
+.exchange-modal-btn--cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .exchange-modal-btn--submit {

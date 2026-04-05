@@ -4,7 +4,7 @@ import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import ExchangeProposalModal from "../../components/ExchangeProposalModal/ExchangeProposalModal.jsx";
 import MaterialIcon from "../../components/MaterialIcon/MaterialIcon.jsx";
-import API from "../../config/api.js";
+import API, { authHeader, flashSessionExpired } from "../../config/api.js";
 import {
   getBookAuthor,
   getBookRecordId,
@@ -20,7 +20,7 @@ import "./BookDetailPage.css";
 export default function BookDetailPage() {
   const { bookId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -68,7 +68,8 @@ export default function BookDetailPage() {
   const title = book ? getBookTitle(book) : "";
   const author = book ? getBookAuthor(book) : "";
   const coverUrl = book ? getCoverUrlFromRaw(book) : "";
-  const coverAlt = coverUrl && title ? `Cover: ${title}` : "No cover image";
+  const coverAlt =
+    coverUrl && title ? `Cover: ${title}` : "No cover image";
   const { displaySrc, onImgError } = useBookCoverDisplaySrc(coverUrl);
 
   useEffect(() => {
@@ -113,20 +114,72 @@ export default function BookDetailPage() {
 
   const actionsDisabled = !isAvailable || !user;
 
+  const handleProposeExchange = useCallback(
+    async ({ offeredBookIds }) => {
+      const offeredBookId = offeredBookIds[0];
+      if (!book || !offeredBookId || !ownerId) {
+        throw new Error("Missing book or owner information.");
+      }
+      const targetBookId = String(getBookRecordId(book)).trim();
+      const oid = String(ownerId).trim();
+      const obid = String(offeredBookId).trim();
+      if (!/^[a-f\d]{24}$/i.test(targetBookId)) {
+        throw new Error("Invalid book.");
+      }
+      if (!/^[a-f\d]{24}$/i.test(oid)) {
+        throw new Error("Invalid owner.");
+      }
+      if (!/^[a-f\d]{24}$/i.test(obid)) {
+        throw new Error("Invalid offered book.");
+      }
+
+      const response = await fetch(`${API}/request/exchange`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: JSON.stringify({
+          bookId: targetBookId,
+          ownerId: oid,
+          offeredBookId: obid,
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.status === 401) {
+        flashSessionExpired();
+        logout();
+        throw new Error(
+          data.message ?? "Session expired. Please sign in again.",
+        );
+      }
+      if (!response.ok) {
+        throw new Error(
+          data.message ??
+            data.detail ??
+            "Could not send exchange proposal.",
+        );
+      }
+    },
+    [book, ownerId, logout],
+  );
+
   return (
     <div className="book-detail-page">
       <Header variant={user ? "user" : "guest"} />
       <main className="book-detail-page-main">
-        <button type="button" className="book-detail-back" onClick={handleBack}>
-          <MaterialIcon
-            name="west"
-            className="book-detail-back-icon"
-            aria-hidden
-          />
+        <button
+          type="button"
+          className="book-detail-back"
+          onClick={handleBack}
+        >
+          <MaterialIcon name="west" className="book-detail-back-icon" aria-hidden />
           <span>Back</span>
         </button>
 
-        {loading ? <p className="book-detail-state">Loading…</p> : null}
+        {loading ? (
+          <p className="book-detail-state">Loading…</p>
+        ) : null}
         {error ? (
           <p className="book-detail-state book-detail-state--error">{error}</p>
         ) : null}
@@ -266,6 +319,7 @@ export default function BookDetailPage() {
           onClose={closeExchange}
           targetBook={book}
           ownerName={ownerName}
+          onPropose={handleProposeExchange}
         />
       ) : null}
       <Footer />
