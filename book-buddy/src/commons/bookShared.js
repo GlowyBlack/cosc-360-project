@@ -109,6 +109,14 @@ export function toLibraryPageCardBook(raw, currentUser) {
   const coverUrl = getCoverUrlFromRaw(raw);
   const pending =
     raw.pendingRequestCount != null ? Number(raw.pendingRequestCount) : 0;
+
+  const onLoan =
+    raw.isOnLoan === true ||
+    raw.onLoan === true ||
+    raw.lentOut === true ||
+    raw.borrowStatus === "out" ||
+    raw.borrowStatus === "lent";
+
   return {
     id,
     title,
@@ -119,6 +127,7 @@ export function toLibraryPageCardBook(raw, currentUser) {
         ? String(currentUser.location).trim()
         : null) ?? resolveBookOwnerLocation(raw),
     isAvailable: raw.isAvailable === true,
+    onLoan,
     pendingRequestCount: Number.isFinite(pending) && pending >= 0 ? pending : 0,
     cover: buildBookCover(coverUrl, title),
   };

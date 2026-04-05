@@ -117,23 +117,35 @@ export default function BookDetailPage() {
   const handleProposeExchange = useCallback(
     async ({ offeredBookIds }) => {
       const offeredBookId = offeredBookIds[0];
-      if (!book || !offeredBookId || !ownerId) {
-        throw new Error("Missing book or owner information.");
-      }
-      const targetBookId = String(getBookRecordId(book)).trim();
-      const oid = String(ownerId).trim();
-      const obid = String(offeredBookId).trim();
+      const targetBookId = bookId ? String(bookId).trim() : "";
+      const obid = offeredBookId ? String(offeredBookId).trim() : "";
       if (!/^[a-f\d]{24}$/i.test(targetBookId)) {
         throw new Error("Invalid book.");
-      }
-      if (!/^[a-f\d]{24}$/i.test(oid)) {
-        throw new Error("Invalid owner.");
       }
       if (!/^[a-f\d]{24}$/i.test(obid)) {
         throw new Error("Invalid offered book.");
       }
 
-      const response = await fetch(`${API}/request/exchange`, {
+      const verifyRes = await fetch(
+        `${API}/books/${encodeURIComponent(targetBookId)}`,
+      );
+      const freshBook = await verifyRes.json().catch(() => ({}));
+      if (!verifyRes.ok) {
+        throw new Error(
+          freshBook.message ??
+            freshBook.detail ??
+            "Could not verify this listing.",
+        );
+      }
+      if (freshBook.isAvailable !== true) {
+        throw new Error("This book is no longer available to request.");
+      }
+      const oid = String(getBookOwnerId(freshBook)).trim();
+      if (!/^[a-f\d]{24}$/i.test(oid)) {
+        throw new Error("Could not determine the current owner. Try again.");
+      }
+
+      const response = await fetch(`${API}/requests/exchange`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -155,13 +167,14 @@ export default function BookDetailPage() {
       }
       if (!response.ok) {
         throw new Error(
-          data.message ??
+          data.error ??
             data.detail ??
+            data.message ??
             "Could not send exchange proposal.",
         );
       }
     },
-    [book, ownerId, logout],
+    [bookId, logout],
   );
 
   return (

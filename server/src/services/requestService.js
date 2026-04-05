@@ -4,9 +4,16 @@ TODO:
     - Create method getUserRequests for /me route
 */
 const RequestService = {
-    async getAllBooks() {
-        return await requestRepository.findAll();
+
+    async getAllRequests() {
+        return requestRepository.getAllRequests();
     },
+
+    async getUserRequests(userId){
+        if (!userId) throw new Error("User ID is required");
+        return requestRepository.findUserRequests(userId)
+
+    }
     
 }
 

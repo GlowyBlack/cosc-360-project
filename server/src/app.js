@@ -15,6 +15,7 @@ TODO:
     - Follow List
     - Notifications
     - Commenting on Blogs
+    - Potential Exchange Logs
 */
 
 dotenv.config()
@@ -32,7 +33,7 @@ app.get('/', (req, res) => {res.send('Book Buddy API is running...');});
 app.use('/auth', authRoute);
 app.use('/admin', adminRoute);
 app.use('/books', bookRoute);
-app.use('/request', requestRoute);
+app.use('/requests', requestRoute);
 app.use('/messages', messageRoute);
 
 
