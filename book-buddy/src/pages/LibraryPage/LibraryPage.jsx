@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
-import API, { authHeader } from "../../config/api.js";
+import API, { authHeader, flashSessionExpired } from "../../config/api.js";
 import { toLibraryPageCardBook } from "../../commons/bookShared.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 
@@ -17,7 +17,7 @@ const TABS = [
 
 export default function LibraryPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -34,6 +34,11 @@ export default function LibraryPage() {
           },
         });
         const data = await response.json().catch(() => ({}));
+        if (response.status === 401) {
+          flashSessionExpired();
+          logout();
+          return;
+        }
         if (!response.ok) {
           throw new Error(data.message ?? data.detail ?? "Failed to load your books");
         }
@@ -120,8 +125,8 @@ export default function LibraryPage() {
                   coverSrc={book.cover.src}
                   coverAlt={book.cover.alt}
                   isAvailable={book.isAvailable}
+                  onLoan={book.onLoan}
                   requestCount={book.pendingRequestCount}
-                  likeCount={0}
                   onEdit={() => navigate(`/library/edit/${book.id}`)}
                   onDelete={async () => {
                     const ok = window.confirm(
@@ -133,6 +138,11 @@ export default function LibraryPage() {
                         method: "DELETE",
                         headers: { ...authHeader() },
                       });
+                      if (response.status === 401) {
+                        flashSessionExpired();
+                        logout();
+                        return;
+                      }
                       if (!response.ok) {
                         const data = await response.json().catch(() => ({}));
                         throw new Error(

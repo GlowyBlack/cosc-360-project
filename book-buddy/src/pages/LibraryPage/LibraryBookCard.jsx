@@ -8,18 +8,20 @@ export default function LibraryBookCard({
   coverSrc,
   coverAlt,
   isAvailable,
+  onLoan = false,
   requestCount = 0,
-  likeCount = 0,
   onEdit,
   onDelete,
 }) {
-  const badgeLabel = isAvailable ? "AVAILABLE" : "ON LOAN";
+  const badge =
+    onLoan
+      ? { label: "ON LOAN", tone: "loan" }
+      : isAvailable
+        ? { label: "AVAILABLE", tone: "available" }
+        : { label: "NOT AVAILABLE", tone: "unavailable" };
+
   const { displaySrc, onImgError } = useBookCoverDisplaySrc(coverSrc);
   const showActions = Boolean(bookId && (onEdit || onDelete));
-
-  const toggleAvailability = () => {
-
-  }
 
   return (
     <article className="library-book-card">
@@ -64,23 +66,14 @@ export default function LibraryBookCard({
           </div>
         ) : null}
         <span
-          className={`library-book-card-badge ${
-            isAvailable
-              ? "library-book-card-badge--available"
-              : "library-book-card-badge--loan"
-          }`}
-          onClick={() => {}}
+          className={`library-book-card-badge library-book-card-badge--${badge.tone}`}
         >
-          {badgeLabel}
+          {badge.label}
         </span>
       </div>
       <div className="library-book-card-body">
         <div className="library-book-card-row">
           <h3 className="library-book-card-title">{title}</h3>
-          <span className="library-book-card-likes" aria-hidden>
-            <MaterialIcon name="favorite" className="library-book-card-heart" />
-            <span className="library-book-card-like-count">{likeCount}</span>
-          </span>
         </div>
         <p className="library-book-card-author">
           {(author ?? "").toUpperCase()}

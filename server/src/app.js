@@ -20,6 +20,7 @@ TODO:
     - Follow List
     - Notifications
     - Commenting on Blogs
+    - Potential Exchange Logs
 */
 
 const app = express();
@@ -35,7 +36,7 @@ app.get('/', (req, res) => {res.send('Book Buddy API is running...');});
 app.use('/auth', authRoute);
 app.use('/books', bookRoute);
 app.use('/user', userRoute);
-app.use('/request', requestRoute);
+app.use('/requests', requestRoute);
 app.use('/messages', messageRoute);
 
 // wraped express in a plain http server so socket.io can share the same port

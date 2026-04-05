@@ -4,18 +4,18 @@ const BookController = {
     async getBookGenres(req, res) {
         try {
             const { BOOK_GENRES } = await import("../constants/bookGenres.js");
-            res.status(200).json({ genres: [...BOOK_GENRES] });
+            return res.status(200).json({ genres: [...BOOK_GENRES] });
         } catch (error) {
-            res.status(500).json({ message: "Server Error", error: error.message });
+            return res.status(500).json({ message: "Server Error", error: error.message });
         }
     },
 
     async getAllBooks(req, res) {
         try {
             const books = await bookService.getAllBooks();
-            res.status(200).json(books);
+            return res.status(200).json(books);
         } catch (error) {
-            res.status(500).json({ message: "Server Error", error: error.message });
+            return res.status(500).json({ message: "Server Error", error: error.message });
         }
     },
 
@@ -40,7 +40,7 @@ const BookController = {
             if (badRequest.includes(msg)) {
                 return res.status(400).json({ message: msg });
             }
-            res.status(500).json({ message: "Server Error", error: msg });
+            return res.status(500).json({ message: "Server Error", error: msg });
         }
     },
 
@@ -52,9 +52,9 @@ const BookController = {
             }
             const userId = String(rawUserId);
             const books = await bookService.findBooksByUserId(userId);
-            res.status(200).json(books);
+            return res.status(200).json(books);
         } catch (error) {
-            res.status(500).json({ message: "Server Error", error: error.message });
+            return res.status(500).json({ message: "Server Error", error: error.message });
         }
     },
 
@@ -62,9 +62,9 @@ const BookController = {
         try {
             const q = req.query.q ?? req.query.query ?? "";
             const results = await bookService.searchBooks(String(q));
-            res.status(200).json(results);
+            return res.status(200).json(results);
         } catch (error) {
-            res.status(500).json({ message: "Server Error", error: error.message });
+            return res.status(500).json({ message: "Server Error", error: error.message });
         }
     },
 
@@ -83,7 +83,7 @@ const BookController = {
             if (error.message === "Book ID is required") {
                 return res.status(400).json({ message: error.message });
             }
-            res.status(500).json({ message: "Server Error", error: error.message });
+            return res.status(500).json({ message: "Server Error", error: error.message });
         }
     },
 
@@ -95,7 +95,7 @@ const BookController = {
                 return res.status(401).json({ message: "Unauthorized" });
             }
             const book = await bookService.updateDetails(bookId, userId, req.body);
-            res.status(200).json(book);
+            return res.status(200).json(book);
         } catch (error) {
             const msg = error.message;
             if (msg === "Book not found") {
@@ -107,7 +107,7 @@ const BookController = {
             if (msg === "Book ID is required." || msg === "User ID is required") {
                 return res.status(400).json({ message: msg });
             }
-            res.status(500).json({ message: "Server Error", error: msg });
+            return res.status(500).json({ message: "Server Error", error: msg });
         }
     },
 
@@ -119,7 +119,7 @@ const BookController = {
                 return res.status(401).json({ message: "Unauthorized" });
             }
             await bookService.deleteBook(bookId, userId);
-            res.status(204).send();
+            return res.status(204).send();
         } catch (error) {
             const msg = error.message;
             if (msg === "Book not found") {
@@ -131,7 +131,34 @@ const BookController = {
             if (msg === "Book ID is required") {
                 return res.status(400).json({ message: msg });
             }
-            res.status(500).json({ message: "Server Error", error: msg });
+            return res.status(500).json({ message: "Server Error", error: msg });
+        }
+    },
+    
+    async toggleAvailability(req, res) {
+        try {
+            const { bookId } = req.params;
+            const userId = req.user?._id ?? req.user?.id;
+            if (!userId) {
+                return res.status(401).json({ message: "Unauthorized" });
+            }
+            const book = await bookService.toggleAvailability(bookId, userId);
+            return res.status(200).json(book);
+        } catch (error) {
+            const msg = error.message;
+            if (msg === "Book not found") {
+                return res.status(404).json({ message: msg });
+            }
+            if (msg.includes("doesn't belong")) {
+                return res.status(403).json({ message: msg });
+            }
+            if (msg === "Book ID is required." || msg === "User ID is required") {
+                return res.status(400).json({ message: msg });
+            }
+            if (error.name === "CastError") {
+                return res.status(400).json({ message: "Invalid book id" });
+            }
+            return res.status(500).json({ message: "Server Error", error: msg });
         }
     },
 };

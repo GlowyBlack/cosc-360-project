@@ -2,20 +2,36 @@ import request from "../models/request.js";
 import "../models/user.js";
 
 /* 
-TODO: 
+TODO: Switch OfferedBook in request
 */
 
 const RequestRepository = {
 
     async getAllRequests(){
-        return await book.find()
+        return await request.find()
             .sort({ createdAt: -1 })
             .populate({ path: "bookOwner", select: "username" })
-            .populate({ path: "requesterId", select: "username" });
+            .populate({ path: "requesterId", select: "username" })
+            .populate({ path: "bookId", select: "bookTitle"})
+            .populate({ path: "offeredBookId", select: "bookTitle"})
+            .sort({ createdAt: -1 });
     },
 
     async findRequestById({id}){
         return await request.findById(id);
+    },
+
+    async findUserRequests(userId) {
+        return await request.find({
+            $or: [
+                { bookOwner: userId },
+                { requesterId: userId },
+            ]})
+            .populate({ path: "bookOwner", select: "username" })
+            .populate({ path: "requesterId", select: "username" })
+            .populate({ path: "bookId", select: "bookTitle"})
+            .populate({ path: "offeredBookId", select: "bookTitle"})
+            .sort({ createdAt: -1 });
     },
 
     async createExchange({book, owner, offeredBook, requester, session = null}){
@@ -38,7 +54,7 @@ const RequestRepository = {
     async declineExchange({id, session = null}){
                 return await request.findByIdAndUpdate(
             id,
-            { $set: {status: 'Rejected'}},
+            { $set: {status: 'Declined'}},
             { returnDocument: "after", session }
         )
     },

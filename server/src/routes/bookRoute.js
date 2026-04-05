@@ -10,6 +10,7 @@ router.get('/meta/genres', bookController.getBookGenres);
 router.get('/me', requireAuth, bookController.findBooksByUserId);
 router.get('/user/:userId', bookController.findBooksByUserId);
 router.get('/search', bookController.searchBooks);
+router.post('/:bookId/toggle-availability', requireAuth, bookController.toggleAvailability);
 router.get('/:bookId', bookController.getBookByBookId);
 
 router.patch('/:bookId', requireAuth, bookController.updateDetails);

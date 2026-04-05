@@ -11,6 +11,23 @@ const BorrowController = {
         
         // status code 201
     },
+
+    async acceptBorrow(req, res){
+        // TODO Accept Borrow
+        const {bookId, ownerId} = req.body;
+        const requesterId = req.user.id; 
+
+        
+        // status code 201
+    },
+    async declineBorrow(req, res){
+        // TODO Decline Borrow
+        const {bookId, ownerId} = req.body;
+        const requesterId = req.user.id; 
+
+        
+        // status code 201
+    },
 }
 
 export default BorrowController;
