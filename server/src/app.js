@@ -4,13 +4,13 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import http from 'http'
 import { Server } from 'socket.io'
-import bookRoute from './routes/bookRoute.js';
-import userRoute from './routes/userRoute.js';
-import requestRoute from './routes/requestRoute.js';
-import authRoute from './routes/authRoute.js';
 import adminRoute from './routes/adminRoute.js';
+import authRoute from './routes/authRoute.js';
+import bookRoute from './routes/bookRoute.js';
 import messageRoute from './routes/messageRoute.js';
 import messageService from './services/messageService.js';
+import requestRoute from './routes/requestRoute.js';
+import userRoute from './routes/userRoute.js';
 dotenv.config()
  
 const app = express();
