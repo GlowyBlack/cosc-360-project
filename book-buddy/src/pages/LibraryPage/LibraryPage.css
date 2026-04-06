@@ -205,6 +205,21 @@
   background: var(--color-outline);
 }
 
+.library-book-card-badge--clickable {
+  cursor: pointer;
+}
+
+.library-book-card-badge--clickable:focus-visible {
+  outline: 2px solid var(--color-on-surface);
+  outline-offset: 2px;
+}
+
+.library-book-card-badge--busy {
+  pointer-events: none;
+  cursor: wait;
+  opacity: 0.75;
+}
+
 .library-book-card-body {
   padding: 0.85rem 0.15rem 0;
   display: flex;

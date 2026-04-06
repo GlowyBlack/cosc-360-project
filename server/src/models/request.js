@@ -12,11 +12,9 @@ const RequestSchema = new mongoose.Schema({
 
 RequestSchema.index(
     { bookId: 1, requesterId: 1 },
-    { 
-        unique: true, 
-        partialFilterExpression: { 
-            status: { $in: ["Pending", "Accepted"] } 
-        } 
+    {
+        unique: true,
+        partialFilterExpression: { status: "Pending" },
     }
 );
 export default mongoose.model("Request", RequestSchema);
