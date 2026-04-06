@@ -4,7 +4,6 @@ import requestRepository from '../repositories/requestRepository.js';
 /* 
 TODO:
     - Potential ExchangeLog to keep track of exchange histories
-    - Change offered book method to allow user to offer different book for exchange
 */
 
 const ExchangeService = {
