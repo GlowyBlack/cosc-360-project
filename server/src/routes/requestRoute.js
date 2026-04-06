@@ -11,8 +11,10 @@ router.post("/borrow/:requestId/accept", requireAuth, borrowController.acceptBor
 router.post("/borrow/:requestId/decline", requireAuth, borrowController.declineBorrow)
 
 router.post("/exchange", requireAuth, exchangeController.createExchange)
+router.patch("/exchange/:requestId", requireAuth, exchangeController.editExchange)
 router.post("/exchange/:requestId/accept", requireAuth, exchangeController.acceptExchange)
 router.post("/exchange/:requestId/decline", requireAuth, exchangeController.declineExchange)
+router.post("/exchange/:requestId/cancel", requireAuth, exchangeController.cancelExchange)
 
 router.get("/", requireAuth, requestController.getAllRequest)
 router.get("/me", requireAuth, requestController.getUserRequests)

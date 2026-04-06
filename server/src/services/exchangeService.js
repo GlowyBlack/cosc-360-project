@@ -3,9 +3,6 @@ import bookRepository from '../repositories/bookRepository.js';
 import requestRepository from '../repositories/requestRepository.js';
 /* 
 TODO:
-    - Complete decline, cancel exchange
-    - Edit acceptRequest:
-        - change availability of book to unavailable after exchange completed
     - Potential ExchangeLog to keep track of exchange histories
     - Change offered book method to allow user to offer different book for exchange
 */
@@ -31,22 +28,83 @@ const ExchangeService = {
         const session = await mongoose.startSession();
         try{
             await session.withTransaction(async () => {
+                const existing = await requestRepository.findPendingByBookAndRequester({
+                    bookId,
+                    requesterId,
+                    session,
+                });
+                if (existing) {
+                    throw new Error("You've already requested this book.");
+                }
                 response = await requestRepository.createExchange({ 
                     book: bookId,
                     owner: ownerId,
                     requester: requesterId,
                     offeredBook: offeredBookId, 
-                    session: session
+                    session
                 });
-                await bookRepository.increaseRequestCount({id: bookId, session: session})
+                await bookRepository.increaseRequestCount({id: bookId, session})
             });
             return response;
         } catch(err){
+            if (err?.code === 11000) {
+                throw new Error("You've already requested this book.");
+            }
             console.error("Transaction failed:", err);
             throw err;
         } finally{
             session.endSession();
         }
+    },
+
+    async editExchangeOfferedBook({ requestId, userId, offeredBookId }) {
+        let request = await requestRepository.findRequestById({ id: requestId });
+
+        if (!request) throw new Error("The exchange request doesn't exist.");
+        if (String(request.type).toLowerCase() !== "exchange") {
+            throw new Error("The request isn't an exchange request.");
+        }
+        if (String(request.status).toLowerCase() !== "pending") throw new Error("Only pending exchange requests can be edited.");
+
+        const requesterRaw = request.requesterId?._id ?? request.requesterId;
+        if (String(requesterRaw) !== String(userId)) throw new Error("Only the person who proposed the exchange can change the offered book.");
+        if (String(offeredBookId) === String(request.offeredBookId)) {
+            return {
+                success: true,
+                message: "No change to offered book.",
+                request: request,
+            };
+        }
+
+        const newOffered = await bookRepository.findByID({ id: offeredBookId });
+        if (!newOffered) throw new Error("The book you are offering does not exist.");
+
+        const newOfferedOwner = newOffered.bookOwner?._id ?? newOffered.bookOwner;
+        if (!newOfferedOwner || !newOfferedOwner.equals(requesterRaw)) throw new Error("The book you are offering does not belong to you.");
+        if (!newOffered.isAvailable) throw new Error("The book you are offering is not available for trade.");
+
+        const session = await mongoose.startSession();
+        try {
+            await session.withTransaction(async () => {
+                const updated = await requestRepository.switchOfferedBook({
+                    id: requestId,
+                    newBookId: offeredBookId,
+                    session,
+                });
+                if (!updated) {
+                    throw new Error("Could not update the exchange request.");
+                }
+            });
+        } finally {
+            session.endSession();
+        }
+
+        request = await requestRepository.findRequestById({ id: requestId });
+        return {
+            success: true,
+            message: "Offered book updated.",
+            request: request,
+        };
     },
 
     async acceptExchange({requestId, userId}){
@@ -130,12 +188,9 @@ const ExchangeService = {
                 if(!book || !offeredBook) throw new Error("One of the book no longer exists in database.");
                 
                 if(!offeredBook.bookOwner.equals(request.requesterId)) throw new Error("The offered book doesn't belong to the requester anymore.");
-                
-                // TODO: Complete decline exchange
-                // Change Exchange to Declined
+            
                 request = await requestRepository.declineExchange({ id: requestId, session: session });
-                book = await bookRepository.decreaseRequestCount({ id: request.bookId, session: session })
-
+                book = await bookRepository.decreaseRequestCount({ id: request.bookId, session: session });
             });
             console.log("Transaction successful");
         }catch(error){
@@ -154,7 +209,54 @@ const ExchangeService = {
             }
         };
         
-    }
+    },
+
+    async cancelExchange({requestId, userId}){
+        let request = await requestRepository.findRequestById({id: requestId});
+        
+        if(!request) throw new Error("The exchange request doesn't exist.");
+        if(request.type.toLowerCase() != "exchange") throw new Error("The request isn't an exchange request.");
+        if(request.status.toLowerCase() != 'pending') throw new Error("The exchange request isn't a pending request.");
+
+        const requesterRaw = request.requesterId?._id ?? request.requesterId;
+        if (String(requesterRaw) !== String(userId)) {
+            throw new Error("Only the person who proposed the exchange can cancel it.");
+        }
+
+        let book;
+        let offeredBook;
+        
+        const session = await mongoose.startSession();
+        try{
+            await session.withTransaction(async () => {
+                book = await bookRepository.findByID({id: request.bookId});
+                offeredBook = await bookRepository.findByID({id: request.offeredBookId});
+                if(!book || !offeredBook) throw new Error("One of the book no longer exists in database.");
+                
+                if(!offeredBook.bookOwner.equals(request.requesterId)) throw new Error("The offered book doesn't belong to the requester anymore.");
+            
+                request = await requestRepository.cancelRequest({ id: requestId, session: session });
+                book = await bookRepository.decreaseRequestCount({ id: request.bookId, session: session });
+            });
+            console.log("Transaction successful");
+        }catch(error){
+            console.error("Transaction failed:", error);
+            throw error
+        }finally{
+            session.endSession()
+        }
+        return {
+            success: true,
+            message: "Exchange cancelled.",
+            request: request,
+            books: {
+                requestedBook: book,
+                offeredBook: offeredBook
+            }
+        };
+    },
+
+
 }
 
 export default ExchangeService;

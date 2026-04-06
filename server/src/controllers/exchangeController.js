@@ -16,12 +16,36 @@ const ExchangeController = {
 
             if (!offeredBookId) return res.status(400).json({ message: "Offered book is required for exchange" });
 
-            let result = await exchangeService.initiateExchange({requesterId: requesterId, ownerId: ownerId,
+            const result = await exchangeService.initiateExchange({requesterId: requesterId, ownerId: ownerId,
                                                                  bookId: bookId, offeredBookId: offeredBookId});
             return res.status(201).json({success: true, data: result})
         } catch(error){
             console.error(error)
             return res.status(500).json({ message: "Internal server error", error: error.message });
+        }
+    },
+
+    async editExchange(req, res) {
+        try {
+            const { requestId: bodyRequestId, offeredBookId } = req.body;
+            const paramId = req.params.requestId;
+            const id = bodyRequestId ?? paramId;
+            const userId = req.user?.id;
+
+            if (!userId) return res.status(401).json({ message: "Unauthorized" });
+            if (!id) return res.status(400).json({ message: "requestId is required" });
+            if (!offeredBookId) {
+                return res.status(400).json({ message: "offeredBookId is required" });
+            }
+
+            const result = await exchangeService.editExchangeOfferedBook({
+                requestId: id,
+                userId,
+                offeredBookId,
+            });
+            return res.status(200).json({ success: true, data: result });
+        } catch (error) {
+            return res.status(400).json({ message: error.message, error: error.message });
         }
     },
 
@@ -56,6 +80,25 @@ const ExchangeController = {
             return res.status(400).json({ message: "Internal server error", error: error.message });
         }
     },
+
+    async cancelExchange(req, res){
+        try{
+            const { requestId } = req.body;
+            const paramId = req.params.requestId;
+            const id = requestId ?? paramId;
+            const userId = req.user?.id;
+
+            if(!userId) return res.status(401).json({ message: "Unauthorized" });
+
+            if (!id) return res.status(400).json({ message: "requestId is required" });
+            const result = await exchangeService.cancelExchange({ requestId: id, userId });
+
+            return res.status(200).json({ success: true, data: result });
+        } catch(error){
+            return res.status(400).json({ message: "Internal server error", error: error.message });
+        }
+    },
+
 }
 
 export default ExchangeController;

@@ -22,6 +22,74 @@ export default function LibraryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("my");
+  const [togglingBookId, setTogglingBookId] = useState("");
+
+  const handleToggleAvailability = async (bookId) => {
+    setError("");
+    setTogglingBookId(bookId);
+    try {
+      const response = await fetch(
+        `${API}/books/${bookId}/toggle-availability`,
+        {
+          method: "POST",
+          headers: { ...authHeader() },
+        },
+      );
+      const data = await response.json().catch(() => ({}));
+      if (response.status === 401) {
+        flashSessionExpired();
+        logout();
+        return;
+      }
+      if (!response.ok) {
+        throw new Error(
+          data.message ?? data.detail ?? data.error ?? "Could not update availability",
+        );
+      }
+      const nextAvailable = data.isAvailable === true;
+      setBooks((prev) =>
+        prev.map((b) => {
+          const id = String(b._id ?? b.id);
+          if (id !== String(bookId)) return b;
+          return { ...b, isAvailable: nextAvailable };
+        }),
+      );
+    } catch (e) {
+      setError(e.message ?? "Could not update availability");
+    } finally {
+      setTogglingBookId("");
+    }
+  };
+
+  const handleDeleteBook = async (bookId, title) => {
+    const ok = window.confirm(
+      `Remove “${title}” from your library? This cannot be undone.`,
+    );
+    if (!ok) return;
+    setError("");
+    try {
+      const response = await fetch(`${API}/books/${bookId}`, {
+        method: "DELETE",
+        headers: { ...authHeader() },
+      });
+      if (response.status === 401) {
+        flashSessionExpired();
+        logout();
+        return;
+      }
+      if (!response.ok) {
+        const delData = await response.json().catch(() => ({}));
+        throw new Error(
+          delData.message ?? delData.detail ?? "Failed to delete book",
+        );
+      }
+      setBooks((prev) =>
+        prev.filter((b) => String(b._id ?? b.id) !== String(bookId)),
+      );
+    } catch (e) {
+      setError(e.message ?? "Failed to delete book");
+    }
+  };
 
   useEffect(() => {
     async function loadMyBooks() {
@@ -127,33 +195,10 @@ export default function LibraryPage() {
                   isAvailable={book.isAvailable}
                   onLoan={book.onLoan}
                   requestCount={book.pendingRequestCount}
+                  availabilityBusy={togglingBookId === book.id}
+                  onToggleAvailability={() => handleToggleAvailability(book.id)}
                   onEdit={() => navigate(`/library/edit/${book.id}`)}
-                  onDelete={async () => {
-                    const ok = window.confirm(
-                      `Remove “${book.title}” from your library? This cannot be undone.`,
-                    );
-                    if (!ok) return;
-                    try {
-                      const response = await fetch(`${API}/books/${book.id}`, {
-                        method: "DELETE",
-                        headers: { ...authHeader() },
-                      });
-                      if (response.status === 401) {
-                        flashSessionExpired();
-                        logout();
-                        return;
-                      }
-                      if (!response.ok) {
-                        const data = await response.json().catch(() => ({}));
-                        throw new Error(
-                          data.message ?? data.detail ?? "Failed to delete book",
-                        );
-                      }
-                      setBooks((prev) => prev.filter((b) => String(b._id ?? b.id) !== String(book.id)));
-                    } catch (e) {
-                      setError(e.message ?? "Failed to delete book");
-                    }
-                  }}
+                  onDelete={() => void handleDeleteBook(book.id, book.title)}
                 />
               ))
             )}

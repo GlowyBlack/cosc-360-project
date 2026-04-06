@@ -1,7 +1,7 @@
 import request from "../models/request.js";
 import "../models/user.js";
 
-/* 
+/*
 TODO: Switch OfferedBook in request
 */
 
@@ -17,8 +17,20 @@ const RequestRepository = {
             .sort({ createdAt: -1 });
     },
 
-    async findRequestById({id}){
-        return await request.findById(id);
+    async findRequestById({ id, session = null }) {
+        let q = request.findById(id);
+        if (session) q = q.session(session);
+        return await q.exec();
+    },
+
+    async findPendingByBookAndRequester({ bookId, requesterId, session = null }) {
+        let q = request.findOne({
+                bookId,
+                requesterId,
+                status: "Pending",
+            });
+        if (session) q = q.session(session);
+        return await q.exec();
     },
 
     async findUserRequests(userId) {
@@ -43,6 +55,18 @@ const RequestRepository = {
             );
     },
 
+    async switchOfferedBook({id, newBookId, session = null}){
+        return await request.findByIdAndUpdate(
+            id,
+            {$set: {offeredBookId: newBookId}},
+            {
+                returnDocument: "after", 
+                session,
+                runValidators: true
+            }
+        )
+    },
+
     async acceptExchange({id, session = null}){
         return await request.findByIdAndUpdate(
             id,
@@ -52,9 +76,17 @@ const RequestRepository = {
     },
 
     async declineExchange({id, session = null}){
-                return await request.findByIdAndUpdate(
+        return await request.findByIdAndUpdate(
             id,
             { $set: {status: 'Declined'}},
+            { returnDocument: "after", session }
+        )
+    },
+
+    async cancelRequest({id, session = null}){
+        return await request.findByIdAndUpdate(
+            id,
+            { $set: {status: 'Cancelled'}},
             { returnDocument: "after", session }
         )
     },

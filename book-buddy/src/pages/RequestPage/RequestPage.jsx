@@ -116,6 +116,7 @@ function RequestPageCard({
   isHistory,
   onAccept,
   onDecline,
+  onCancel,
   onMessage,
   actionError,
   busyId,
@@ -180,6 +181,8 @@ function RequestPageCard({
 
   const showAwaiting =
     !isHistory && direction === "outgoing" && status === "pending";
+  const showCancelOutgoing =
+    showAwaiting && typeof onCancel === "function";
 
   const historyLabel =
     status === "returned"
@@ -304,7 +307,19 @@ function RequestPageCard({
             {isHistory ? historyLabel : status === "returned" ? "Completed" : "Closed"}
           </span>
         ) : null}
-        {showAwaiting ? (
+        {showCancelOutgoing ? (
+          <>
+            <button
+              type="button"
+              className="request-page-btn request-page-btn--ghost"
+              disabled={busyId === id}
+              onClick={() => onCancel(id)}
+            >
+              Cancel
+            </button>
+            <span className="request-page-awaiting">Awaiting response</span>
+          </>
+        ) : showAwaiting ? (
           <span className="request-page-awaiting">Awaiting response</span>
         ) : null}
       </div>
@@ -495,6 +510,47 @@ export default function RequestPage() {
     [loadRequests, logout],
   );
 
+  const cancelOutgoingRequest = useCallback(
+    async (requestId, kind) => {
+      setActionError("");
+      setActionBusyId(requestId);
+      const segment = kind === "exchange" ? "exchange" : "borrow";
+      const url = `${API}/requests/${segment}/${encodeURIComponent(requestId)}/cancel`;
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+          body: JSON.stringify({ requestId }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (response.status === 401) {
+          flashSessionExpired();
+          logout();
+          return;
+        }
+        if (!response.ok) {
+          throw new Error(
+            data.error ??
+              data.detail ??
+              data.message ??
+              (response.status === 404
+                ? "Not found."
+                : `Request failed (${response.status})`),
+          );
+        }
+        await loadRequests();
+      } catch (e) {
+        setActionError(e.message ?? "Could not cancel request");
+      } finally {
+        setActionBusyId("");
+      }
+    },
+    [loadRequests, logout],
+  );
+
   if (!user) return <Navigate to="/login" replace />;
 
   return (
@@ -594,6 +650,12 @@ export default function RequestPage() {
                       onAccept={isHistory ? undefined : (id) => void respondToRequest(id, "accept", requestKind)}
                       onDecline={isHistory ? undefined : (id) => void respondToRequest(id, "decline", requestKind)}
                       onMessage={isHistory ? undefined : () => navigate("/messages")}
+                      onCancel={
+                        isHistory || direction !== "outgoing"
+                          ? undefined
+                          : (id) =>
+                              void cancelOutgoingRequest(id, requestKind)
+                      }
                     />
                   </li>
                 );
