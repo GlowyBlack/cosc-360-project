@@ -4,13 +4,14 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import http from 'http'
 import { Server } from 'socket.io'
-import bookRoute from './routes/bookRoute.js';
-import userRoute from './routes/userRoute.js';
-import requestRoute from './routes/requestRoute.js';
-import authRoute from './routes/authRoute.js';
 import adminRoute from './routes/adminRoute.js';
+import authRoute from './routes/authRoute.js';
+import bookRoute from './routes/bookRoute.js';
 import messageRoute from './routes/messageRoute.js';
 import messageService from './services/messageService.js';
+import requestRoute from './routes/requestRoute.js';
+import reviewRoute from './routes/reviewRoute.js';
+import userRoute from './routes/userRoute.js';
 dotenv.config()
  
 const app = express();
@@ -23,12 +24,13 @@ app.use(cors({
 app.use(express.json());
  
 app.get('/', (req, res) => {res.send('Book Buddy API is running...');});
+app.use('/admin', adminRoute);
 app.use('/auth', authRoute);
 app.use('/books', bookRoute);
-app.use('/user', userRoute);
-app.use('/requests', requestRoute);
 app.use('/messages', messageRoute);
-app.use('/admin', adminRoute);
+app.use('/requests', requestRoute);
+app.use('/reviews', reviewRoute);
+app.use('/user', userRoute);
  
 // wrapped express in a plain http server so socket.io can share the same port
 const httpServer = http.createServer(app);
