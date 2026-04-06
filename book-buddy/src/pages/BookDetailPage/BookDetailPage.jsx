@@ -15,7 +15,12 @@ import {
   useBookCoverDisplaySrc,
 } from "../../commons/bookShared.js";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { io } from "socket.io-client";
 import "./BookDetailPage.css";
+
+// create one socket connection for this page
+// used to notify the book owner in real time when an exchange is proposed
+const socket = io("http://localhost:5001");
 
 export default function BookDetailPage() {
   const { bookId } = useParams();
@@ -173,6 +178,11 @@ export default function BookDetailPage() {
             "Could not send exchange proposal.",
         );
       }
+
+      // exchange saved successfully
+      // notify the book owner in real time so their RequestPage updates instantly
+      // oid is the owner's userId — they are in a socket room named after their id
+      socket.emit("new_request", { ownerId: oid });
     },
     [bookId, logout],
   );
