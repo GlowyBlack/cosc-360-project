@@ -1,10 +1,6 @@
 import request from "../models/request.js";
 import "../models/user.js";
 
-/*
-TODO: Switch OfferedBook in request
-*/
-
 const RequestRepository = {
 
     async getAllRequests(){
@@ -55,16 +51,16 @@ const RequestRepository = {
             );
     },
 
-    async switchOfferedBook({id, newBookId, session = null}){
+    async switchOfferedBook({ id, newBookId, session = null }) {
         return await request.findByIdAndUpdate(
             id,
-            {$set: {offeredBookId: newBookId}},
+            { $set: { offeredBookId: newBookId } },
             {
-                returnDocument: "after", 
+                returnDocument: "after",
                 session,
-                runValidators: true
-            }
-        )
+                runValidators: true,
+            },
+        );
     },
 
     async acceptExchange({id, session = null}){
