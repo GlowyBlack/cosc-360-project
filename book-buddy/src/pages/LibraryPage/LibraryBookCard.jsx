@@ -12,6 +12,8 @@ export default function LibraryBookCard({
   requestCount = 0,
   onEdit,
   onDelete,
+  onToggleAvailability,
+  availabilityBusy = false,
 }) {
   const badge =
     onLoan
@@ -22,6 +24,11 @@ export default function LibraryBookCard({
 
   const { displaySrc, onImgError } = useBookCoverDisplaySrc(coverSrc);
   const showActions = Boolean(bookId && (onEdit || onDelete));
+  const canToggleAvailability =
+    !onLoan && typeof onToggleAvailability === "function";
+  const availabilityLabel = isAvailable
+    ? "Mark as not available for requests"
+    : "Mark as available for requests";
 
   return (
     <article className="library-book-card">
@@ -66,7 +73,30 @@ export default function LibraryBookCard({
           </div>
         ) : null}
         <span
-          className={`library-book-card-badge library-book-card-badge--${badge.tone}`}
+          className={`library-book-card-badge library-book-card-badge--${badge.tone}${canToggleAvailability ? " library-book-card-badge--clickable" : ""}${availabilityBusy ? " library-book-card-badge--busy" : ""}`.trim()}
+          role={canToggleAvailability ? "button" : undefined}
+          tabIndex={canToggleAvailability && !availabilityBusy ? 0 : undefined}
+          aria-label={canToggleAvailability ? availabilityLabel : undefined}
+          aria-busy={canToggleAvailability ? availabilityBusy : undefined}
+          onClick={
+            canToggleAvailability && !availabilityBusy
+              ? (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onToggleAvailability();
+                }
+              : undefined
+          }
+          onKeyDown={
+            canToggleAvailability && !availabilityBusy
+              ? (e) => {
+                  if (e.key !== "Enter" && e.key !== " ") return;
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onToggleAvailability();
+                }
+              : undefined
+          }
         >
           {badge.label}
         </span>

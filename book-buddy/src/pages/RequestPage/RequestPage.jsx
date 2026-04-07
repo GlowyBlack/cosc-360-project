@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import MaterialIcon from "../../components/MaterialIcon/MaterialIcon.jsx";
@@ -115,6 +116,7 @@ function RequestPageCard({
   isHistory,
   onAccept,
   onDecline,
+  onCancel,
   onMessage,
   actionError,
   busyId,
@@ -134,8 +136,7 @@ function RequestPageCard({
   const created = req.createdAt;
   const returnBy = req.returnBy;
 
-  const counterparty =
-    direction === "incoming" ? requesterName : ownerName;
+  const counterparty = direction === "incoming" ? requesterName : ownerName;
   const relTime = formatRelativePast(created);
   const dueLine = formatDueIn(returnBy);
   const durationDays = proposedBorrowDurationDays(created, returnBy);
@@ -180,6 +181,8 @@ function RequestPageCard({
 
   const showAwaiting =
     !isHistory && direction === "outgoing" && status === "pending";
+  const showCancelOutgoing =
+    showAwaiting && typeof onCancel === "function";
 
   const historyLabel =
     status === "returned"
@@ -199,21 +202,11 @@ function RequestPageCard({
       className={`request-page-card ${isHistory ? "request-page-card--history" : ""}`.trim()}
     >
       <div className="request-page-card-media">
-        <img
-          src={coverSrcOrFallback(cover)}
-          alt=""
-          className="request-page-card-cover"
-        />
+        <img src={coverSrcOrFallback(cover)} alt="" className="request-page-card-cover" />
         {isExchange && offeredBook ? (
           <>
-            <span className="request-page-card-swap" aria-hidden>
-              ⇄
-            </span>
-            <img
-              src={coverSrcOrFallback(offeredCover)}
-              alt=""
-              className="request-page-card-cover"
-            />
+            <span className="request-page-card-swap" aria-hidden>⇄</span>
+            <img src={coverSrcOrFallback(offeredCover)} alt="" className="request-page-card-cover" />
           </>
         ) : null}
       </div>
@@ -221,9 +214,7 @@ function RequestPageCard({
       <div className="request-page-card-body">
         <div className="request-page-card-topline">
           <span className={badgeClass}>{badgeText}</span>
-          {relTime ? (
-            <span className="request-page-card-time">{relTime}</span>
-          ) : null}
+          {relTime ? <span className="request-page-card-time">{relTime}</span> : null}
           {status === "accepted" && !isExchange && dueLine && !isHistory ? (
             <span className="request-page-card-due">{dueLine}</span>
           ) : null}
@@ -249,15 +240,9 @@ function RequestPageCard({
           </p>
         )}
 
-        {isHistory ? (
-          <p className="request-page-card-meta-upper">History</p>
-        ) : null}
+        {isHistory ? <p className="request-page-card-meta-upper">History</p> : null}
 
-
-        {!isExchange &&
-        status === "pending" &&
-        durationDays != null &&
-        direction === "incoming" ? (
+        {!isExchange && status === "pending" && durationDays != null && direction === "incoming" ? (
           <p className="request-page-card-meta-upper">
             Proposed duration: {durationDays} day{durationDays === 1 ? "" : "s"}
           </p>
@@ -271,27 +256,19 @@ function RequestPageCard({
             aria-valuemin={0}
             aria-valuemax={100}
           >
-            <div
-              className="request-page-card-progress-fill"
-              style={{ width: `${progress}%` }}
-            />
+            <div className="request-page-card-progress-fill" style={{ width: `${progress}%` }} />
           </div>
         ) : null}
 
         {showRate ? (
           <button type="button" className="request-page-card-rate" disabled>
-            <MaterialIcon
-              name="star"
-              className="request-page-card-rate-icon"
-            />
+            <MaterialIcon name="star" className="request-page-card-rate-icon" />
             Rate this exchange
           </button>
         ) : null}
 
         {actionError && busyId === id ? (
-          <p className="request-page-card-inline-error" role="alert">
-            {actionError}
-          </p>
+          <p className="request-page-card-inline-error" role="alert">{actionError}</p>
         ) : null}
       </div>
 
@@ -330,7 +307,19 @@ function RequestPageCard({
             {isHistory ? historyLabel : status === "returned" ? "Completed" : "Closed"}
           </span>
         ) : null}
-        {showAwaiting ? (
+        {showCancelOutgoing ? (
+          <>
+            <button
+              type="button"
+              className="request-page-btn request-page-btn--ghost"
+              disabled={busyId === id}
+              onClick={() => onCancel(id)}
+            >
+              Cancel
+            </button>
+            <span className="request-page-awaiting">Awaiting response</span>
+          </>
+        ) : showAwaiting ? (
           <span className="request-page-awaiting">Awaiting response</span>
         ) : null}
       </div>
@@ -367,9 +356,7 @@ export default function RequestPage() {
       }
       if (!response.ok) {
         throw new Error(
-          data.message ??
-            data.detail ??
-            `Could not load requests (${response.status})`,
+          data.message ?? data.detail ?? `Could not load requests (${response.status})`,
         );
       }
       setRequests(normalizeRequestPayload(data));
@@ -384,6 +371,15 @@ export default function RequestPage() {
   useEffect(() => {
     loadRequests();
   }, [loadRequests]);
+
+  useEffect(() => {
+    const socket = io("http://localhost:5001");
+    if (sessionId) socket.emit("join_user_room", sessionId);
+    socket.on("request_update", () => {
+      loadRequests();
+    });
+    return () => socket.disconnect();
+  }, [sessionId, loadRequests]);
 
   useEffect(() => {
     setListPage(0);
@@ -443,8 +439,7 @@ export default function RequestPage() {
   }, [activeList, safeListPage]);
 
   const showListBack = safeListPage > 0;
-  const showListNext =
-    (safeListPage + 1) * LIST_PAGE_SIZE < activeList.length;
+  const showListNext = (safeListPage + 1) * LIST_PAGE_SIZE < activeList.length;
 
   useEffect(() => {
     const maxP = Math.max(0, Math.ceil(activeList.length / LIST_PAGE_SIZE) - 1);
@@ -501,6 +496,43 @@ export default function RequestPage() {
         }
         if (!response.ok) {
           throw new Error(
+            data.error ?? data.detail ?? data.message ??
+              (response.status === 404 ? "Not found." : `Request failed (${response.status})`),
+          );
+        }
+        await loadRequests();
+      } catch (e) {
+        setActionError(e.message ?? "Action failed");
+      } finally {
+        setActionBusyId("");
+      }
+    },
+    [loadRequests, logout],
+  );
+
+  const cancelOutgoingRequest = useCallback(
+    async (requestId, kind) => {
+      setActionError("");
+      setActionBusyId(requestId);
+      const segment = kind === "exchange" ? "exchange" : "borrow";
+      const url = `${API}/requests/${segment}/${encodeURIComponent(requestId)}/cancel`;
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+          body: JSON.stringify({ requestId }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (response.status === 401) {
+          flashSessionExpired();
+          logout();
+          return;
+        }
+        if (!response.ok) {
+          throw new Error(
             data.error ??
               data.detail ??
               data.message ??
@@ -511,7 +543,7 @@ export default function RequestPage() {
         }
         await loadRequests();
       } catch (e) {
-        setActionError(e.message ?? "Action failed");
+        setActionError(e.message ?? "Could not cancel request");
       } finally {
         setActionBusyId("");
       }
@@ -529,11 +561,7 @@ export default function RequestPage() {
           <div className="request-page-hero-text">
             <h1 className="request-page-hero-title">Requests</h1>
           </div>
-          <div
-            className="request-page-toggle"
-            role="group"
-            aria-label="Request kind"
-          >
+          <div className="request-page-toggle" role="group" aria-label="Request kind">
             <button
               type="button"
               className={`request-page-toggle-btn ${hubMode === "borrow" ? "request-page-toggle-btn--on" : ""}`.trim()}
@@ -551,11 +579,7 @@ export default function RequestPage() {
           </div>
         </header>
 
-        <div
-          className="request-page-tabs"
-          role="tablist"
-          aria-label="Request lists"
-        >
+        <div className="request-page-tabs" role="tablist" aria-label="Request lists">
           <button
             type="button"
             role="tab"
@@ -586,10 +610,7 @@ export default function RequestPage() {
         </div>
 
         {loadError ? (
-          <div
-            className="request-page-banner request-page-banner--error"
-            role="alert"
-          >
+          <div className="request-page-banner request-page-banner--error" role="alert">
             <p className="request-page-banner-text">{loadError}</p>
             <p className="request-page-banner-hint">
               The list expects a working <code>GET /requests/me</code> response.
@@ -604,14 +625,10 @@ export default function RequestPage() {
           </div>
         ) : null}
 
-        {loading ? (
-          <p className="request-page-state">Loading requests…</p>
-        ) : null}
+        {loading ? <p className="request-page-state">Loading requests…</p> : null}
 
         {!loading && !loadError && activeList.length === 0 ? (
-          <p className="request-page-state request-page-state--empty">
-            {emptyMessage}
-          </p>
+          <p className="request-page-state request-page-state--empty">{emptyMessage}</p>
         ) : null}
 
         {!loading && activeList.length > 0 ? (
@@ -619,40 +636,25 @@ export default function RequestPage() {
             <ul className="request-page-list" aria-label="Requests">
               {pagedList.map((req, index) => {
                 const rid = idString(req._id ?? req.id);
-                const direction =
-                  idString(req.bookOwner) === sessionId
-                    ? "incoming"
-                    : "outgoing";
+                const direction = idString(req.bookOwner) === sessionId ? "incoming" : "outgoing";
                 const isHistory = listTab === "history";
-                const requestKind =
-                  requestTypeNorm(req.type) === "exchange"
-                    ? "exchange"
-                    : "borrow";
+                const requestKind = requestTypeNorm(req.type) === "exchange" ? "exchange" : "borrow";
                 return (
-                  <li
-                    key={rid || `request-${safeListPage}-${index}`}
-                    className="request-page-list-item"
-                  >
+                  <li key={rid || `request-${safeListPage}-${index}`} className="request-page-list-item">
                     <RequestPageCard
                       req={req}
                       direction={direction}
                       isHistory={isHistory}
                       busyId={actionBusyId}
                       actionError={actionError}
-                      onAccept={
-                        isHistory
+                      onAccept={isHistory ? undefined : (id) => void respondToRequest(id, "accept", requestKind)}
+                      onDecline={isHistory ? undefined : (id) => void respondToRequest(id, "decline", requestKind)}
+                      onMessage={isHistory ? undefined : () => navigate("/messages")}
+                      onCancel={
+                        isHistory || direction !== "outgoing"
                           ? undefined
                           : (id) =>
-                              void respondToRequest(id, "accept", requestKind)
-                      }
-                      onDecline={
-                        isHistory
-                          ? undefined
-                          : (id) =>
-                              void respondToRequest(id, "decline", requestKind)
-                      }
-                      onMessage={
-                        isHistory ? undefined : () => navigate("/messages")
+                              void cancelOutgoingRequest(id, requestKind)
                       }
                     />
                   </li>
@@ -678,10 +680,7 @@ export default function RequestPage() {
                     className="request-page-btn request-page-btn--ghost"
                     onClick={() =>
                       setListPage((p) => {
-                        const maxP = Math.max(
-                          0,
-                          Math.ceil(activeList.length / LIST_PAGE_SIZE) - 1,
-                        );
+                        const maxP = Math.max(0, Math.ceil(activeList.length / LIST_PAGE_SIZE) - 1);
                         return Math.min(maxP, p + 1);
                       })
                     }
@@ -696,22 +695,13 @@ export default function RequestPage() {
           </>
         ) : null}
 
-        <section
-          className="request-page-footer-cta"
-          aria-labelledby="request-page-quote"
-        >
-          <MaterialIcon
-            name="auto_stories"
-            className="request-page-footer-icon"
-            aria-hidden
-          />
+        <section className="request-page-footer-cta" aria-labelledby="request-page-quote">
+          <MaterialIcon name="auto_stories" className="request-page-footer-icon" aria-hidden />
           <blockquote id="request-page-quote" className="request-page-quote">
             A house without books is like a room without windows.
             <footer className="request-page-quote-cite">— Horace Mann</footer>
           </blockquote>
-          <Link to="/" className="request-page-browse">
-            Browse more books
-          </Link>
+          <Link to="/" className="request-page-browse">Browse more books</Link>
         </section>
       </main>
       <Footer />
