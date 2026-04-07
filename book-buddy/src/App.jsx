@@ -9,10 +9,6 @@ import MessagesPage from "./pages/MessagesPage/MessagesPage.jsx";
 import RegisterPage from "./pages/RegisterPage/RegisterPage.jsx";
 import RequestPage from "./pages/RequestPage/RequestPage.jsx";
 import SearchResultsPage from "./pages/SearchResultsPage/SearchResultsPage.jsx";
-import LoginPage from "./pages/LoginPage/LoginPage.jsx";
-import LibraryPage from "./pages/LibraryPage/LibraryPage.jsx";
-import BookDetails from "./pages/BookDetails/BookDetails.jsx";
-import DiscoverPage from "./pages/DiscoverPage/DiscoverPage.jsx";
 import AdminUserSearch from "./pages/AdminUserSearch.jsx";
 
 function App() {
