@@ -8,7 +8,7 @@
   background-color: var(--color-primary);
   color: #fff;
   padding: 0.5rem 1.5rem;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-pill);
   font-weight: 500;
   font-size: 10px;
   letter-spacing: 0.2em;
@@ -31,7 +31,7 @@
 .btn-terracotta {
   background-color: var(--color-primary-terracotta);
   color: #fff;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-pill);
   font-weight: 700;
   font-size: 11px;
   letter-spacing: 0.2em;
@@ -39,7 +39,8 @@
 }
 
 .btn-terracotta:hover {
-  filter: brightness(1.08);
+  background-color: var(--color-accent-hover);
+  filter: none;
 }
 
 .btn-terracotta:active {

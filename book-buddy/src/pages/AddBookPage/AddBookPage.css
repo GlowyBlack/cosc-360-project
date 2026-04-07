@@ -1,0 +1,47 @@
+.add-book-page {
+  flex: 1 1 auto;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-background);
+  color: var(--color-on-surface);
+}
+
+.add-book-page-main {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 3rem;
+}
+
+.add-book-page-intro {
+  margin-bottom: 1.5rem;
+}
+
+.add-book-page-kicker {
+  margin: 0 0 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--color-outline);
+}
+
+.add-book-page-title {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 700;
+}
+
+.add-book-page-lede {
+  margin: 0.7rem 0 0;
+  max-width: 38rem;
+  color: var(--color-on-surface-variant);
+}
+
+.add-book-page-error {
+  margin: 0 0 1rem;
+  color: var(--color-danger);
+}

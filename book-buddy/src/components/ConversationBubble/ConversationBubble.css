@@ -1,0 +1,56 @@
+.conversation-bubble-row {
+  display: flex;
+  width: 100%;
+}
+
+.conversation-bubble-row--left {
+  justify-content: flex-start;
+}
+
+.conversation-bubble-row--right {
+  justify-content: flex-end;
+}
+
+.conversation-bubble {
+  max-width: 85%;
+  border-radius: 1rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.conversation-bubble--left {
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface);
+  border-bottom-left-radius: 0.25rem;
+}
+
+.conversation-bubble--right {
+  background-color: var(--color-on-surface);
+  color: #fff;
+  border-bottom-right-radius: 0.25rem;
+}
+
+.conversation-bubble-sender {
+  margin: 0 0 0.25rem;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: var(--color-outline);
+}
+
+.conversation-bubble-text {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.conversation-bubble-time {
+  margin: 0.25rem 0 0;
+  font-size: 10px;
+  color: var(--color-outline);
+}
+
+.conversation-bubble-time--right {
+  color: color-mix(in srgb, #fff 80%, transparent);
+}

@@ -16,11 +16,11 @@ export default function RegisterForm({
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [city, setCity] = useState("");
+  const [provinceState, setProvinceState] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
-  // TODO: Add validation for email and password 
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -35,6 +35,8 @@ export default function RegisterForm({
           firstName: String(firstName || "").trim(),
           lastName: String(lastName || "").trim(),
           email: String(email || "").trim(),
+          city: String(city || "").trim(),
+          provinceState: String(provinceState || "").trim(),
           password,
         }),
       });
@@ -97,6 +99,32 @@ export default function RegisterForm({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
+        <div className="register-form-row">
+          <TextField
+            id="register-city"
+            name="city"
+            label="City"
+            type="text"
+            placeholder="e.g. Kelowna"
+            autoComplete="address-level2"
+            required
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            className="register-form-row-field"
+          />
+          <TextField
+            id="register-province-state"
+            name="provinceState"
+            label="Province / State"
+            type="text"
+            placeholder="e.g. Alberta / California"
+            autoComplete="address-level1"
+            required
+            value={provinceState}
+            onChange={(e) => setProvinceState(e.target.value)}
+            className="register-form-row-field"
+          />
+        </div>
         <PasswordField
           label="Password"
           name="password"

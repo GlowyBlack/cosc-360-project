@@ -1,4 +1,3 @@
-import user from "../models/user.js";
 import bookRepository from "../repositories/bookRepository.js"
 import fs from "fs";
 
@@ -8,79 +7,135 @@ const BookService = {
     },
 
     async createBook(data) {
-        if (!data.book_title || !data.book_author) {
-            throw new Error("Title and author are required");
-        }
-        if(!data.description){
-            throw new Error("Please provide the summary of the book");
-        }
+        const bookTitle = String(data.bookTitle ?? "").trim();
+        const bookAuthor = String(data.bookAuthor ?? "").trim();
+        if (!bookTitle || !bookAuthor) throw new Error("Title and author are required");
 
-        return await bookRepository.createBook(data);
+        const description = String(data.description ?? "").trim();
+        if (!description) throw new Error("Please provide the summary of the book");
+        
+        const rawGenre = data.genre ?? data.genres;
+        const genre = Array.isArray(rawGenre)
+            ? rawGenre.map((g) => String(g).trim()).filter(Boolean)
+            : [];
+
+        if (genre.length < 1) throw new Error("Select at least one genre");
+
+        const bookOwner = data.bookOwner;
+        if (!bookOwner) throw new Error("Book owner is required");
+
+        const doc = {
+            bookTitle,
+            bookAuthor,
+            description,
+            genre,
+            bookOwner,
+            bookImage:
+                data.bookImage != null && data.bookImage !== ""
+                    ? String(data.bookImage)
+                    : null,
+            condition: data.condition ?? "Good",
+            ownerNote: String(data.ownerNote ?? "").trim(),
+            isAvailable: data.isAvailable !== false,
+        };
+
+        return await bookRepository.createBook(doc);
     },
 
     async findBooksByUserId(userID) {
-        if (!userID) {
-            throw new Error("User ID is required");
-        }
+        if (!userID) throw new Error("User ID is required");
+
         return await bookRepository.findUserBooks(userID);
     },
 
 
-    async getBookByBookId(id) {
-        if (!id) {
-            throw new Error("Book ID is required");
-        }
-        return await bookRepository.findByID(id);
+    async getBookByBookId(bookId) {
+        if (!bookId) throw new Error("Book ID is required");
+
+        return await bookRepository.findByID({id: bookId, lean: true });
     },
 
-    async updateDetails(data) {
-        if(!data.id){
-            throw new Error("Book ID is required.");
+    async updateDetails(bookId, userId, body) {
+        if (!bookId) throw new Error("Book ID is required.");
+        if (!userId) throw new Error("User ID is required");
+
+        const existing = await bookRepository.findByID({id: bookId});
+        if (!existing) throw new Error("Book not found");
+
+        const ownerId = String(existing.bookOwner?._id ?? existing.bookOwner);
+        if (!ownerId.equals(userId)) throw new Error("You can't edit a book that doesn't belong to you.");
+
+        const updates = {};
+        if (body.bookTitle != null) updates.bookTitle = String(body.bookTitle).trim();
+        if (body.bookAuthor != null) updates.bookAuthor = String(body.bookAuthor).trim();
+        if (body.description != null) updates.description = String(body.description).trim();
+
+        if (Array.isArray(body.genre)) {
+            updates.genre = body.genre
+                .map((g) => String(g).trim())
+                .filter(Boolean);
         }
-        if(!data.userId) {
-            throw new Error("User ID is required");
+        if (body.condition != null) updates.condition = body.condition;
+        if (body.ownerNote != null) updates.ownerNote = String(body.ownerNote).trim();
+
+        if (body.bookImage !== undefined) {
+            updates.bookImage =
+                body.bookImage === "" || body.bookImage == null
+                    ? null
+                    : String(body.bookImage);
         }
-        const book = bookRepository.findByID(id);
-        if(book.bookOwner != data.userId){
-            throw new Error("You can't edit a book that doesn't belong to you.");
-        }
-        const { id } = data;
-        return await bookRepository.updateBook(data, id);
+        if (body.isAvailable !== undefined) updates.isAvailable = Boolean(body.isAvailable);
+        return await bookRepository.updateBook(bookId, updates);
+    },
+    
+
+    async toggleAvailability(bookId, userId) {
+        if (!bookId) throw new Error("Book ID is required.");
+        if (!userId) throw new Error("User ID is required");
+
+        const existing = await bookRepository.findByID({ id: bookId });
+        if (!existing) throw new Error("Book not found");
+
+        const ownerId = String(existing.bookOwner?._id ?? existing.bookOwner);
+        if (ownerId !== String(userId)) throw new Error("You can't change availability for a book that doesn't belong to you.");
+
+        const updated = await bookRepository.toggleAvailability({ bookId });
+        if (!updated) throw new Error("Book not found");
+        return updated;
     },
 
-    async deleteBook(bookId, userId){
-        if (!bookId) {
-            throw new Error("Book ID is required");
+
+    async deleteBook(bookId, userId) {
+        if (!bookId) throw new Error("Book ID is required");
+        const book = await bookRepository.findByID({id: bookId});
+        if (!book) throw new Error("Book not found");
+
+        const ownerId = String(book.bookOwner?._id ?? book.bookOwner);
+        if (ownerId !== String(userId)  /* or if not admin */) {
+            throw new Error("You can't delete a book that doesn't belong to you.");
         }
-        const book = bookRepository.findByID(bookId);
-        if(book.bookOwner != userId /* or if not admin */){
-            throw new Error("You can't edit a book that doesn't belong to you.");
+
+        const session = await mongoose.startSession();
+        try{
+            await session.withTransaction(async () => {
+                await bookRepository.deleteBook(bookId, session);
+
+                await requestRepository.cancelAllRequestsForBook(bookId, session);
+            });
+            return { success: true, message: "Book and associated requests cancelled." };
+        }catch{
+            console.error("Deletion/Cancellation transaction failed:", error);
+            throw error;
+        }finally{
+            session.endSession();
         }
-        return await bookRepository.delete(bookId);
     },
 
-    searchBooksFromMock(searchTerm) {
-        const normalizedTerm = String(searchTerm ?? "").trim().toLowerCase();
-        const filePath = new URL("../mock/books.json", import.meta.url);
-        const mockBooks = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-
-        if (!normalizedTerm) {
-            return mockBooks;
-        }
-
-        return mockBooks.filter((book) => {
-            const haystack = [
-                book.title,
-                book.author,
-                book.genre,
-                book.description,
-            ]
-                .join(" ")
-                .toLowerCase();
-
-            return haystack.includes(normalizedTerm);
-        });
+    async searchBooks(searchTerm) {
+        const raw = String(searchTerm ?? "").trim()
+        if(!raw) return this.getAllBooks();
+        
+        return await bookRepository.searchBook(raw);
     },
-
 };
 export default BookService;

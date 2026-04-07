@@ -2,6 +2,12 @@ import User from "../models/user.js";
 import Book from "../models/book.js";
 import Request from "../models/request.js";
 
+/* 
+TODO: 
+  - Dataflow is Route -> Controller -> Service -> Repository
+  - Move db queries to Admin Repository
+*/
+
 const AdminController = {
   async listUsers(req, res) {
     try {
@@ -98,7 +104,7 @@ const AdminController = {
       const user = await User.findByIdAndUpdate(
         req.params.id,
         { isSuspended: true },
-        { new: true }
+        { returnDocument: "after" }
       )
         .select("-passwordHash")
         .lean();
@@ -114,7 +120,7 @@ const AdminController = {
       const user = await User.findByIdAndUpdate(
         req.params.id,
         { isSuspended: false },
-        { new: true }
+        { returnDocument: "after" }
       )
         .select("-passwordHash")
         .lean();
@@ -130,7 +136,7 @@ const AdminController = {
       const user = await User.findByIdAndUpdate(
         req.params.id,
         { isBanned: true },
-        { new: true }
+        { returnDocument: "after" }
       )
         .select("-passwordHash")
         .lean();

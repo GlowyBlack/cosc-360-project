@@ -5,14 +5,15 @@ import { requireAuth } from "../middleware/auth.js";
 const router = express.Router();
 
 router.post('/', requireAuth, bookController.createBook);
-
 router.get('/', bookController.getAllBooks);
-router.get('/me', bookController.findBooksByUserId);
-router.get('/search', bookController.searchBooks);
+router.get('/meta/genres', bookController.getBookGenres);
+router.get('/me', requireAuth, bookController.findBooksByUserId);
 router.get('/user/:userId', bookController.findBooksByUserId);
-router.get('/:id', bookController.getBookByBookId);
+router.get('/search', bookController.searchBooks);
+router.post('/:bookId/toggle-availability', requireAuth, bookController.toggleAvailability);
+router.get('/:bookId', bookController.getBookByBookId);
 
-router.patch('/:id', bookController.updateDetails);
-router.delete('/:id', bookController.deleteBook);
+router.patch('/:bookId', requireAuth, bookController.updateDetails);
+router.delete('/:bookId', requireAuth, bookController.deleteBook);
 
 export default router

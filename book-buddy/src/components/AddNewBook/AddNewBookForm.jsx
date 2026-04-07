@@ -11,6 +11,7 @@ function AddNewBookForm() {
   const [genre, setGenre] = useState("Fiction");
   const [conditionValue, setConditionValue] = useState(3);
   const [description, setDescription] = useState("");
+  const [ownerNote, setOwnerNote] = useState("");
   const [isAvailable, setIsAvailable] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -33,11 +34,12 @@ function AddNewBookForm() {
     setSubmitError("");
     try {
       const payload = {
-        book_title: bookTitle.trim(),
-        book_author: bookAuthor.trim(),
+        bookTitle: bookTitle.trim(),
+        bookAuthor: bookAuthor.trim(),
         book_image: bookImage.trim(),
         genre,
         description: description.trim(),
+        ownerNote: ownerNote.trim(),
         condition: conditionMap[conditionValue],
         is_available: isAvailable,
       };
@@ -150,11 +152,20 @@ function AddNewBookForm() {
         </div>
 
         <div className="form-group">
-          <label className="field-label">Description</label>
+          <label className="field-label">Book Summary</label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Tell others about this book..."
+            placeholder="Tell the next reader what this book is about..."
+          />
+        </div>
+
+        <div className="form-group">
+          <label className="field-label">Owner Note (State of Book)</label>
+          <textarea
+            value={ownerNote}
+            onChange={(e) => setOwnerNote(e.target.value)}
+            placeholder="Share wear details, markings, or anything the next reader should know..."
           />
         </div>
 

@@ -19,7 +19,7 @@
   height: 52px;
   padding: 0 1.25rem;
   background-color: var(--color-background);
-  border: 1px solid var(--color-surface-oatmeal);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   color: var(--color-on-surface);
   outline: none;
@@ -31,6 +31,6 @@
 }
 
 .text-field-input:focus {
-  border-color: var(--color-primary-terracotta);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary-terracotta) 10%, transparent);
+  border-color: var(--color-on-surface);
+  box-shadow: 0 0 0 3px rgba(18, 18, 18, 0.08);
 }

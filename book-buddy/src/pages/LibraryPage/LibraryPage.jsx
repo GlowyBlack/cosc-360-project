@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
-import API, { authHeader } from "../../config/api.js";
-import { toLibraryPageCardBook } from "../../commons/bookShared.js";
+import API, { authHeader, flashSessionExpired } from "../../config/api.js";
+import { toLibraryPageCardBook, getSessionUserId } from "../../commons/bookShared.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 
 import LibraryBookCard from "./LibraryBookCard.jsx";
@@ -17,36 +18,119 @@ const TABS = [
 
 export default function LibraryPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("my");
+  const [togglingBookId, setTogglingBookId] = useState("");
+
+  const handleToggleAvailability = async (bookId) => {
+    setError("");
+    setTogglingBookId(bookId);
+    try {
+      const response = await fetch(
+        `${API}/books/${bookId}/toggle-availability`,
+        {
+          method: "POST",
+          headers: { ...authHeader() },
+        },
+      );
+      const data = await response.json().catch(() => ({}));
+      if (response.status === 401) {
+        flashSessionExpired();
+        logout();
+        return;
+      }
+      if (!response.ok) {
+        throw new Error(
+          data.message ?? data.detail ?? data.error ?? "Could not update availability",
+        );
+      }
+      const nextAvailable = data.isAvailable === true;
+      setBooks((prev) =>
+        prev.map((b) => {
+          const id = String(b._id ?? b.id);
+          if (id !== String(bookId)) return b;
+          return { ...b, isAvailable: nextAvailable };
+        }),
+      );
+    } catch (e) {
+      setError(e.message ?? "Could not update availability");
+    } finally {
+      setTogglingBookId("");
+    }
+  };
+
+  const handleDeleteBook = async (bookId, title) => {
+    const ok = window.confirm(
+      `Remove “${title}” from your library? This cannot be undone.`,
+    );
+    if (!ok) return;
+    setError("");
+    try {
+      const response = await fetch(`${API}/books/${bookId}`, {
+        method: "DELETE",
+        headers: { ...authHeader() },
+      });
+      if (response.status === 401) {
+        flashSessionExpired();
+        logout();
+        return;
+      }
+      if (!response.ok) {
+        const delData = await response.json().catch(() => ({}));
+        throw new Error(
+          delData.message ?? delData.detail ?? "Failed to delete book",
+        );
+      }
+      setBooks((prev) =>
+        prev.filter((b) => String(b._id ?? b.id) !== String(bookId)),
+      );
+    } catch (e) {
+      setError(e.message ?? "Failed to delete book");
+    }
+  };
+
+  const loadMyBooks = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(`${API}/books/me`, {
+        headers: {
+          ...authHeader(),
+        },
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.status === 401) {
+        flashSessionExpired();
+        logout();
+        return;
+      }
+      if (!response.ok) {
+        throw new Error(data.message ?? data.detail ?? "Failed to load your books");
+      }
+      setBooks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      setError(e.message ?? "Failed to load your books");
+    } finally {
+      setLoading(false);
+    }
+  }, [logout]);
 
   useEffect(() => {
-    async function loadMyBooks() {
-      setLoading(true);
-      setError("");
-      try {
-        const response = await fetch(`${API}/books/me`, {
-          headers: {
-            ...authHeader(),
-          },
-        });
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) {
-          throw new Error(data.message ?? data.detail ?? "Failed to load your books");
-        }
-        setBooks(Array.isArray(data) ? data : []);
-      } catch (e) {
-        setError(e.message ?? "Failed to load your books");
-      } finally {
-        setLoading(false);
-      }
-    }
-
     loadMyBooks();
-  }, []);
+  }, [loadMyBooks]);
+
+  useEffect(() => {
+    const socket = io("http://localhost:5001");
+    const sessionId = getSessionUserId(user);
+    if (sessionId) socket.emit("join_user_room", sessionId);
+    socket.on("request_update", () => {
+      loadMyBooks();
+    });
+    return () => socket.disconnect();
+  }, [user, loadMyBooks]);
 
   const cardBooks = useMemo(
     () => books.map((b) => toLibraryPageCardBook(b, user)),
@@ -114,13 +198,18 @@ export default function LibraryPage() {
               cardBooks.map((book) => (
                 <LibraryBookCard
                   key={book.id}
+                  bookId={book.id}
                   title={book.title}
                   author={book.author}
                   coverSrc={book.cover.src}
                   coverAlt={book.cover.alt}
                   isAvailable={book.isAvailable}
-                  requestCount={0}
-                  likeCount={0}
+                  onLoan={book.onLoan}
+                  requestCount={book.pendingRequestCount}
+                  availabilityBusy={togglingBookId === book.id}
+                  onToggleAvailability={() => handleToggleAvailability(book.id)}
+                  onEdit={() => navigate(`/library/edit/${book.id}`)}
+                  onDelete={() => void handleDeleteBook(book.id, book.title)}
                 />
               ))
             )}

@@ -2,7 +2,8 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import User from "../models/user.js";
 import Book from "../models/book.js";
-import userService from "../services/user-service.js";
+import Request from "../models/request.js";
+import userService from "../services/authService.js";
 
 dotenv.config();
 
@@ -12,6 +13,8 @@ const tempUsers = [
     lastName: "Example",
     email: "alice@example.com",
     password: "passwordAlice",
+    city: "Kelowna",
+    provinceState: "British Columbia",
     profileImage: null,
     bio: "Temporary seeded user Alice",
     role: "Registered",
@@ -23,6 +26,8 @@ const tempUsers = [
     lastName: "User",
     email: "admin@example.com",
     password: "passwordAdmin",
+    city: "Edmonton",
+    provinceState: "Alberta",
     profileImage: null,
     bio: "Admin user",
     role: "Admin",
@@ -34,6 +39,8 @@ const tempUsers = [
     lastName: "Doe",
     email: "john.doe@example.com",
     password: "passwordJohn",
+    city: "Miami",
+    provinceState: "Florida",
     profileImage: null,
     bio: "Temporary seeded user John Doe",
     role: "Registered",
@@ -45,6 +52,8 @@ const tempUsers = [
     lastName: "Smith",
     email: "jane.smith@example.com",
     password: "passwordJane",
+    city: "Victoria",
+    provinceState: "British Columbia",
     profileImage: null,
     bio: "Temporary seeded user Jane Smith",
     role: "Registered",
@@ -56,6 +65,8 @@ const tempUsers = [
     lastName: "Davis",
     email: "emily.davis@example.com",
     password: "passwordEmily",
+    city: "Calgary",
+    provinceState: "Alberta",
     profileImage: null,
     bio: "Temporary seeded user Emily Davis",
     role: "Registered",
@@ -67,6 +78,8 @@ const tempUsers = [
     lastName: "Brown",
     email: "robert.brown@example.com",
     password: "passwordRobert",
+    city: "Toronto",
+    provinceState: "Ontario",
     profileImage: null,
     bio: "Temporary seeded user Robert Brown",
     role: "Registered",
@@ -86,8 +99,8 @@ const tempBooks = [
   { bookTitle: "The Catcher in the Rye", bookAuthor: "J.D. Salinger", genre: ["Fiction"] },
   { bookTitle: "Brave New World", bookAuthor: "Aldous Huxley", genre: ["Sci-Fi", "Fiction"] },
   { bookTitle: "The Alchemist", bookAuthor: "Paulo Coelho", genre: ["Fiction", "Adventure"] },
-  { bookTitle: "Harry Potter and the Philosopher Stone", bookAuthor: "J.K. Rowling", genre: ["Action", "Fantasy", "Young Adult"] },
-  { bookTitle: "Percy Jackson and the Lightning Thief", bookAuthor: "Rick Riordan", genre: ["Fantasy", "Young Adult"] },
+  { bookTitle: "Harry Potter and the Philosopher Stone", bookAuthor: "J.K. Rowling", genre: ["Fantasy", "Young Adult"] },
+  { bookTitle: "Percy Jackson and the Lightning Thief", bookAuthor: "Rick Riordan", genre: ["Adventure", "Fantasy", "Young Adult"] },
   { bookTitle: "The Odyssey", bookAuthor: "Homer", genre: ["Adventure", "Fiction"] },
   { bookTitle: "Crime and Punishment", bookAuthor: "Fyodor Dostoevsky", genre: ["Thriller", "Fiction"] },
   { bookTitle: "The Book Thief", bookAuthor: "Markus Zusak", genre: ["Historical Fiction", "Young Adult"] },
@@ -105,7 +118,7 @@ const tempBooks = [
 async function seed() {
   try {
     const mongoURI = process.env.MONGO_URI;
-    if(!mongoURI){
+    if (!mongoURI) {
       throw new Error("MONGO_URI is missing")
     }
     await mongoose.connect(mongoURI);
@@ -113,6 +126,7 @@ async function seed() {
 
     await User.deleteMany({ email: { $in: tempUsers.map((u) => u.email) } });
     await Book.deleteMany({});
+    await Request.deleteMany({});
 
     // Create users through the same service used by auth (hashing + validation).
     await Promise.all(
@@ -122,6 +136,8 @@ async function seed() {
           lastName: u.lastName,
           email: u.email,
           password: u.password,
+          city: u.city,
+          provinceState: u.provinceState,
         });
 
         // Apply any extra seeded fields not handled by register().
@@ -163,13 +179,17 @@ async function seed() {
           bookImage: null,
           description: null,
           condition: "Good",
-          onwerNote: "",
+          ownerNote: "",
           isAvailable: true,
           bookOwner: user._id,
         });
       }
 
       console.log(`${user.username} assigned ${count} unique books`);
+    }
+    for (let i = allBooks.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allBooks[i], allBooks[j]] = [allBooks[j], allBooks[i]];
     }
 
     await Book.insertMany(allBooks);

@@ -10,4 +10,11 @@ const RequestSchema = new mongoose.Schema({
     status: {type: String, enum: ["Pending", "Accepted", "Declined", "Returned", "Cancelled"], default: "Pending"},
 }, { timestamps: true });
 
+RequestSchema.index(
+    { bookId: 1, requesterId: 1 },
+    {
+        unique: true,
+        partialFilterExpression: { status: "Pending" },
+    }
+);
 export default mongoose.model("Request", RequestSchema);

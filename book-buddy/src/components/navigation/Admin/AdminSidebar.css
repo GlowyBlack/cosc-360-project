@@ -2,8 +2,8 @@
   width: 100%;
   max-width: 260px;
   min-height: 100vh;
-  background-color: var(--color-surface-oatmeal);
-  border-right: 1px solid color-mix(in srgb, var(--color-surface-oatmeal) 80%, #000);
+  background-color: var(--color-surface-container);
+  border-right: 1px solid var(--color-border);
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
@@ -38,7 +38,7 @@
 
 .admin-sidebar-link--active {
   background-color: #fff;
-  color: var(--color-primary-terracotta);
+  color: var(--color-on-surface);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
@@ -63,6 +63,6 @@
 }
 
 .admin-sidebar-logout:hover {
-  color: var(--color-primary-terracotta);
+  color: var(--color-on-surface);
   background-color: color-mix(in srgb, #fff 60%, transparent);
 }
