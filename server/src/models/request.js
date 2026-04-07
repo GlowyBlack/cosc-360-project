@@ -15,7 +15,7 @@ RequestSchema.index(
     { 
         unique: true, 
         partialFilterExpression: { 
-            status: { $in: ["Pending", "Accepted"] } 
+            status: { $in: ["Pending",] } 
         } 
     }
 );

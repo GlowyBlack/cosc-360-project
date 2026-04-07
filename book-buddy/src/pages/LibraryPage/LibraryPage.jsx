@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import API, { authHeader, flashSessionExpired } from "../../config/api.js";
-import { toLibraryPageCardBook } from "../../commons/bookShared.js";
+import { toLibraryPageCardBook, getSessionUserId } from "../../commons/bookShared.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 
 import LibraryBookCard from "./LibraryBookCard.jsx";
@@ -23,35 +24,45 @@ export default function LibraryPage() {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("my");
 
-  useEffect(() => {
-    async function loadMyBooks() {
-      setLoading(true);
-      setError("");
-      try {
-        const response = await fetch(`${API}/books/me`, {
-          headers: {
-            ...authHeader(),
-          },
-        });
-        const data = await response.json().catch(() => ({}));
-        if (response.status === 401) {
-          flashSessionExpired();
-          logout();
-          return;
-        }
-        if (!response.ok) {
-          throw new Error(data.message ?? data.detail ?? "Failed to load your books");
-        }
-        setBooks(Array.isArray(data) ? data : []);
-      } catch (e) {
-        setError(e.message ?? "Failed to load your books");
-      } finally {
-        setLoading(false);
+  const loadMyBooks = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(`${API}/books/me`, {
+        headers: {
+          ...authHeader(),
+        },
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.status === 401) {
+        flashSessionExpired();
+        logout();
+        return;
       }
+      if (!response.ok) {
+        throw new Error(data.message ?? data.detail ?? "Failed to load your books");
+      }
+      setBooks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      setError(e.message ?? "Failed to load your books");
+    } finally {
+      setLoading(false);
     }
+  }, [logout]);
 
+  useEffect(() => {
     loadMyBooks();
-  }, []);
+  }, [loadMyBooks]);
+
+  useEffect(() => {
+    const socket = io("http://localhost:5001");
+    const sessionId = getSessionUserId(user);
+    if (sessionId) socket.emit("join_user_room", sessionId);
+    socket.on("request_update", () => {
+      loadMyBooks();
+    });
+    return () => socket.disconnect();
+  }, [user, loadMyBooks]);
 
   const cardBooks = useMemo(
     () => books.map((b) => toLibraryPageCardBook(b, user)),
@@ -130,7 +141,7 @@ export default function LibraryPage() {
                   onEdit={() => navigate(`/library/edit/${book.id}`)}
                   onDelete={async () => {
                     const ok = window.confirm(
-                      `Remove “${book.title}” from your library? This cannot be undone.`,
+                      `Remove "${book.title}" from your library? This cannot be undone.`,
                     );
                     if (!ok) return;
                     try {

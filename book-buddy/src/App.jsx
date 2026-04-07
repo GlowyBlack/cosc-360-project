@@ -1,13 +1,15 @@
 import { Routes, Route } from "react-router-dom";
-import RegisterPage from "./pages/RegisterPage/RegisterPage.jsx";
-import LoginPage from "./pages/LoginPage/LoginPage.jsx";
-import DiscoverPage from "./pages/DiscoverPage/DiscoverPage.jsx";
-import LibraryPage from "./pages/LibraryPage/LibraryPage.jsx";
 import AddBookPage from "./pages/AddBookPage/AddBookPage.jsx";
-import EditBookPage from "./pages/EditBookPage/EditBookPage.jsx";
-import SearchResultsPage from "./pages/SearchResultsPage/SearchResultsPage.jsx";
 import BookDetailPage from "./pages/BookDetailPage/BookDetailPage.jsx";
+import DiscoverPage from "./pages/DiscoverPage/DiscoverPage.jsx";
+import EditBookPage from "./pages/EditBookPage/EditBookPage.jsx";
+import LibraryPage from "./pages/LibraryPage/LibraryPage.jsx";
+import LoginPage from "./pages/LoginPage/LoginPage.jsx";
+import MessagesPage from "./pages/MessagesPage/MessagesPage.jsx";
+import RegisterPage from "./pages/RegisterPage/RegisterPage.jsx";
 import RequestPage from "./pages/RequestPage/RequestPage.jsx";
+import SearchResultsPage from "./pages/SearchResultsPage/SearchResultsPage.jsx";
+
 
 
 function App() {
@@ -23,6 +25,8 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/library" element={<LibraryPage />} />
         <Route path="/book/:bookId" element={<BookDetailPage />} />
+        <Route path="/messages" element={<MessagesPage />} />
+        
       </Routes>
     </>
   );

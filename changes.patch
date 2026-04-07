@@ -1,0 +1,315 @@
+diff --git a/book-buddy/src/App.jsx b/book-buddy/src/App.jsx
+index f33b486..0e361b5 100644
+--- a/book-buddy/src/App.jsx
++++ b/book-buddy/src/App.jsx
+@@ -1,13 +1,14 @@
+ import { Routes, Route } from "react-router-dom";
+-import RegisterPage from "./pages/RegisterPage/RegisterPage.jsx";
+-import LoginPage from "./pages/LoginPage/LoginPage.jsx";
+-import DiscoverPage from "./pages/DiscoverPage/DiscoverPage.jsx";
+-import LibraryPage from "./pages/LibraryPage/LibraryPage.jsx";
+ import AddBookPage from "./pages/AddBookPage/AddBookPage.jsx";
+-import EditBookPage from "./pages/EditBookPage/EditBookPage.jsx";
+-import SearchResultsPage from "./pages/SearchResultsPage/SearchResultsPage.jsx";
+ import BookDetailPage from "./pages/BookDetailPage/BookDetailPage.jsx";
++import DiscoverPage from "./pages/DiscoverPage/DiscoverPage.jsx";
++import EditBookPage from "./pages/EditBookPage/EditBookPage.jsx";
++import LibraryPage from "./pages/LibraryPage/LibraryPage.jsx";
++import LoginPage from "./pages/LoginPage/LoginPage.jsx";
++import MessagesPage from "./pages/MessagesPage/MessagesPage.jsx";
++import RegisterPage from "./pages/RegisterPage/RegisterPage.jsx";
+ import RequestPage from "./pages/RequestPage/RequestPage.jsx";
++import SearchResultsPage from "./pages/SearchResultsPage/SearchResultsPage.jsx";
+ 
+ 
+ function App() {
+@@ -23,6 +24,7 @@ function App() {
+         <Route path="/login" element={<LoginPage />} />
+         <Route path="/library" element={<LibraryPage />} />
+         <Route path="/book/:bookId" element={<BookDetailPage />} />
++        <Route path="/messages" element={<MessagesPage />} />
+       </Routes>
+     </>
+   );
+diff --git a/server/src/controllers/messageController.js b/server/src/controllers/messageController.js
+index b4ee8db..738794b 100644
+--- a/server/src/controllers/messageController.js
++++ b/server/src/controllers/messageController.js
+@@ -1,40 +1,71 @@
+ import messageService from "../services/messageService.js";
+  
+ const messageController = {
++    // GET /messages/inbox
++    async getInbox(req, res) {
++        try {
++            const userId = req.user?._id ?? req.user?.id;
++            if (!userId) return res.status(401).json({ message: "Not authenticated" });
++            const inbox = await messageService.getInbox(userId);
++            return res.status(200).json(inbox);
++        } catch (e) {
++            return res.status(500).json({ message: e.message });
++        }
++    },
++
+     // GET /messages/:requestId
+     async getThread(req, res) {
+         try {
++            const userId = req.user?._id ?? req.user?.id;
+             const { requestId } = req.params;
+-            const messages = await messageService.getThread(requestId);
++            const messages = await messageService.getThread(requestId, userId);
+             return res.status(200).json(messages);
+         } catch (e) {
++            const code = e.statusCode ?? 500;
++            if (code === 404 || code === 403) {
++                return res.status(code).json({ message: e.message });
++            }
+             return res.status(500).json({ message: e.message });
+         }
+     },
+- 
++
+     // POST /messages
+     // body: { requestId, content }
+     async send(req, res) {
+         try {
+             const { requestId, content } = req.body;
+-            const senderId = req.user._id; // comes from requireAuth middleware (JWT)
++            const senderId = req.user?._id ?? req.user?.id;
+             const message = await messageService.send({ requestId, senderId, content });
+             return res.status(201).json(message);
+         } catch (e) {
++            if (e.message.toLowerCase().includes("not found"))
++                return res.status(404).json({message: e.message})
++            if (e.message.toLowerCase().includes("not allowed"))
++                return res.status(403).json({message: e.message})
++            
++            const code = e.statusCode;
++            if (code === 404 || code === 403) {
++                return res.status(code).json({ message: e.message });
++            }
+             return res.status(400).json({ message: e.message });
+         }
+     },
+- 
++
+     // PATCH /messages/:requestId/read
+     async markAsRead(req, res) {
+         try {
++            const userId = req.user?._id ?? req.user?.id;
+             const { requestId } = req.params;
+-            await messageService.markAsRead(requestId);
++            await messageService.markAsRead(requestId, userId);
+             return res.status(200).json({ success: true });
+         } catch (e) {
++            const code = e.statusCode ?? 500;
++            if (code === 404 || code === 403) {
++                return res.status(code).json({ message: e.message });
++            }
+             return res.status(500).json({ message: e.message });
+         }
+     },
+ };
+- 
++
+ export default messageController;
+\ No newline at end of file
+diff --git a/server/src/repositories/messageRepository.js b/server/src/repositories/messageRepository.js
+index 310bbd8..af77b6e 100644
+--- a/server/src/repositories/messageRepository.js
++++ b/server/src/repositories/messageRepository.js
+@@ -1,23 +1,62 @@
++import mongoose from "mongoose";
+ import Message from "../models/message.js";
+-/* 
+-TODO: 
+-*/
++
++function ensureObjectId(id) {
++    if (id instanceof mongoose.Types.ObjectId) return id;
++    return new mongoose.Types.ObjectId(String(id));
++}
++
+ const messageRepository = {
+     // fetch every message for a given requestId, oldest first
+     async findByRequestId(requestId) {
+-        return Message.find({ requestId }).sort({ createdAt: 1 });
++        return Message.find({ requestId })
++            .populate({ path: "senderId", select: "username profileImage" })
++            .sort({ createdAt: 1 });
+     },
+- 
++
++    async findByIdWithSender(messageId) {
++        return Message.findById(messageId)
++            .populate({ path: "senderId", select: "username profileImage" })
++            .exec();
++    },
++
+     // insert a single new message document
+     async create(data) {
+         const message = new Message(data);
+         return message.save();
+     },
+- 
+-    // set isRead: true on every message in this thread
+-    async markThreadAsRead(requestId) {
+-        return Message.updateMany({ requestId }, { $set: { isRead: true } });
++
++    // Marks messages the reader received (not sent by them) as read.
++    async markIncomingAsRead(requestId, readerId) {
++        return Message.updateMany(
++            { requestId, senderId: { $ne: readerId }, isRead: false },
++            { $set: { isRead: true } },
++        );
++    },
++
++    // find newest message (preview + time) + count of unread messages
++    async findLastMessageAndUnreadCountPerRequest(requestIds, readerUserId) {
++        if (!requestIds?.length) return [];
++
++        const inTheseRequests = { $match: { requestId: { $in: requestIds.map(ensureObjectId) } } };
++        const newestFirst = { $sort: { createdAt: -1 } };
++        const readerId = ensureObjectId(readerUserId);
++        // Unread *for this user* = not written by them, and still isRead: false
++        const isUnreadIncoming = {
++            $and: [{ $eq: ["$isRead", false] }, { $ne: ["$senderId", readerId] }],
++        };
++
++        const oneRowPerRequest = {
++            $group: {
++                _id: "$requestId",
++                lastContent: { $first: "$content" },
++                lastCreatedAt: { $first: "$createdAt" },
++                unreadCount: { $sum: { $cond: [isUnreadIncoming, 1, 0] } },
++            },
++        };
++
++        return Message.aggregate([inTheseRequests, newestFirst, oneRowPerRequest]);
+     },
+ };
+- 
++
+ export default messageRepository;
+\ No newline at end of file
+diff --git a/server/src/routes/messageRoute.js b/server/src/routes/messageRoute.js
+index e634acc..0109495 100644
+--- a/server/src/routes/messageRoute.js
++++ b/server/src/routes/messageRoute.js
+@@ -3,11 +3,12 @@ import { requireAuth } from "../middleware/auth.js";
+ import messageController from "../controllers/messageController.js";
+  
+ const router = express.Router();
+- 
+-// all three endpoints require the user to be logged in
+-router.get("/:requestId",       requireAuth, messageController.getThread);
+-router.post("/",                requireAuth, messageController.send);
+-router.patch("/:requestId/read",requireAuth, messageController.markAsRead);
++
++// all endpoints require the user to be logged in
++router.get("/inbox", requireAuth, messageController.getInbox);
++router.post("/", requireAuth, messageController.send);
++router.get("/:requestId", requireAuth, messageController.getThread);
++router.patch("/:requestId/read", requireAuth, messageController.markAsRead);
+  
+ export default router;
+  
+\ No newline at end of file
+diff --git a/server/src/services/messageService.js b/server/src/services/messageService.js
+index 66cc658..570fb7e 100644
+--- a/server/src/services/messageService.js
++++ b/server/src/services/messageService.js
+@@ -1,7 +1,30 @@
+ import messageRepository from "../repositories/messageRepository.js";
++import requestRepository from "../repositories/requestRepository.js";
++
++function isRequestParticipant(requestDoc, userId) {
++    if (!requestDoc || userId == null) return false;
++    const u = String(userId);
++    return (
++        String(requestDoc.bookOwner) === u || String(requestDoc.requesterId) === u
++    );
++}
+ 
+ const messageService = {
+-    async getThread(requestId) {
++    async assertThreadAccess(requestId, userId) {
++        const request = await requestRepository.findRequestById({ id: requestId });
++        if (!request) {
++            throw new Error("Request not found");
++            
++        }
++        if (!isRequestParticipant(request, userId)) {
++            throw new Error("Not allowed to access this thread");
++            
++        }
++        return request;
++    },
++
++    async getThread(requestId, userId) {
++        await this.assertThreadAccess(requestId, userId);
+         return messageRepository.findByRequestId(requestId);
+     },
+ 
+@@ -9,11 +32,58 @@ const messageService = {
+         if (!content || !content.trim()) {
+             throw new Error("Message content cannot be empty");
+         }
+-        return messageRepository.create({ requestId, senderId, content });
++        await this.assertThreadAccess(requestId, senderId);
++        const created = await messageRepository.create({ requestId, senderId, content });
++        return messageRepository.findByIdWithSender(created._id);
+     },
+ 
+-    async markAsRead(requestId) {
+-        return messageRepository.markThreadAsRead(requestId);
++    async markAsRead(requestId, readerId) {
++        await this.assertThreadAccess(requestId, readerId);
++        return messageRepository.markIncomingAsRead(requestId, readerId);
++    },
++
++    async getInbox(userId) {
++        if (!userId) throw new Error("User ID is required");
++        const requests = await requestRepository.findUserRequests(userId);
++        const requestIds = requests.map((r) => r._id);
++        const summaries = await messageRepository.findLastMessageAndUnreadCountPerRequest(
++            requestIds,
++            userId,
++        );
++        const byRequestId = new Map(
++            summaries.map((row) => [String(row._id), row]),
++        );
++
++        const threads = requests.map((reqDoc) => {
++            const idStr = String(reqDoc._id);
++            const row = byRequestId.get(idStr);
++            return {
++                requestId: idStr,
++                request: reqDoc,
++                lastMessagePreview: row?.lastContent ?? null,
++                lastMessageAt: row?.lastCreatedAt ?? null,
++                unreadCount: row?.unreadCount ?? 0,
++            };
++        });
++
++        threads.sort((a, b) => {
++            const ta = a.lastMessageAt
++                ? new Date(a.lastMessageAt).getTime()
++                : 0;
++            const tb = b.lastMessageAt
++                ? new Date(b.lastMessageAt).getTime()
++                : 0;
++            if (tb !== ta) return tb - ta;
++            const ua = new Date(
++                a.request.updatedAt ?? a.request.createdAt,
++            ).getTime();
++            const ub = new Date(
++                b.request.updatedAt ?? b.request.createdAt,
++            ).getTime();
++            return ub - ua;
++        });
++
++        return { threads };
+     },
+ };
+ 
