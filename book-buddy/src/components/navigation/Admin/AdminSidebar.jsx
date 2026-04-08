@@ -12,7 +12,11 @@ const items = [
 export default function AdminSidebar({ onLogout }) {
   return (
     <aside className="admin-sidebar" aria-label="Admin">
-      <p className="admin-sidebar-title">Admin</p>
+      <div className="admin-sidebar-brand">
+        <span className="admin-sidebar-brand-name">BookBuddy</span>
+        <span className="admin-sidebar-brand-suffix"> Admin</span>
+        <p className="admin-sidebar-title">System control</p>
+      </div>
       {items.map(({ to, label, icon, end }) => (
         <NavLink
           key={to}

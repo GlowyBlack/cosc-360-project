@@ -18,7 +18,7 @@ export default function RegisteredNav({
   requestPendingCount = 0,
 }) {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const counts = { messages: messageUnreadCount, requests: requestPendingCount };
 
   const handleLogout = () => {
@@ -53,6 +53,19 @@ export default function RegisteredNav({
                   <span className="reg-nav-label">{label}</span>
                 </NavLink>
               ))}
+              {user?.role === "Admin" ? (
+                <NavLink
+                  to="/admin"
+                  className={({ isActive }) =>
+                    `reg-nav-link reg-nav-link--admin ${isActive ? "reg-nav-link--active" : ""}`.trim()
+                  }
+                >
+                  <span className="reg-nav-icon-wrap">
+                    <MaterialIcon name="admin_panel_settings" className="reg-nav-icon" />
+                  </span>
+                  <span className="reg-nav-label">Admin</span>
+                </NavLink>
+              ) : null}
             </nav>
           </div>
           <div className="reg-nav-desktop-right">
@@ -81,13 +94,20 @@ export default function RegisteredNav({
       <div className="reg-nav-mobile-header">
         <div className="reg-nav-mobile-row">
           <span className="reg-nav-mobile-brand">BookBuddy</span>
-          <button
-            type="button"
-            className="reg-nav-logout"
-            onClick={handleLogout}
-          >
-            Log out
-          </button>
+          <div className="reg-nav-mobile-actions">
+            {user?.role === "Admin" ? (
+              <NavLink to="/admin" className="reg-nav-mobile-admin-link">
+                Admin
+              </NavLink>
+            ) : null}
+            <button
+              type="button"
+              className="reg-nav-logout"
+              onClick={handleLogout}
+            >
+              Log out
+            </button>
+          </div>
         </div>
       </div>
 
