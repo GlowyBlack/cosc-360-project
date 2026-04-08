@@ -8,6 +8,7 @@ const mainNavItems = [
   { to: "/library", label: "My Library", icon: "menu_book", badgeKey: null },
   { to: "/messages", label: "Messages", icon: "chat_bubble", badgeKey: "messages" },
   { to: "/requests", label: "Requests", icon: "sync_alt", badgeKey: "requests" },
+  { to: "/blogs", label: "Blogs", icon: "news", badgeKey: "blogs" },
 ];
 
 const profileNav = { to: "/profile", label: "Profile", icon: "person" };

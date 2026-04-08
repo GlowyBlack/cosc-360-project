@@ -36,12 +36,19 @@ const UserRepository = {
     }
 
     await user.save();
-
     return {
       user,
       favourited: !alreadyFavourited,
     };
-  }
+  },
+
+  async updateProfileById(id, updates) {
+    return User.findByIdAndUpdate(
+      id,
+      { $set: updates },
+      { returnDocument: "after", runValidators: true },
+    );
+  },
 };
 
 export default UserRepository;

@@ -9,6 +9,7 @@ import MessagesPage from "./pages/MessagesPage/MessagesPage.jsx";
 import RegisterPage from "./pages/RegisterPage/RegisterPage.jsx";
 import RequestPage from "./pages/RequestPage/RequestPage.jsx";
 import SearchResultsPage from "./pages/SearchResultsPage/SearchResultsPage.jsx";
+import ProfilePage from "./pages/ProfilePage/ProfilePage.jsx";
 
 function App() {
   return (
@@ -23,7 +24,8 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/library" element={<LibraryPage />} />
         <Route path="/book/:bookId" element={<BookDetailPage />} />
-        <Route path="/messages" element={<MessagesPage />} /> 
+        <Route path="/messages" element={<MessagesPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </>
   );

@@ -19,6 +19,10 @@ const BookRepository = {
         return await book.find({ bookOwner: userID }).sort({ createdAt: -1 });
     },
 
+    async countByOwner(userId) {
+        return await book.countDocuments({ bookOwner: userId });
+    },
+
     async findByID({ id, lean = false, session = null }) {
         let q = book.findById(id)
             .populate({ path: "bookOwner", select: "username location profileImage" });
