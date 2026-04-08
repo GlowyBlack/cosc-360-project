@@ -1,5 +1,7 @@
 import bcrypt from "bcryptjs";
 import UserRepository from "../repositories/userRepository.js";
+import bookRepository from "../repositories/bookRepository.js";
+import requestRepository from "../repositories/requestRepository.js";
 
 function sanitizeUser(userDoc) {
   return {
@@ -105,6 +107,14 @@ const AuthService = {
 
     const updated = await UserRepository.updateProfileById(id, updates);
     return sanitizeUser(updated);
+  },
+
+  async getProfileStats(userId) {
+    const booksListed = await bookRepository.countByOwner(userId);
+    const exchangesCompleted = await requestRepository.countCompletedExchangesForUser(userId);
+    const booksBorrowed = await requestRepository.countCompletedBorrowsAsBorrower(userId);
+   
+    return { booksListed, exchangesCompleted, booksBorrowed };
   },
 };
 

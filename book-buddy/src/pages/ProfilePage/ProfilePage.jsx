@@ -14,6 +14,12 @@ function formatMemberSince(value) {
   return date.toLocaleDateString(undefined, { month: "short", year: "numeric" });
 }
 
+function formatStatNumber(n) {
+  const num = Number(n);
+  if (!Number.isFinite(num)) return "0";
+  return num.toLocaleString();
+}
+
 export default function ProfilePage() {
   const { user, setSessionUser, logout } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
@@ -21,11 +27,53 @@ export default function ProfilePage() {
   const [photoDraft, setPhotoDraft] = useState("");
   const [saving, setSaving] = useState(false);
   const [errorText, setErrorText] = useState("");
+  const [stats, setStats] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState("");
 
   useEffect(() => {
     setBioDraft(String(user?.bio ?? ""));
     setPhotoDraft(String(user?.profileImage ?? ""));
   }, [user?.bio, user?.profileImage]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setStatsLoading(true);
+      setStatsError("");
+      try {
+        const response = await fetch(`${API}/auth/me/stats`, {
+          headers: { ...authHeader() },
+        });
+        const data = await response.json().catch(() => ({}));
+        if (response.status === 401) {
+          flashSessionExpired();
+          logout();
+          return;
+        }
+        if (!response.ok) {
+          throw new Error(data.detail ?? data.message ?? "Could not load stats");
+        }
+        if (!cancelled) {
+          setStats({
+            booksListed: data.booksListed ?? 0,
+            exchangesCompleted: data.exchangesCompleted ?? 0,
+            booksBorrowed: data.booksBorrowed ?? 0,
+          });
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setStats(null);
+          setStatsError(e.message ?? "Could not load stats");
+        }
+      } finally {
+        if (!cancelled) setStatsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [logout]);
 
   const displayName = useMemo(
     () => String(user?.username ?? "Reader"),
@@ -88,82 +136,110 @@ export default function ProfilePage() {
     <div className="profile-page">
       <Header variant="user" />
       <main className="profile-main">
-        <section className="profile-top-card" aria-label="Profile header">
-          <div className="profile-avatar-col">
-            {isEditing ? (
-              <AvatarUpload
-                key="editable-avatar"
-                value={photoDraft}
-                onChange={(next) => {
-                  setPhotoDraft(String(next ?? ""));
-                }}
-                label="Edit photo"
-              />
-            ) : (
-              <div className="profile-avatar-static" aria-label="Profile photo">
-                {photoDraft ? (
-                  <img src={photoDraft} alt={`${displayName} profile`} className="profile-avatar-img" />
-                ) : (
-                  <MaterialIcon
-                    name="account_circle"
-                    className="profile-avatar-icon"
-                    label="Default profile icon"
-                  />
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="profile-info-col">
-            <h1 className="profile-name">{displayName}</h1>
-            <p className="profile-member-since">
-              {memberSince ? `Member since ${memberSince}` : "Member"}
-            </p>
-
-            <label className="profile-bio-label" htmlFor="profile-bio">
-              Personal Bio
-            </label>
-            <textarea
-              id="profile-bio"
-              className="profile-bio-input"
-              value={bioDraft}
-              onChange={(e) => setBioDraft(e.target.value)}
-              readOnly={!isEditing}
-              maxLength={600}
-            />
-
-            <div className="profile-actions">
-              {!isEditing ? (
-                <button
-                  type="button"
-                  className="profile-btn profile-btn-primary"
-                  onClick={() => setIsEditing(true)}
-                >
-                  Edit profile
-                </button>
+        <section className="profile-sheet" aria-label="My profile">
+          <div className="profile-sheet-header">
+            <div className="profile-avatar-col">
+              {isEditing ? (
+                <AvatarUpload
+                  key="editable-avatar"
+                  value={photoDraft}
+                  onChange={(next) => {
+                    setPhotoDraft(String(next ?? ""));
+                  }}
+                  label="Edit photo"
+                />
               ) : (
-                <>
-                  <button
-                    type="button"
-                    className="profile-btn profile-btn-primary"
-                    onClick={onSave}
-                    disabled={!hasChanges || saving}
-                  >
-                    {saving ? "Saving..." : "Save changes"}
-                  </button>
-                  <button
-                    type="button"
-                    className="profile-btn profile-btn-secondary"
-                    onClick={onCancel}
-                    disabled={saving}
-                  >
-                    Cancel
-                  </button>
-                </>
+                <div className="profile-avatar-static" aria-label="Profile photo">
+                  {photoDraft ? (
+                    <img src={photoDraft} alt={`${displayName} profile`} className="profile-avatar-img" />
+                  ) : (
+                    <MaterialIcon
+                      name="account_circle"
+                      className="profile-avatar-icon"
+                      label="Default profile icon"
+                    />
+                  )}
+                </div>
               )}
             </div>
 
-            {errorText ? <p className="profile-error">{errorText}</p> : null}
+            <div className="profile-info-col">
+              <h1 className="profile-name">{displayName}</h1>
+              <p className="profile-member-since">
+                {memberSince ? `Member since ${memberSince}` : "Member"}
+              </p>
+
+              <label className="profile-bio-label" htmlFor="profile-bio">
+                Personal Bio
+              </label>
+              <textarea
+                id="profile-bio"
+                className="profile-bio-input"
+                value={bioDraft}
+                onChange={(e) => setBioDraft(e.target.value)}
+                readOnly={!isEditing}
+                maxLength={600}
+              />
+
+              <div className="profile-actions">
+                {!isEditing ? (
+                  <button
+                    type="button"
+                    className="profile-btn profile-btn-primary"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    Edit profile
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      className="profile-btn profile-btn-primary"
+                      onClick={onSave}
+                      disabled={!hasChanges || saving}
+                    >
+                      {saving ? "Saving..." : "Save changes"}
+                    </button>
+                    <button
+                      type="button"
+                      className="profile-btn profile-btn-secondary"
+                      onClick={onCancel}
+                      disabled={saving}
+                    >
+                      Cancel
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {errorText ? <p className="profile-error">{errorText}</p> : null}
+            </div>
+          </div>
+
+          <div className="profile-stats-wrap" aria-label="Your activity">
+            {statsLoading ? (
+              <p className="profile-stats-hint">Loading stats…</p>
+            ) : statsError ? (
+              <p className="profile-error profile-stats-error">{statsError}</p>
+            ) : (
+              <ul className="profile-stats-grid">
+                <li className="profile-stat-card">
+                  <MaterialIcon name="menu_book" className="profile-stat-icon" aria-hidden />
+                  <p className="profile-stat-value">{formatStatNumber(stats?.booksListed)}</p>
+                  <p className="profile-stat-label">Books listed</p>
+                </li>
+                <li className="profile-stat-card">
+                  <MaterialIcon name="sync_alt" className="profile-stat-icon" aria-hidden />
+                  <p className="profile-stat-value">{formatStatNumber(stats?.exchangesCompleted)}</p>
+                  <p className="profile-stat-label">Exchanges completed</p>
+                </li>
+                <li className="profile-stat-card">
+                  <MaterialIcon name="assignment" className="profile-stat-icon" aria-hidden />
+                  <p className="profile-stat-value">{formatStatNumber(stats?.booksBorrowed)}</p>
+                  <p className="profile-stat-label">Books borrowed</p>
+                </li>
+              </ul>
+            )}
           </div>
         </section>
       </main>
