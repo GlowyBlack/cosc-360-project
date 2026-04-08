@@ -27,6 +27,9 @@
   /* Nav/Footer */
   --color-footer: #ffffff;
 
+  --color-admin-canvas: #f2efe9;
+  --color-admin-brand: #c25c2a;
+
   /* Status */
   --color-success: #2d6a4f;
   --color-warning: #b57d1a;

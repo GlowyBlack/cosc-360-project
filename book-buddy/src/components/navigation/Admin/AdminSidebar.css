@@ -10,13 +10,31 @@
   gap: 0.5rem;
 }
 
+.admin-sidebar-brand {
+  margin: 0 0 1.25rem;
+}
+
+.admin-sidebar-brand-name {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: var(--color-admin-brand);
+}
+
+.admin-sidebar-brand-suffix {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+}
+
 .admin-sidebar-title {
-  font-size: 12px;
+  font-size: 0.625rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  color: var(--color-outline);
-  margin: 0 0 1rem;
+  color: var(--color-on-surface-variant);
+  margin: 0.35rem 0 0;
 }
 
 .admin-sidebar-link {
@@ -37,9 +55,9 @@
 }
 
 .admin-sidebar-link--active {
-  background-color: #fff;
-  color: var(--color-on-surface);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  background-color: var(--color-surface);
+  color: var(--color-admin-brand);
+  box-shadow: var(--shadow-card);
 }
 
 .admin-sidebar-link-icon {
