@@ -1,10 +1,10 @@
-import userService from "../services/authService.js";
+import authService from "../services/authService.js";
 import { signAccessToken } from "../middleware/auth.js";
 
 const AuthController = {
   async register(req, res) {
     try {
-      const user = await userService.register(req.body);
+      const user = await authService.register(req.body);
       return res.status(201).json(user);
     } catch (e) {
       const status =
@@ -32,7 +32,7 @@ const AuthController = {
 
   async login(req, res) {
     try {
-      const user = await userService.login(req.body);
+      const user = await authService.login(req.body);
       const token = signAccessToken({
         id: user.id,
         role: user.role,
@@ -60,9 +60,24 @@ const AuthController = {
   },
 
   async me(req, res) {
-    const user = await userService.getById(req.user._id || req.user.id);
+    const user = await authService.getById(req.user._id || req.user.id);
     if (!user) return res.status(404).json({ detail: "User not found" });
     return res.json(user);
+  },
+
+  async updateMe(req, res) {
+    try {
+      const userId = req.user?._id ?? req.user?.id;
+      if (!userId) return res.status(401).json({ detail: "Not authenticated" });
+      const updated = await authService.updateProfile(userId, req.body ?? {});
+      if (!updated) return res.status(404).json({ detail: "User not found" });
+      return res.status(200).json(updated);
+    } catch (e) {
+      if (e.message === "bio_too_long") {
+        return res.status(400).json({ detail: "Bio must be 600 characters or less" });
+      }
+      return res.status(500).json({ detail: "Server Error" });
+    }
   },
 };
 
