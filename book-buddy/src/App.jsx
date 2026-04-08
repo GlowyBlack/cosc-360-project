@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import AddBookPage from "./pages/AddBookPage/AddBookPage.jsx";
+import BlogsPage from "./pages/BlogsPage/BlogsPage.jsx";
 import BookDetailPage from "./pages/BookDetailPage/BookDetailPage.jsx";
 import DiscoverPage from "./pages/DiscoverPage/DiscoverPage.jsx";
 import EditBookPage from "./pages/EditBookPage/EditBookPage.jsx";
@@ -25,6 +26,7 @@ function App() {
         <Route path="/library" element={<LibraryPage />} />
         <Route path="/book/:bookId" element={<BookDetailPage />} />
         <Route path="/messages" element={<MessagesPage />} />
+        <Route path="/blogs" element={<BlogsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </>
