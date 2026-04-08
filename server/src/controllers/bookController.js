@@ -86,14 +86,17 @@ const BookController = {
             return res.status(500).json({ message: "Server Error", error: error.message });
         }
     },
-
+//passing to service
     async updateDetails(req, res) {
         try {
+            //book to update
             const { bookId } = req.params;
+            //logged in user
             const userId = req.user?._id ?? req.user?.id;
             if (!userId) {
                 return res.status(401).json({ message: "Unauthorized" });
             }
+            //new field values the frontend sent
             const book = await bookService.updateDetails(bookId, userId, req.body);
             return res.status(200).json(book);
         } catch (error) {
