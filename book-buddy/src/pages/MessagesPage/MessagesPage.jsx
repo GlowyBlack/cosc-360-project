@@ -34,6 +34,43 @@ function formatRelative(value) {
   return `${days}d`;
 }
 
+function requestInboxTab(request) {
+  const status = String(request?.status ?? "").toLowerCase();
+  const type = String(request?.type ?? "").toLowerCase();
+
+  if (status === "cancelled") return "ongoing";
+  if (status === "pending") return "ongoing";
+  if (status === "declined" || status === "returned") return "archived";
+
+  if (status === "accepted") {
+    if (type === "borrow") {
+      const end = request?.returnBy ? new Date(request.returnBy).getTime() : NaN;
+      if (!Number.isFinite(end)) return "ongoing";
+      return Date.now() > end ? "archived" : "ongoing";
+    }
+    return "archived";
+  }
+  return "ongoing";
+}
+
+function requestAllowsSending(request) {
+  const status = String(request?.status ?? "").toLowerCase();
+  const type = String(request?.type ?? "").toLowerCase();
+
+  if (status === "cancelled") return false;
+  if (status === "pending") return true;
+  if (status === "declined" || status === "returned") return false;
+
+  if (status === "accepted") {
+    if (type === "borrow") {
+      if (!request?.returnBy) return true;
+      return new Date() <= new Date(request.returnBy);
+    }
+    return false;
+  }
+  return false;
+}
+
 function threadFromRequest(request, sessionUserId) {
   const requestId = idString(request._id ?? request.id);
   const ownerId = idString(request.bookOwner);
@@ -72,6 +109,8 @@ export default function MessagesPage() {
   const [threads, setThreads] = useState([]);
   const [threadLoading, setThreadLoading] = useState(true);
   const [threadError, setThreadError] = useState("");
+  const [inboxTab, setInboxTab] = useState("ongoing");
+  const [listSearch, setListSearch] = useState("");
 
   const [activeThreadId, setActiveThreadId] = useState("");
   const [messages, setMessages] = useState([]);
@@ -101,7 +140,11 @@ export default function MessagesPage() {
         .map((row) => threadFromInboxRow(row, sessionUserId))
         .filter((thread) => thread.requestId);
       setThreads(normalized);
-      setActiveThreadId((prev) => prev || normalized[0]?.requestId || "");
+      setActiveThreadId((prev) => {
+        if (prev) return prev;
+        const ongoingFirst = normalized.find((t) => requestInboxTab(t.request) === "ongoing");
+        return ongoingFirst?.requestId ?? normalized[0]?.requestId ?? "";
+      });
     } catch (error) {
       setThreads([]);
       setThreadError(error.message ?? "Could not load conversations");
@@ -184,9 +227,42 @@ export default function MessagesPage() {
     [threads, activeThreadId],
   );
 
+  const ongoingThreads = useMemo(
+    () => threads.filter((t) => requestInboxTab(t.request) === "ongoing"),
+    [threads],
+  );
+  const archivedThreads = useMemo(
+    () => threads.filter((t) => requestInboxTab(t.request) === "archived"),
+    [threads],
+  );
+
+  const tabThreads = useMemo(
+    () => (inboxTab === "ongoing" ? ongoingThreads : archivedThreads),
+    [inboxTab, ongoingThreads, archivedThreads],
+  );
+
+  const visibleThreads = useMemo(() => {
+    const q = listSearch.trim().toLowerCase();
+    if (!q) return tabThreads;
+    return tabThreads.filter((t) => {
+      const book = String(t.title ?? "").toLowerCase();
+      const partner = String(t.partnerName ?? "").toLowerCase();
+      return book.includes(q) || partner.includes(q);
+    });
+  }, [tabThreads, listSearch]);
+
+  useEffect(() => {
+    if (visibleThreads.some((t) => t.requestId === activeThreadId)) return;
+    setActiveThreadId(visibleThreads[0]?.requestId ?? "");
+  }, [visibleThreads, activeThreadId]);
+
+  const canSendInActiveThread = activeThread
+    ? requestAllowsSending(activeThread.request)
+    : false;
+
   const sendMessage = async (event) => {
     event.preventDefault();
-    if (!activeThreadId || !composer.trim() || sending) return;
+    if (!activeThreadId || !composer.trim() || sending || !canSendInActiveThread) return;
     setSending(true);
     try {
       const response = await fetch(`${API}/messages`, {
@@ -229,6 +305,39 @@ export default function MessagesPage() {
           <aside className="messages-sidebar" aria-label="Conversations">
             <header className="messages-sidebar-header">
               <h1 className="messages-page-title">Messages</h1>
+              <label className="messages-search-label">
+                <span className="visually-hidden">Search conversations</span>
+                <input
+                  type="search"
+                  className="messages-search-input"
+                  value={listSearch}
+                  onChange={(e) => setListSearch(e.target.value)}
+                  placeholder="Search conversations..."
+                  autoComplete="off"
+                />
+              </label>
+              <div className="messages-tabs" role="tablist" aria-label="Inbox sections">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={inboxTab === "ongoing"}
+                  className={`messages-tab ${inboxTab === "ongoing" ? "messages-tab--active" : ""}`.trim()}
+                  onClick={() => setInboxTab("ongoing")}
+                >
+                  Ongoing
+                  <span className="messages-tab-count">{ongoingThreads.length}</span>
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={inboxTab === "archived"}
+                  className={`messages-tab ${inboxTab === "archived" ? "messages-tab--active" : ""}`.trim()}
+                  onClick={() => setInboxTab("archived")}
+                >
+                  Archived
+                  <span className="messages-tab-count">{archivedThreads.length}</span>
+                </button>
+              </div>
             </header>
 
             {threadLoading ? <p className="messages-hint">Loading conversations...</p> : null}
@@ -238,8 +347,19 @@ export default function MessagesPage() {
               <p className="messages-hint">No conversations yet. Accept a request to start messaging.</p>
             ) : null}
 
+            {!threadLoading &&
+            !threadError &&
+            threads.length > 0 &&
+            (inboxTab === "ongoing" ? ongoingThreads : archivedThreads).length === 0 ? (
+              <p className="messages-hint">
+                {inboxTab === "ongoing"
+                  ? "No ongoing conversations. Finished swaps and closed borrows appear under Archived."
+                  : "Nothing archived yet. Declined requests and completed swaps appear here; accepted borrows move here after the return date."}
+              </p>
+            ) : null}
+
             <ul className="messages-thread-list">
-              {threads.map((thread) => {
+              {visibleThreads.map((thread) => {
                 const isActive = thread.requestId === activeThreadId;
                 return (
                   <li key={thread.requestId}>
@@ -286,7 +406,10 @@ export default function MessagesPage() {
                 <header className="messages-chat-header">
                   <div>
                     <p className="messages-chat-with">{activeThread.partnerName}</p>
-                    <p className="messages-chat-title">{activeThread.title}</p>
+                    <p className="messages-chat-title">
+                      Viewing: {activeThread.title}
+                      {activeThread.request?.type ? ` · ${activeThread.request.type}` : ""}
+                    </p>
                   </div>
                 </header>
 
@@ -320,6 +443,20 @@ export default function MessagesPage() {
                   </div>
                 </div>
 
+                {!canSendInActiveThread ? (
+                  <p className="messages-readonly-banner" role="status">
+                    {String(activeThread.request?.status ?? "").toLowerCase() === "cancelled"
+                      ? "This request was cancelled — messaging is disabled."
+                      : inboxTab === "archived" ||
+                          String(activeThread.request?.status ?? "").toLowerCase() === "declined"
+                        ? "This conversation is read-only."
+                        : String(activeThread.request?.type ?? "").toLowerCase() === "borrow" &&
+                            String(activeThread.request?.status ?? "").toLowerCase() === "accepted"
+                          ? "The borrow period has ended — messaging is disabled."
+                          : "Messaging is disabled for this request."}
+                  </p>
+                ) : null}
+
                 <form className="messages-composer" onSubmit={sendMessage}>
                   <input
                     type="text"
@@ -328,11 +465,12 @@ export default function MessagesPage() {
                     onChange={(event) => setComposer(event.target.value)}
                     placeholder="Type your message..."
                     maxLength={1000}
+                    disabled={!canSendInActiveThread}
                   />
                   <button
                     type="submit"
                     className="messages-send-btn"
-                    disabled={!composer.trim() || sending}
+                    disabled={!composer.trim() || sending || !canSendInActiveThread}
                   >
                     <MaterialIcon name="send" className="messages-send-icon" />
                   </button>
