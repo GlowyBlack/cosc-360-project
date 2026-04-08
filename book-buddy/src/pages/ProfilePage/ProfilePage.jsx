@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import AvatarUpload from "../../components/AvatarUpload/AvatarUpload.jsx";
@@ -20,6 +20,17 @@ function formatStatNumber(n) {
   return num.toLocaleString();
 }
 
+function relativeListedAt(value) {
+  const t = new Date(value).getTime();
+  if (!Number.isFinite(t)) return "Listed recently";
+  const diff = Date.now() - t;
+  const dayMs = 24 * 60 * 60 * 1000;
+  const days = Math.floor(diff / dayMs);
+  if (days <= 0) return "Listed today";
+  if (days === 1) return "Listed 1 day ago";
+  return `Listed ${days} days ago`;
+}
+
 export default function ProfilePage() {
   const { user, setSessionUser, logout } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
@@ -30,6 +41,9 @@ export default function ProfilePage() {
   const [stats, setStats] = useState(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const [statsError, setStatsError] = useState("");
+  const [activityBooks, setActivityBooks] = useState([]);
+  const [activityLoading, setActivityLoading] = useState(true);
+  const [activityError, setActivityError] = useState("");
 
   useEffect(() => {
     setBioDraft(String(user?.bio ?? ""));
@@ -68,6 +82,48 @@ export default function ProfilePage() {
         }
       } finally {
         if (!cancelled) setStatsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [logout]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setActivityLoading(true);
+      setActivityError("");
+      try {
+        const response = await fetch(`${API}/books/me`, {
+          headers: { ...authHeader() },
+        });
+        const data = await response.json().catch(() => ({}));
+        if (response.status === 401) {
+          flashSessionExpired();
+          logout();
+          return;
+        }
+        if (!response.ok) {
+          throw new Error(data.message ?? data.detail ?? "Could not load shelf activity");
+        }
+
+        const rows = Array.isArray(data) ? data : [];
+        const sorted = [...rows].sort((a, b) => {
+          const at = new Date(a?.updatedAt ?? a?.createdAt ?? 0).getTime();
+          const bt = new Date(b?.updatedAt ?? b?.createdAt ?? 0).getTime();
+          return bt - at;
+        });
+        if (!cancelled) {
+          setActivityBooks(sorted.slice(0, 6));
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setActivityBooks([]);
+          setActivityError(e.message ?? "Could not load shelf activity");
+        }
+      } finally {
+        if (!cancelled) setActivityLoading(false);
       }
     })();
     return () => {
@@ -241,6 +297,49 @@ export default function ProfilePage() {
               </ul>
             )}
           </div>
+
+          <section className="profile-activity" aria-label="Shelf activity">
+            <div className="profile-activity-head">
+              <div>
+                <h2 className="profile-activity-title">Shelf Activity</h2>
+                <p className="profile-activity-subtitle">Your most recent contributions and requests.</p>
+              </div>
+              <Link to="/library" className="profile-activity-link">
+                View library
+              </Link>
+            </div>
+
+            {activityLoading ? (
+              <p className="profile-stats-hint">Loading shelf activity…</p>
+            ) : activityError ? (
+              <p className="profile-error profile-stats-error">{activityError}</p>
+            ) : activityBooks.length < 1 ? (
+              <p className="profile-stats-hint">No shelf activity yet.</p>
+            ) : (
+              <ul className="profile-activity-grid">
+                {activityBooks.map((book, i) => {
+                  const id = String(book?._id ?? book?.id ?? `book-${i}`);
+                  const title = String(book?.bookTitle ?? "Untitled");
+                  const image = String(book?.bookImage ?? "").trim();
+                  return (
+                    <li key={id} className="profile-activity-card">
+                      <div className="profile-activity-cover-wrap">
+                        {image ? (
+                          <img src={image} alt={`Cover: ${title}`} className="profile-activity-cover" />
+                        ) : (
+                          <div className="profile-activity-cover profile-activity-cover--empty">
+                            <MaterialIcon name="menu_book" className="profile-activity-empty-icon" />
+                          </div>
+                        )}
+                      </div>
+                      <p className="profile-activity-book">{title}</p>
+                      <p className="profile-activity-meta">{relativeListedAt(book?.createdAt)}</p>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
         </section>
       </main>
       <Footer />

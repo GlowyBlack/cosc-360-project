@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import API from "../../config/api.js";
+import API, { consumeSessionExpiredFlash } from "../../config/api.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import TextField from "../TextField/TextField.jsx";
 import PasswordField from "../PasswordField/PasswordField.jsx";
@@ -19,6 +19,12 @@ export default function LoginForm({
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (consumeSessionExpiredFlash()) {
+      setError("Session expired. Please sign in again.");
+    }
+  }, []);
 
   async function handleLogin(e) {
     e.preventDefault();
