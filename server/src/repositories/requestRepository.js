@@ -72,7 +72,7 @@ const RequestRepository = {
     },
 
     async declineExchange({id, session = null}){
-        return await request.findByIdAndUpdate(
+                return await request.findByIdAndUpdate(
             id,
             { $set: {status: 'Declined'}},
             { returnDocument: "after", session }
