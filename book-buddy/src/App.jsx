@@ -23,7 +23,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/library" element={<LibraryPage />} />
         <Route path="/book/:bookId" element={<BookDetailPage />} />
-        <Route path="/messages" element={<MessagesPage />} />
+        <Route path="/messages" element={<MessagesPage />} /> 
       </Routes>
     </>
   );

@@ -41,6 +41,26 @@ export async function requireAuth(req, res, next) {
   }
 }
 
+export async function optionalAuth(req, _res, next) {
+  const authHeader = req.headers.authorization || "";
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+  if (!token) return next();
+
+  try {
+    const payload = jwt.verify(token, JWT_SECRET);
+    const userId = payload.id ?? payload._id;
+    if (!userId) return next();
+
+    const user = await User.findById(userId).select("-passwordHash").lean();
+    if (!user || user.isBanned || user.isSuspended) return next();
+
+    req.user = { ...user, id: user._id };
+  } catch {
+    // Ignore optional auth errors and continue as anonymous.
+  }
+  return next();
+}
+
 export function requireAdmin(req, res, next) {
   if (req.user.role !== "Admin") {
     return res.status(403).json({ message: "Admin access required" });
