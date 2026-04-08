@@ -1,5 +1,7 @@
 import bcrypt from "bcryptjs";
 import UserRepository from "../repositories/userRepository.js";
+import bookRepository from "../repositories/bookRepository.js";
+import requestRepository from "../repositories/requestRepository.js";
 
 function sanitizeUser(userDoc) {
   return {
@@ -16,7 +18,7 @@ function sanitizeUser(userDoc) {
   };
 }
 
-const UserService = {
+const AuthService = {
   async register({ firstName, lastName, email, password, city, provinceState }) {
     const first = String(firstName || "").trim();
     const last = String(lastName || "").trim();
@@ -83,6 +85,37 @@ const UserService = {
     if (!user) return null;
     return sanitizeUser(user);
   },
+
+  async updateProfile(id, { bio, profileImage }) {
+    const current = await UserRepository.findById(id);
+    if (!current) return null;
+
+    const updates = {};
+    if (bio !== undefined) {
+      const cleanBio = String(bio ?? "").trim();
+      if (cleanBio.length > 600) throw new Error("bio_too_long");
+      updates.bio = cleanBio;
+    }
+    if (profileImage !== undefined) {
+      const cleanImage = String(profileImage ?? "").trim();
+      updates.profileImage = cleanImage || null;
+    }
+
+    if (Object.keys(updates).length < 1) {
+      return sanitizeUser(current);
+    }
+
+    const updated = await UserRepository.updateProfileById(id, updates);
+    return sanitizeUser(updated);
+  },
+
+  async getProfileStats(userId) {
+    const booksListed = await bookRepository.countByOwner(userId);
+    const exchangesCompleted = await requestRepository.countCompletedExchangesForUser(userId);
+    const booksBorrowed = await requestRepository.countCompletedBorrowsAsBorrower(userId);
+   
+    return { booksListed, exchangesCompleted, booksBorrowed };
+  },
 };
 
-export default UserService;
+export default AuthService;

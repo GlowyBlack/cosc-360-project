@@ -6,7 +6,7 @@ function ensureObjectId(id) {
     return new mongoose.Types.ObjectId(String(id));
 }
 
-const messageRepository = {
+const MessageRepository = {
     // fetch every message for a given requestId, oldest first
     async findByRequestId(requestId) {
         return Message.find({ requestId })
@@ -59,4 +59,4 @@ const messageRepository = {
     },
 };
 
-export default messageRepository;
+export default MessageRepository;

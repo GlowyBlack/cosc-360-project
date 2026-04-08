@@ -42,6 +42,22 @@ const RequestRepository = {
             .sort({ createdAt: -1 });
     },
 
+     async countCompletedExchangesForUser(userId) {
+        return await request.countDocuments({
+            type: "Exchange",
+            status: "Accepted",
+            $or: [{ bookOwner: userId }, { requesterId: userId }],
+        });
+    },
+
+    async countCompletedBorrowsAsBorrower(userId) {
+        return await request.countDocuments({
+            type: "Borrow",
+            requesterId: userId,
+            status: { $in: ["Accepted", "Returned"] },
+        });
+    },
+
     async createExchange({book, owner, offeredBook, requester, session = null}){
         return await request.create(
             [{bookId: book, bookOwner: owner,
@@ -72,7 +88,7 @@ const RequestRepository = {
     },
 
     async declineExchange({id, session = null}){
-        return await request.findByIdAndUpdate(
+                return await request.findByIdAndUpdate(
             id,
             { $set: {status: 'Declined'}},
             { returnDocument: "after", session }
