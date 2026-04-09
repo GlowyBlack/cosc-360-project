@@ -3,6 +3,9 @@ import API, { authHeader } from "../../config/api.js";
 import "./AdminUsersPage.css";
 import "./AdminDashboardPage.css";
 
+const PAGE_SIZE = 10;
+const PAGE_BUTTON_WINDOW = 10;
+
 function bookCountMap(books) {
   const m = new Map();
   if (!Array.isArray(books)) return m;
@@ -28,6 +31,7 @@ export default function AdminUsersPage() {
   const [query, setQuery] = useState("");
   const [actingId, setActingId] = useState(null);
   const [actionError, setActionError] = useState("");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     let cancelled = false;
@@ -76,6 +80,42 @@ export default function AdminUsersPage() {
       return un.includes(q) || em.includes(q);
     });
   }, [users, query]);
+
+  const totalPages = useMemo(() => {
+    if (filteredUsers.length === 0) return 0;
+    return Math.ceil(filteredUsers.length / PAGE_SIZE);
+  }, [filteredUsers.length]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [query]);
+
+  useEffect(() => {
+    if (totalPages === 0) return;
+    setPage((p) => Math.min(Math.max(1, p), totalPages));
+  }, [totalPages]);
+
+  const paginatedUsers = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filteredUsers.slice(start, start + PAGE_SIZE);
+  }, [filteredUsers, page]);
+
+  const { windowStart, windowEnd, showPageWindow } = useMemo(() => {
+    if (totalPages === 0) {
+      return { windowStart: 1, windowEnd: 1, showPageWindow: false };
+    }
+    if (totalPages <= PAGE_BUTTON_WINDOW) {
+      return {
+        windowStart: 1,
+        windowEnd: totalPages,
+        showPageWindow: false,
+      };
+    }
+    const ws =
+      Math.floor((page - 1) / PAGE_BUTTON_WINDOW) * PAGE_BUTTON_WINDOW + 1;
+    const we = Math.min(ws + PAGE_BUTTON_WINDOW - 1, totalPages);
+    return { windowStart: ws, windowEnd: we, showPageWindow: true };
+  }, [totalPages, page]);
 
   async function runAction(userId, action) {
     const id = String(userId);
@@ -166,7 +206,11 @@ export default function AdminUsersPage() {
         <span className="admin-users__meta">
           {loading
             ? "Loading…"
-            : `${filteredUsers.length} of ${users.length} users`}
+            : totalPages === 0
+              ? `0 of ${users.length} users`
+              : totalPages === 1
+                ? `${filteredUsers.length} of ${users.length} users`
+                : `Showing ${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, filteredUsers.length)} of ${filteredUsers.length} (${users.length} total)`}
         </span>
       </div>
 
@@ -198,7 +242,7 @@ export default function AdminUsersPage() {
                 </td>
               </tr>
             ) : (
-              filteredUsers.map((u) => {
+              paginatedUsers.map((u) => {
                 const id = String(u._id);
                 const isAdmin = u.role === "Admin";
                 const busy = actingId === id;
@@ -272,6 +316,70 @@ export default function AdminUsersPage() {
           </tbody>
         </table>
       </div>
+
+      {!loading && totalPages > 1 ? (
+        <nav
+          className="admin-users__pagination"
+          aria-label="User list pages"
+        >
+          <button
+            type="button"
+            className="admin-btn admin-btn--outline admin-users__pagination-step"
+            disabled={page <= 1}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+          >
+            Previous
+          </button>
+          <div className="admin-users__pagination-pages">
+            {showPageWindow && windowStart > 1 ? (
+              <button
+                type="button"
+                className="admin-btn admin-btn--outline admin-users__pagination-chunk"
+                aria-label="Show previous group of pages"
+                onClick={() => setPage(windowStart - 1)}
+              >
+                …
+              </button>
+            ) : null}
+            {Array.from(
+              { length: Math.max(0, windowEnd - windowStart + 1) },
+              (_, i) => windowStart + i
+            ).map((pnum) => (
+              <button
+                key={pnum}
+                type="button"
+                className={
+                  pnum === page
+                    ? "admin-btn admin-btn--solid admin-users__pagination-num is-active"
+                    : "admin-btn admin-btn--outline admin-users__pagination-num"
+                }
+                aria-current={pnum === page ? "page" : undefined}
+                onClick={() => setPage(pnum)}
+              >
+                {pnum}
+              </button>
+            ))}
+            {showPageWindow && windowEnd < totalPages ? (
+              <button
+                type="button"
+                className="admin-btn admin-btn--outline admin-users__pagination-chunk"
+                aria-label="Show next group of pages"
+                onClick={() => setPage(windowEnd + 1)}
+              >
+                …
+              </button>
+            ) : null}
+          </div>
+          <button
+            type="button"
+            className="admin-btn admin-btn--outline admin-users__pagination-step"
+            disabled={page >= totalPages}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+          >
+            Next
+          </button>
+        </nav>
+      ) : null}
     </div>
   );
 }
