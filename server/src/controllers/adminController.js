@@ -2,6 +2,9 @@ import User from "../models/user.js";
 import Book from "../models/book.js";
 import Request from "../models/request.js";
 import Post from "../models/post.js";
+import Comment from "../models/comment.js";
+
+
 
 /* 
 TODO: 
@@ -245,6 +248,64 @@ const AdminController = {
 
       if (!post) return res.status(404).json({ message: "Post not found" });
       return res.json(post);
+    } catch {
+      return res.status(500).json({ message: "Server Error" });
+    }
+  },
+
+  async listComments(req, res) {
+    try {
+      const includeRemoved =
+        String(req.query.includeRemoved ?? "").toLowerCase() === "true" ||
+        String(req.query.includeRemoved ?? "") === "1";
+
+      const query = includeRemoved ? {} : { isRemoved: false };
+
+      const comments = await Comment.find(query)
+        .populate("authorId", "username email role profileImage")
+        .populate("postId", "title")
+        .sort({ createdAt: -1 })
+        .lean();
+
+      return res.json(comments);
+    } catch {
+      return res.status(500).json({ message: "Server Error" });
+    }
+  },
+
+  async removeComment(req, res) {
+    try {
+      const comment = await Comment.findByIdAndUpdate(
+        req.params.id,
+        { isRemoved: true },
+        { returnDocument: "after" }
+      )
+        .populate("authorId", "username email role profileImage")
+        .populate("postId", "title")
+        .lean();
+
+      if (!comment)
+        return res.status(404).json({ message: "Comment not found" });
+      return res.json(comment);
+    } catch {
+      return res.status(500).json({ message: "Server Error" });
+    }
+  },
+
+  async restoreComment(req, res) {
+    try {
+      const comment = await Comment.findByIdAndUpdate(
+        req.params.id,
+        { isRemoved: false },
+        { returnDocument: "after" }
+      )
+        .populate("authorId", "username email role profileImage")
+        .populate("postId", "title")
+        .lean();
+
+      if (!comment)
+        return res.status(404).json({ message: "Comment not found" });
+      return res.json(comment);
     } catch {
       return res.status(500).json({ message: "Server Error" });
     }
