@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import API, { authHeader } from "../../config/api.js";
+import API, { authHeader } from "../../../config/api.js";
 import "./AdminPostsPage.css";
 import "./AdminDashboardPage.css";
 
