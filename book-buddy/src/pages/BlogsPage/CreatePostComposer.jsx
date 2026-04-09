@@ -11,6 +11,8 @@ function exec(cmd, value = null) {
 
 export default function CreatePostComposer({ onSubmit, submitting = false }) {
   const [title, setTitle] = useState("");
+  const [bookTagTitle, setBookTagTitle] = useState("");
+  const [bookTagAuthor, setBookTagAuthor] = useState("");
   const [error, setError] = useState("");
   const [editorEmpty, setEditorEmpty] = useState(true);
   const editorRef = useRef(null);
@@ -83,7 +85,10 @@ export default function CreatePostComposer({ onSubmit, submitting = false }) {
     await onSubmit({
       title: title.trim(),
       content: html.trim(),
-      bookTag: { title: null, author: null },
+      bookTag: {
+        title: bookTagTitle.trim() ? bookTagTitle.trim() : null,
+        author: bookTagAuthor.trim() ? bookTagAuthor.trim() : null,
+      },
     }).catch((err) => {
       setError(err?.message ?? "Could not create post");
     });
@@ -105,6 +110,21 @@ export default function CreatePostComposer({ onSubmit, submitting = false }) {
           onChange={(e) => setTitle(e.target.value.slice(0, 300))}
         />
         <span className="blogs-char-count">{title.length}/300</span>
+      </div>
+
+      <div className="blogs-tag-row">
+        <input
+          className="blogs-input"
+          placeholder="Book title tag (optional)"
+          value={bookTagTitle}
+          onChange={(e) => setBookTagTitle(e.target.value)}
+        />
+        <input
+          className="blogs-input"
+          placeholder="Book author tag (optional)"
+          value={bookTagAuthor}
+          onChange={(e) => setBookTagAuthor(e.target.value)}
+        />
       </div>
 
       <div className="blogs-toolbar" role="toolbar" aria-label="Formatting">

@@ -37,6 +37,7 @@ export default function BlogPostPage() {
   const [commentBusy, setCommentBusy] = useState(false);
   const [commentError, setCommentError] = useState("");
   const [commentReactingId, setCommentReactingId] = useState("");
+  const [replyVisibleCount, setReplyVisibleCount] = useState({});
 
   useEffect(() => {
     let cancelled = false;
@@ -207,6 +208,9 @@ export default function BlogPostPage() {
     items.map((comment) => {
       const id = String(comment?._id ?? comment?.id ?? "");
       const replies = commentsByParent.get(id) ?? [];
+      const visibleCount = replyVisibleCount[id] ?? 2;
+      const shownReplies = replies.slice(0, visibleCount);
+      const remainingReplies = Math.max(0, replies.length - shownReplies.length);
       const likedByMe = (comment?.likes ?? []).some(
         (v) => String(v?._id ?? v?.id ?? v) === sessionUserId,
       );
@@ -277,7 +281,36 @@ export default function BlogPostPage() {
                 </button>
               </div>
             ) : null}
-            {replies.length > 0 ? renderCommentTree(replies, depth + 1) : null}
+            {shownReplies.length > 0 ? renderCommentTree(shownReplies, depth + 1) : null}
+            {remainingReplies > 0 ? (
+              <div className="blog-comment-more-replies">
+                <button
+                  type="button"
+                  className="blogs-link-btn"
+                  onClick={() =>
+                    setReplyVisibleCount((prev) => ({
+                      ...prev,
+                      [id]: (prev[id] ?? 2) + 4,
+                    }))
+                  }
+                >
+                  Show {Math.min(4, remainingReplies)} more repl
+                  {Math.min(4, remainingReplies) === 1 ? "y" : "ies"}
+                </button>
+                <button
+                  type="button"
+                  className="blogs-link-btn"
+                  onClick={() =>
+                    setReplyVisibleCount((prev) => ({
+                      ...prev,
+                      [id]: replies.length,
+                    }))
+                  }
+                >
+                  Show all replies
+                </button>
+              </div>
+            ) : null}
           </div>
         </article>
       );
