@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../../config/api.js";
 import TextField from "../TextField/TextField.jsx";
@@ -19,13 +19,42 @@ export default function RegisterForm({
   const [city, setCity] = useState("");
   const [provinceState, setProvinceState] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  const passwordMeetsRequirements = useMemo(() => {
+    // >= 8 chars, at least one uppercase, one number, one symbol
+    const s = String(password ?? "");
+    if (s.length < 8) return false;
+    if (!/[A-Z]/.test(s)) return false;
+    if (!/[0-9]/.test(s)) return false;
+    if (!/[^A-Za-z0-9]/.test(s)) return false;
+    return true;
+  }, [password]);
+
+  const passwordsMatch =
+    password.length > 0 && confirmPassword.length > 0 && password === confirmPassword;
+  const showPasswordMismatch =
+    confirmPassword.length > 0 && password !== confirmPassword;
+  const showPasswordRequirementsWarning =
+    password.length > 0 && !passwordMeetsRequirements;
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
-    
+
+    if (!passwordMeetsRequirements) {
+      setError(
+        "Password must be at least 8 characters and include an uppercase letter, a number, and a symbol."
+      );
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Please make sure your passwords match.");
+      return;
+    }
+
     setSubmitting(true);
     try {
       const response = await fetch(`${API}/auth/register`, {
@@ -66,28 +95,32 @@ export default function RegisterForm({
             {error}
           </p>
         ) : null}
-        <TextField
-          id="register-first-name"
-          name="firstName"
-          label="First Name"
-          type="text"
-          placeholder="John"
-          autoComplete="given-name"
-          required
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-        />
-        <TextField
-          id="register-last-name"
-          name="lastName"
-          label="Last Name"
-          type="text"
-          placeholder="Doe"
-          autoComplete="family-name"
-          required
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-        />
+        <div className="register-form-row">
+          <TextField
+            id="register-first-name"
+            name="firstName"
+            label="First Name"
+            type="text"
+            placeholder="John"
+            autoComplete="given-name"
+            required
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            className="register-form-row-field"
+          />
+          <TextField
+            id="register-last-name"
+            name="lastName"
+            label="Last Name"
+            type="text"
+            placeholder="Doe"
+            autoComplete="family-name"
+            required
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            className="register-form-row-field"
+          />
+        </div>
         <TextField
           id="register-email"
           name="email"
@@ -133,11 +166,32 @@ export default function RegisterForm({
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
+        {showPasswordRequirementsWarning ? (
+          <p className="register-form-inline-error" role="alert">
+            Password must be at least 8 characters and include an uppercase
+            letter, a number, and a symbol.
+          </p>
+        ) : null}
+        <div>
+          <PasswordField
+            label="Confirm Password"
+            name="confirmPassword"
+            showForgotLink={false}
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+          {showPasswordMismatch ? (
+            <p className="register-form-inline-error" role="alert">
+              Password does not match
+            </p>
+          ) : null}
+        </div>
         <Button
           variant="terracotta"
           type="submit"
           className="register-form-submit"
-          disabled={submitting}
+          disabled={submitting || !passwordMeetsRequirements || !passwordsMatch}
         >
           <span className="register-form-submit-inner">
             {submitting ? "Creating…" : "Create account"}

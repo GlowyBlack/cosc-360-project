@@ -1,0 +1,30 @@
+.admin-reports__header {
+  margin-bottom: 1.5rem;
+}
+
+.admin-reports__title {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+}
+
+.admin-reports__lede {
+  margin: 0;
+  max-width: 40rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--color-on-surface-variant);
+}
+
+.admin-reports__lede code {
+  font-size: 0.85em;
+}
+
+.admin-reports__placeholder {
+  padding: 2rem;
+  text-align: center;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-on-surface-variant);
+}
