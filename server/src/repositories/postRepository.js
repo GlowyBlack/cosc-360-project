@@ -57,7 +57,7 @@ const PostRepository = {
         return await post.findOneAndUpdate(
             { _id: postId, likes: { $nin: [userId] } },
             { $addToSet: { likes: userId }, $inc: { likeCount: 1 } },
-            { new: true, runValidators: false },
+            { returnDocument: "after", runValidators: false },
         ).populate({ path: "authorId", select: "username profileImage" });
     },
 
@@ -65,23 +65,23 @@ const PostRepository = {
         return await Post.findOneAndUpdate(
             { _id: postId, likes: userId },
             { $pull: { likes: userId }, $inc: { likeCount: -1 } },
-            { new: true, runValidators: false },
+            { returnDocument: "after", runValidators: false },
         ).populate({ path: "authorId", select: "username profileImage" });
     },
 
     async addDislike(postId, userId) {
-        return await Post.findOneAndUpdate(
+        return await post.findOneAndUpdate(
             { _id: postId, dislikes: { $nin: [userId] } },
             { $addToSet: { dislikes: userId }, $inc: { dislikeCount: 1 } },
-            { new: true, runValidators: false },
+            { returnDocument: "after", runValidators: false },
         ).populate({ path: "authorId", select: "username profileImage" });
     },
 
     async removeDislike(postId, userId) {
-        return await Post.findOneAndUpdate(
+        return await post.findOneAndUpdate(
             { _id: postId, dislikes: userId },
             { $pull: { dislikes: userId }, $inc: { dislikeCount: -1 } },
-            { new: true, runValidators: false },
+            { returnDocument: "after", runValidators: false },
         ).populate({ path: "authorId", select: "username profileImage" });
     },
 };

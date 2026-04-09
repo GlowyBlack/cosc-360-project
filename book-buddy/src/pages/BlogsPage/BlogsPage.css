@@ -27,6 +27,19 @@
   margin: 0;
 }
 
+.blogs-sort-toggle {
+  border: 1px solid var(--color-border);
+  background: #fff;
+  color: var(--color-on-surface, #1a1a1a);
+  border-radius: var(--radius-pill);
+  min-height: 34px;
+  padding: 0 0.9rem;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .blogs-btn-close {
   background: #fff;
   border: 1px solid var(--color-border);
@@ -135,6 +148,33 @@
   font-weight: 600;
   font-size: 0.78rem;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  text-decoration: none;
+}
+
+.blogs-vote-btn {
+  padding: 0.1rem 0.2rem;
+}
+
+.blogs-vote-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.blogs-vote-btn--active {
+  color: var(--color-on-surface, #1a1a1a);
+}
+
+.blogs-post-score {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-on-surface, #1a1a1a);
 }
 
 .blogs-composer {

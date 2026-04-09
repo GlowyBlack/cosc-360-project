@@ -133,7 +133,7 @@ const PostController = {
     async toggleDislike(req, res) {
         try {
             const { postId } = req.params;
-            const userId = userIdFromReq(req);
+            const userId = req.user?._id ?? req.user?.id;
             if (!userId) return res.status(401).json({ message: "Not authenticated" });
             if (!mongoose.Types.ObjectId.isValid(postId)) {
                 return res.status(400).json({ message: "Invalid post id" });

@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import API, { authHeader, flashSessionExpired } from "../../config/api.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import MaterialIcon from "../../components/MaterialIcon/MaterialIcon.jsx";
-import { PostBody, postTag } from "./blogPostShared.jsx";
+import { PostBody, postTag, togglePostReaction } from "./blogPostShared.jsx";
+import { getSessionUserId } from "../../commons/bookShared.js";
 import "./BlogsPage.css";
 
 function since(value) {
@@ -21,11 +22,14 @@ function since(value) {
 }
 
 export default function BlogPostPage() {
+  const navigate = useNavigate();
   const { postId } = useParams();
   const { user, logout } = useAuth();
+  const sessionUserId = getSessionUserId(user);
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [reacting, setReacting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -69,6 +73,32 @@ export default function BlogPostPage() {
   }, [postId, logout]);
 
   const author = String(post?.authorId?.username ?? "Unknown");
+  const likedByMe = (post?.likes ?? []).some(
+    (v) => String(v?._id ?? v?.id ?? v) === sessionUserId,
+  );
+  const dislikedByMe = (post?.dislikes ?? []).some(
+    (v) => String(v?._id ?? v?.id ?? v) === sessionUserId,
+  );
+  const score = Number(post?.likeCount ?? 0) - Number(post?.dislikeCount ?? 0);
+
+  const handleReact = async (mode) => {
+    const id = String(post?._id ?? post?.id ?? "");
+    if (!id || reacting) return;
+    if (!user) {
+      navigate(`/login?next=${encodeURIComponent(`/blogs/${postId}`)}`);
+      return;
+    }
+    setReacting(true);
+    setError("");
+    try {
+      const updated = await togglePostReaction({ postId: id, mode, logout });
+      setPost(updated);
+    } catch (e) {
+      setError(e.message ?? "Could not update reaction");
+    } finally {
+      setReacting(false);
+    }
+  };
 
   return (
     <div className="blogs-page">
@@ -108,6 +138,27 @@ export default function BlogPostPage() {
               </button>
               <button type="button" className="blogs-link-btn">
                 <MaterialIcon name="flag" /> Report
+              </button>
+              <button
+                type="button"
+                className={`blogs-link-btn blogs-vote-btn${
+                  likedByMe ? " blogs-vote-btn--active" : ""
+                }`}
+                onClick={() => handleReact("like")}
+                disabled={reacting}
+              >
+                <MaterialIcon name="arrow_upward" />
+              </button>
+              <span className="blogs-post-score">{score}</span>
+              <button
+                type="button"
+                className={`blogs-link-btn blogs-vote-btn${
+                  dislikedByMe ? " blogs-vote-btn--active" : ""
+                }`}
+                onClick={() => handleReact("dislike")}
+                disabled={reacting}
+              >
+                <MaterialIcon name="arrow_downward" />
               </button>
             </div>
           </article>
