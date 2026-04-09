@@ -129,6 +129,25 @@ const PostController = {
             return res.status(500).json({ message: "Server Error", error: error.message });
         }
     },
+
+    async toggleDislike(req, res) {
+        try {
+            const { postId } = req.params;
+            const userId = userIdFromReq(req);
+            if (!userId) return res.status(401).json({ message: "Not authenticated" });
+            if (!mongoose.Types.ObjectId.isValid(postId)) {
+                return res.status(400).json({ message: "Invalid post id" });
+            }
+
+            const post = await postService.toggleDislike(postId, userId);
+            return res.status(200).json(post);
+        } catch (error) {
+            if (error.message === "Post not found") {
+                return res.status(404).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Server Error", error: error.message });
+        }
+    },
 };
 
 export default PostController;

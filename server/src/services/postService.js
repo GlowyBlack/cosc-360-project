@@ -106,9 +106,32 @@ const PostService = {
 
         const hasLiked = (post.likes ?? []).some((id) => String(id) === String(userId));
         if (hasLiked) {
-            return await postRepository.removeLike(postId, userId);
+            const updated = await postRepository.removeLike(postId, userId);
+            return updated ?? (await postRepository.findById(postId));
         }
-        return await postRepository.addLike(postId, userId);
+        const hadDisliked = (post.dislikes ?? []).some((id) => String(id) === String(userId));
+        if (hadDisliked) {
+            await postRepository.removeDislike(postId, userId);
+        }
+        const updated = await postRepository.addLike(postId, userId);
+        return updated ?? (await postRepository.findById(postId));
+    },
+
+    async toggleDislike(postId, userId) {
+        const post = await postRepository.findById(postId);
+        if (!post || post.isRemoved) throw new Error("Post not found");
+
+        const hasDisliked = (post.dislikes ?? []).some((id) => String(id) === String(userId));
+        if (hasDisliked) {
+            const updated = await postRepository.removeDislike(postId, userId);
+            return updated ?? (await postRepository.findById(postId));
+        }
+        const hadLiked = (post.likes ?? []).some((id) => String(id) === String(userId));
+        if (hadLiked) {
+            await postRepository.removeLike(postId, userId);
+        }
+        const updated = await postRepository.addDislike(postId, userId);
+        return updated ?? (await postRepository.findById(postId));
     },
 };
 

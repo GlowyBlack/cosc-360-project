@@ -1,16 +1,22 @@
 .guest-navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem 2.5rem;
-  max-width: 1440px;
-  margin: 0 auto;
   width: 100%;
   position: sticky;
   top: 0;
   z-index: 50;
   background-color: color-mix(in srgb, var(--color-footer) 90%, transparent);
   backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border);
+  box-sizing: border-box;
+}
+
+.guest-navbar-inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 1.5rem 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
 }
 
 .guest-navbar-left {
