@@ -5,7 +5,8 @@ import "./AdminSidebar.css";
 const items = [
   { to: "/admin", label: "Dashboard", icon: "dashboard", end: true },
   { to: "/admin/users", label: "User Management", icon: "group" },
-  { to: "/admin/listings", label: "Listings", icon: "inventory_2" },
+  { to: "/admin/listings", label: "Listings Management", icon: "inventory_2" },
+  { to: "/admin/posts", label: "Posts Management", icon: "feed" },
   { to: "/admin/reports", label: "Reports", icon: "assessment" },
 ];
 
