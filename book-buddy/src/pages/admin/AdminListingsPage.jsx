@@ -159,7 +159,7 @@ export default function AdminListingsPage() {
     <div className="admin-page admin-listings">
       <header className="admin-listings__header">
         <div>
-          <h1 className="admin-listings__title">Listing management</h1>
+          <h1 className="admin-listings__title">Listing Management</h1>
           <p className="admin-listings__subtitle">
             Browse all book listings, filter the database, and remove entries
             that violate policy or are no longer valid. Listings tied to active

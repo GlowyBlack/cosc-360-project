@@ -1,6 +1,7 @@
 import User from "../models/user.js";
 import Book from "../models/book.js";
 import Request from "../models/request.js";
+import Post from "../models/post.js";
 
 /* 
 TODO: 
@@ -191,6 +192,59 @@ const AdminController = {
       const deleted = await Book.findByIdAndDelete(bookId);
       if (!deleted) return res.status(404).json({ message: "Book not found" });
       return res.json({ message: "Book deleted", id: bookId });
+    } catch {
+      return res.status(500).json({ message: "Server Error" });
+    }
+  },
+
+  async listPosts(req, res) {
+    try {
+      const includeRemoved =
+        String(req.query.includeRemoved ?? "").toLowerCase() === "true" ||
+        String(req.query.includeRemoved ?? "") === "1";
+
+      const query = includeRemoved ? {} : { isRemoved: false };
+
+      const posts = await Post.find(query)
+        .populate("authorId", "username email role profileImage")
+        .sort({ createdAt: -1 })
+        .lean();
+
+      return res.json(posts);
+    } catch {
+      return res.status(500).json({ message: "Server Error" });
+    }
+  },
+
+  async removePost(req, res) {
+    try {
+      const post = await Post.findByIdAndUpdate(
+        req.params.id,
+        { isRemoved: true },
+        { returnDocument: "after" }
+      )
+        .populate("authorId", "username email role profileImage")
+        .lean();
+
+      if (!post) return res.status(404).json({ message: "Post not found" });
+      return res.json(post);
+    } catch {
+      return res.status(500).json({ message: "Server Error" });
+    }
+  },
+
+  async restorePost(req, res) {
+    try {
+      const post = await Post.findByIdAndUpdate(
+        req.params.id,
+        { isRemoved: false },
+        { returnDocument: "after" }
+      )
+        .populate("authorId", "username email role profileImage")
+        .lean();
+
+      if (!post) return res.status(404).json({ message: "Post not found" });
+      return res.json(post);
     } catch {
       return res.status(500).json({ message: "Server Error" });
     }

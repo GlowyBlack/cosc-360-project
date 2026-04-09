@@ -12,5 +12,8 @@ router.put("/users/:id/unsuspend", requireAuth, requireAdmin, adminController.un
 router.put("/users/:id/ban", requireAuth, requireAdmin, adminController.banUser);
 router.put("/users/:id/unban", requireAuth, requireAdmin, adminController.unbanUser);
 router.delete("/books/:id", requireAuth, requireAdmin, adminController.deleteBook);
+router.get("/posts", requireAuth, requireAdmin, adminController.listPosts);
+router.put("/posts/:id/remove", requireAuth, requireAdmin, adminController.removePost);
+router.put("/posts/:id/restore", requireAuth, requireAdmin, adminController.restorePost);
 
 export default router;

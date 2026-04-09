@@ -58,7 +58,7 @@ export default function AdminDashboardPage() {
     <div className="admin-page admin-dashboard">
       <header className="admin-dashboard__header">
         <div>
-          <h1 className="admin-dashboard__title">Executive Overview</h1>
+          <h1 className="admin-dashboard__title">Site Overview</h1>
           <p className="admin-dashboard__subtitle">
             Monitoring the status of BookBuddy&apos;s site.
           </p>
