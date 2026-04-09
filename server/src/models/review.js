@@ -1,5 +1,10 @@
 import mongoose from "mongoose";
 
+/*
+TODO:
+- Add is removed to review so even if users delete book, admins can still see them
+*/
+
 const ReviewSchema = new mongoose.Schema({
     requestId:   { type: mongoose.Schema.Types.ObjectId, ref: "Request", required: true },
     reviewerId:  { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },

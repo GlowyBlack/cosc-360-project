@@ -14,7 +14,7 @@ const PostService = {
         const post = await postRepository.findById(postId);
         if (!post || post.isRemoved) return null;
 
-        const comments = await commentRepository.findByPostId(postId);
+        const comments = await commentRepository.findByPostId({ postId, includeRemoved: false });
         return { post, comments };
     },
 

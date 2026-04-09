@@ -9,5 +9,6 @@ router.post("/", requireAuth, commentController.createComment);
 router.patch("/:commentId", requireAuth, commentController.editComment);
 router.delete("/:commentId", requireAuth, commentController.deleteComment);
 router.patch("/:commentId/like", requireAuth, commentController.toggleLike);
+router.patch("/:commentId/dislike", requireAuth, commentController.toggleDislike);
 
 export default router;

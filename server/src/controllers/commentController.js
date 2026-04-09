@@ -141,6 +141,29 @@ const CommentController = {
             return res.status(500).json({ message: "Server Error", error: error.message });
         }
     },
+    
+    // PATCH /comments/:commentId/dislike
+    async toggleDislike(req, res) {
+        try {
+            const { commentId } = req.params;
+            const userId = req.user?._id ?? req.user?.id;;
+            if (!userId) return res.status(401).json({ message: "Not authenticated" });
+            if (!mongoose.Types.ObjectId.isValid(String(commentId))) {
+                return res.status(400).json({ message: "Invalid comment id" });
+            }
+
+            const updated = await commentService.toggleDislike({ commentId, userId });
+            return res.status(200).json(updated);
+        } catch (error) {
+            if (error.message === "Comment not found") {
+                return res.status(404).json({ message: error.message });
+            }
+            if (error.message === "Removed comments cannot be disliked") {
+                return res.status(400).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Server Error", error: error.message });
+        }
+    },
 };
 
 export default CommentController;
