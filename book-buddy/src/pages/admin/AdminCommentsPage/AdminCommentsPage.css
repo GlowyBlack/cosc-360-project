@@ -1,10 +1,10 @@
 @import "../admin-shared.css";
 
-.admin-posts__header {
+.admin-comments__header {
   margin-bottom: 1.5rem;
 }
 
-.admin-posts__title {
+.admin-comments__title {
   margin: 0;
   font-size: 1.75rem;
   font-weight: 700;
@@ -12,15 +12,15 @@
   color: var(--color-on-surface);
 }
 
-.admin-posts__subtitle {
+.admin-comments__subtitle {
   margin: 0.35rem 0 0;
   font-size: 0.9375rem;
   color: var(--color-on-surface-variant);
-  max-width: 42rem;
+  max-width: 44rem;
   line-height: 1.45;
 }
 
-.admin-posts__toolbar {
+.admin-comments__toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
@@ -28,7 +28,7 @@
   margin-bottom: 1.25rem;
 }
 
-.admin-posts__search-label {
+.admin-comments__search-label {
   width: 100%;
   font-size: 0.625rem;
   font-weight: 700;
@@ -37,7 +37,7 @@
   color: var(--color-on-surface-variant);
 }
 
-.admin-posts__filters {
+.admin-comments__filters {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
@@ -46,10 +46,10 @@
   min-width: 0;
 }
 
-.admin-posts__search {
+.admin-comments__search {
   flex: 1 1 16rem;
   min-width: 0;
-  max-width: 32rem;
+  max-width: 34rem;
   padding: 0.65rem 1.1rem;
   font-size: 0.9375rem;
   border: 1px solid var(--color-border);
@@ -59,12 +59,12 @@
   outline: none;
 }
 
-.admin-posts__search:focus {
+.admin-comments__search:focus {
   border-color: var(--color-on-surface);
   box-shadow: 0 0 0 1px var(--color-on-surface);
 }
 
-.admin-posts__toggle {
+.admin-comments__toggle {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -78,17 +78,17 @@
   user-select: none;
 }
 
-.admin-posts__toggle input {
+.admin-comments__toggle input {
   accent-color: var(--color-on-surface);
 }
 
-.admin-posts__meta {
+.admin-comments__meta {
   font-size: 0.8125rem;
   color: var(--color-on-surface-variant);
   margin-left: auto;
 }
 
-.admin-posts__table-wrap {
+.admin-comments__table-wrap {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
@@ -96,58 +96,58 @@
   overflow-x: auto;
 }
 
-.admin-posts__post-title {
-  font-weight: 600;
+.admin-comments__content {
+  max-width: 28rem;
   color: var(--color-on-surface);
 }
 
-.admin-posts__author {
+.admin-comments__author {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
   min-width: 0;
 }
 
-.admin-posts__author-sub {
+.admin-comments__author-sub {
   font-size: 0.75rem;
   color: var(--color-on-surface-variant);
   word-break: break-word;
 }
 
-.admin-posts__tag {
+.admin-comments__post-title {
   font-size: 0.8125rem;
   color: var(--color-on-surface-variant);
-  max-width: 14rem;
+  max-width: 16rem;
 }
 
-.admin-posts__status {
+.admin-comments__status {
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
-.admin-posts__status--active {
+.admin-comments__status--active {
   color: var(--color-success);
 }
 
-.admin-posts__status--removed {
+.admin-comments__status--removed {
   color: var(--color-on-surface-variant);
 }
 
-.admin-posts__date {
+.admin-comments__date {
   font-size: 0.8125rem;
   font-variant-numeric: tabular-nums;
   color: var(--color-on-surface-variant);
   white-space: nowrap;
 }
 
-.admin-posts__action-btn {
+.admin-comments__action-btn {
   padding: 0.4rem 0.75rem;
   font-size: 0.625rem;
 }
 
-.admin-posts__pagination {
+.admin-comments__pagination {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -156,7 +156,7 @@
   margin-top: 1.25rem;
 }
 
-.admin-posts__pagination-pages {
+.admin-comments__pagination-pages {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -164,23 +164,23 @@
   gap: 0.35rem;
 }
 
-.admin-posts__pagination-step {
+.admin-comments__pagination-step {
   padding: 0.45rem 0.9rem;
   font-size: 0.75rem;
 }
 
-.admin-posts__pagination-num {
+.admin-comments__pagination-num {
   min-width: 2.25rem;
   padding: 0.45rem 0.5rem;
   font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
 }
 
-.admin-posts__pagination-num.is-active {
+.admin-comments__pagination-num.is-active {
   pointer-events: none;
 }
 
-.admin-posts__pagination-chunk {
+.admin-comments__pagination-chunk {
   min-width: 2.25rem;
   padding: 0.45rem 0.5rem;
   font-size: 1rem;

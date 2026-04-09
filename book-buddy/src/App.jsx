@@ -3,6 +3,7 @@ import AddBookPage from "./pages/AddBookPage/AddBookPage.jsx";
 import AdminLayout from "./pages/AdminLayout/AdminLayout.jsx";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage/AdminDashboardPage.jsx";
 import AdminListingsPage from "./pages/admin/AdminListingsPage/AdminListingsPage.jsx";
+import AdminCommentsPage from "./pages/admin/AdminCommentsPage/AdminCommentsPage.jsx";
 import AdminPostsPage from "./pages/admin/AdminPostsPage/AdminPostsPage.jsx";
 import AdminUsersPage from "./pages/admin/AdminUsersPage/AdminUsersPage.jsx";
 import BlogsPage from "./pages/BlogsPage/BlogsPage.jsx";
@@ -41,6 +42,7 @@ function AppContent() {
           <Route path="users" element={<AdminUsersPage />} />
           <Route path="listings" element={<AdminListingsPage />} />
           <Route path="posts" element={<AdminPostsPage />} />
+          <Route path="comments" element={<AdminCommentsPage />} />
         </Route>
       </Routes>
     </>

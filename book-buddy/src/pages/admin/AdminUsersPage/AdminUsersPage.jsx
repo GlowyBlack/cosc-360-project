@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import API, { authHeader } from "../../../config/api.js";
 import "./AdminUsersPage.css";
-import "./AdminDashboardPage.css";
+import "../AdminDashboardPage/AdminDashboardPage.css";
 
 const PAGE_SIZE = 10;
 const PAGE_BUTTON_WINDOW = 10;

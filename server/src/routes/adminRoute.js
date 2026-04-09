@@ -15,5 +15,23 @@ router.delete("/books/:id", requireAuth, requireAdmin, adminController.deleteBoo
 router.get("/posts", requireAuth, requireAdmin, adminController.listPosts);
 router.put("/posts/:id/remove", requireAuth, requireAdmin, adminController.removePost);
 router.put("/posts/:id/restore", requireAuth, requireAdmin, adminController.restorePost);
+router.get(
+  "/comments",
+  requireAuth,
+  requireAdmin,
+  adminController.listComments
+);
+router.put(
+  "/comments/:id/remove",
+  requireAuth,
+  requireAdmin,
+  adminController.removeComment
+);
+router.put(
+  "/comments/:id/restore",
+  requireAuth,
+  requireAdmin,
+  adminController.restoreComment
+);
 
 export default router;
