@@ -1,3 +1,5 @@
+import API, { authHeader, flashSessionExpired } from "../../config/api.js";
+
 export const PREVIEW_MAX_CHARS = 600;
 
 export function postTag(post) {
@@ -11,9 +13,7 @@ export function postTag(post) {
 export function sanitizePostHtml(html) {
   try {
     const doc = new DOMParser().parseFromString(String(html), "text/html");
-    doc
-      .querySelectorAll("script,iframe,object,embed")
-      .forEach((el) => el.remove());
+    doc.querySelectorAll("script,iframe,object,embed").forEach((el) => el.remove());
     doc.querySelectorAll("a[href]").forEach((a) => {
       const h = a.getAttribute("href") ?? "";
       if (/^\s*javascript:/i.test(h)) a.removeAttribute("href");
@@ -55,4 +55,25 @@ export function PostBody({ content }) {
     );
   }
   return <p className="blogs-post-content">{raw}</p>;
+}
+
+export async function togglePostReaction({ postId, mode, logout }) {
+  if (!postId) throw new Error("Post id is required");
+  if (mode !== "like" && mode !== "dislike") {
+    throw new Error("Invalid reaction mode");
+  }
+  const response = await fetch(`${API}/posts/${encodeURIComponent(postId)}/${mode}`, {
+    method: "PATCH",
+    headers: { ...authHeader() },
+  });
+  const data = await response.json().catch(() => ({}));
+  if (response.status === 401) {
+    flashSessionExpired();
+    logout?.();
+    throw new Error(data.message ?? "Not authenticated");
+  }
+  if (!response.ok) {
+    throw new Error(data.message ?? `Could not ${mode} post`);
+  }
+  return data;
 }
