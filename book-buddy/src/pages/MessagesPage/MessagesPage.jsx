@@ -38,7 +38,7 @@ function requestInboxTab(request) {
   const status = String(request?.status ?? "").toLowerCase();
   const type = String(request?.type ?? "").toLowerCase();
 
-  if (status === "cancelled") return "ongoing";
+  if (status === "cancelled") return null;
   if (status === "pending") return "ongoing";
   if (status === "declined" || status === "returned") return "archived";
 
@@ -50,6 +50,7 @@ function requestInboxTab(request) {
     }
     return "archived";
   }
+
   return "ongoing";
 }
 
@@ -68,6 +69,7 @@ function requestAllowsSending(request) {
     }
     return false;
   }
+
   return false;
 }
 
@@ -138,12 +140,14 @@ export default function MessagesPage() {
       }
       const normalized = data.threads
         .map((row) => threadFromInboxRow(row, sessionUserId))
-        .filter((thread) => thread.requestId);
+        .filter((thread) => thread.requestId)
+        .filter((thread) => String(thread.request?.status ?? "").toLowerCase() !== "cancelled");
       setThreads(normalized);
       setActiveThreadId((prev) => {
-        if (prev) return prev;
+        if (prev && normalized.some((t) => t.requestId === prev)) return prev;
         const ongoingFirst = normalized.find((t) => requestInboxTab(t.request) === "ongoing");
-        return ongoingFirst?.requestId ?? normalized[0]?.requestId ?? "";
+        const archivedFirst = normalized.find((t) => requestInboxTab(t.request) === "archived");
+        return ongoingFirst?.requestId ?? archivedFirst?.requestId ?? "";
       });
     } catch (error) {
       setThreads([]);

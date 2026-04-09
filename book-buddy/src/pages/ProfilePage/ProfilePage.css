@@ -21,7 +21,6 @@
   padding: 1rem 1rem 2rem;
 }
 
-/* Single card: profile header + stats box */
 .profile-sheet {
   background: var(--color-surface);
   border: 1px solid var(--color-border);

@@ -12,5 +12,6 @@ router.post("/", requireAuth, postController.createPost);
 router.patch("/:postId", requireAuth, postController.updatePost);
 router.delete("/:postId", requireAuth, postController.deletePost);
 router.patch("/:postId/like", requireAuth, postController.toggleLike);
+router.patch("/:postId/dislike", requireAuth, postController.toggleDislike);
 
 export default router;

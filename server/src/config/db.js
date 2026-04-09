@@ -4,6 +4,7 @@ import Request from '../models/request.js'
 import Comment from '../models/comment.js'
 import Follow from '../models/following.js'
 import Review from '../models/review.js'
+import Post from '../models/post.js'
 
 dotenv.config()
 
@@ -19,6 +20,16 @@ async function startup() {
         await Comment.syncIndexes();
         await Follow.syncIndexes();
         await Review.syncIndexes();
+       await Post.updateMany(
+            { $or: [{ likeCount: { $exists: false } }, { likeCount: null }] },
+            [{ $set: { likeCount: { $size: { $ifNull: ["$likes", []] } } } }],
+            { updatePipeline: true },
+        );
+        await Post.updateMany(
+            { $or: [{ dislikeCount: { $exists: false } }, { dislikeCount: null }] },
+            [{ $set: { dislikeCount: { $size: { $ifNull: ["$dislikes", []] } } } }],
+            { updatePipeline: true },
+        );
         console.log("Connected to MongoDB");
     } catch (error) {
         console.error("MongoDB connection error:", error);

@@ -168,7 +168,7 @@ export default function CreatePostComposer({ onSubmit, submitting = false }) {
         role="textbox"
         aria-multiline="true"
         aria-label="Post body"
-        data-placeholder="Begin your archival entry..."
+        data-placeholder="Begin your discussion"
         onInput={(e) => syncEmpty(e.currentTarget)}
         onBlur={(e) => syncEmpty(e.currentTarget)}
       />

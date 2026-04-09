@@ -1,5 +1,3 @@
-/** Placeholder discover listings — replace with API later. */
-
 export const DISCOVER_FILTERS = [
   "All",
   "Action",

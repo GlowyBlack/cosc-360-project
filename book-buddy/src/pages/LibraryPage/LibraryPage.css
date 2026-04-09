@@ -10,7 +10,7 @@
 
 @media (min-width: 900px) {
   .library-page {
-    padding-bottom: 2rem;
+    padding-bottom: 0;
   }
 }
 
@@ -22,7 +22,6 @@
   padding: 1.5rem 1.25rem 3rem;
 }
 
-/* Hero — headline + CTA */
 .library-hero {
   display: flex;
   flex-direction: column;
@@ -85,7 +84,6 @@
   transform: scale(0.98);
 }
 
-/* Tabs */
 .library-tabs {
   display: flex;
   flex-wrap: wrap;
@@ -126,7 +124,6 @@
   border-radius: 1px;
 }
 
-/* Grid */
 .library-page-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -159,7 +156,6 @@
   line-height: 1.55;
 }
 
-/* Library book card (Stitch-style) */
 .library-book-card {
   display: flex;
   flex-direction: column;
@@ -266,7 +262,6 @@
   color: var(--color-outline);
 }
 
-/* Hover: edit / delete on cover */
 .library-book-card-actions {
   position: absolute;
   inset: 0;
