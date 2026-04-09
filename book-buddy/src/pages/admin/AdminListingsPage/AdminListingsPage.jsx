@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import API, { authHeader } from "../../../config/api.js";
 import { BOOK_GENRES } from "../../../constants/bookGenres.js";
 import "./AdminListingsPage.css";
-import "./AdminDashboardPage.css";
+import "../AdminDashboardPage/AdminDashboardPage.css";
 
 const PAGE_SIZE = 10;
 const PAGE_BUTTON_WINDOW = 10;
