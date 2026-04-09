@@ -62,7 +62,7 @@ const PostRepository = {
     },
 
     async removeLike(postId, userId) {
-        return await Post.findOneAndUpdate(
+        return await post.findOneAndUpdate(
             { _id: postId, likes: userId },
             { $pull: { likes: userId }, $inc: { likeCount: -1 } },
             { returnDocument: "after", runValidators: false },

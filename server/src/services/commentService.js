@@ -76,9 +76,33 @@ const CommentService = {
 
         const hasLiked = (comment.likes ?? []).some((id) => String(id) === String(userId));
         if (hasLiked) {
-            return await commentRepository.removeLike(commentId, userId);
+            const updated = await commentRepository.removeLike(commentId, userId);
+            return updated ?? (await commentRepository.findById(commentId));
         }
-        return await commentRepository.addLike(commentId, userId);
+        const hadDisliked = (comment.dislikes ?? []).some((id) => String(id) === String(userId));
+        if (hadDisliked) {
+            await commentRepository.removeDislike(commentId, userId);
+        }
+        const updated = await commentRepository.addLike(commentId, userId);
+        return updated ?? (await commentRepository.findById(commentId));
+    },
+
+    async toggleDislike({ commentId, userId }) {
+        const comment = await commentRepository.findById(commentId);
+        if (!comment) throw new Error("Comment not found");
+        if (comment.isRemoved) throw new Error("Removed comments cannot be disliked");
+
+        const hasDisliked = (comment.dislikes ?? []).some((id) => String(id) === String(userId));
+        if (hasDisliked) {
+            const updated = await commentRepository.removeDislike(commentId, userId);
+            return updated ?? (await commentRepository.findById(commentId));
+        }
+        const hadLiked = (comment.likes ?? []).some((id) => String(id) === String(userId));
+        if (hadLiked) {
+            await commentRepository.removeLike(commentId, userId);
+        }
+        const updated = await commentRepository.addDislike(commentId, userId);
+        return updated ?? (await commentRepository.findById(commentId));
     },
 };
 
