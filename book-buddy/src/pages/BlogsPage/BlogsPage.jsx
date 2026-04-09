@@ -38,13 +38,18 @@ export default function BlogsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [sortMode, setSortMode] = useState("top");
   const [reactingPostId, setReactingPostId] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const loadPosts = async () => {
     setLoading(true);
     setError("");
     try {
       const headers = { ...authHeader() };
-      const response = await fetch(`${API}/posts`, { headers });
+      const params = new URLSearchParams();
+      if (searchQuery.trim()) params.set("q", searchQuery.trim());
+      const response = await fetch(`${API}/posts${params.toString() ? `?${params}` : ""}`, {
+        headers,
+      });
       const data = await response.json().catch(() => ({}));
       if (response.status === 401) {
         if (headers.Authorization) {
@@ -67,7 +72,7 @@ export default function BlogsPage() {
 
   useEffect(() => {
     void loadPosts();
-  }, []);
+  }, [searchQuery]);
 
   useEffect(() => {
     if (!user) setShowComposer(false);
@@ -140,13 +145,22 @@ export default function BlogsPage() {
         <section
           className={`blogs-header${showComposer ? " blogs-header--composer" : ""}`}
         >
-          <button
-            type="button"
-            className="blogs-sort-toggle"
-            onClick={() => setSortMode((prev) => (prev === "top" ? "new" : "top"))}
-          >
-            {sortMode === "top" ? "Top (Most Likes)" : "New (Created Time)"}
-          </button>
+          <div className="blogs-header-left">
+            <button
+              type="button"
+              className="blogs-sort-toggle"
+              onClick={() => setSortMode((prev) => (prev === "top" ? "new" : "top"))}
+            >
+              {sortMode === "top" ? "Top (Most Likes)" : "New (Created Time)"}
+            </button>
+            <input
+              type="search"
+              className="blogs-search-input"
+              placeholder="Search by book title, author, post title, user"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
           {user ? (
             showComposer ? (
               <button

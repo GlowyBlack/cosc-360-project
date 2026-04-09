@@ -6,8 +6,8 @@ function isOwner(postDoc, userId) {
 }
 
 const PostService = {
-    async getAllPosts({ genre, bookTag }) {
-        return await postRepository.findAll({ genre, bookTag });
+     async getAllPosts({ genre, bookTag, q }) {
+        return await postRepository.findAll({ genre, bookTag, q });
     },
 
     async getPostById(postId) {

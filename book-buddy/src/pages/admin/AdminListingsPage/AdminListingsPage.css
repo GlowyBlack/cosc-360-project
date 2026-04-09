@@ -4,7 +4,7 @@
 
 
 
-@import "./admin-shared.css";
+@import "../admin-shared.css";
 
 .admin-listings__header {
   margin-bottom: 1.5rem;

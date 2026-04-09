@@ -1,4 +1,4 @@
-@import "./admin-shared.css";
+@import "../admin-shared.css";
 
 .admin-posts__header {
   margin-bottom: 1.5rem;

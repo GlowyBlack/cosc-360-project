@@ -6,7 +6,8 @@ const PostController = {
         try {
             const genre = req.query.genre ?? null;
             const bookTag = req.query.bookTag ?? null;
-            const posts = await postService.getAllPosts({ genre, bookTag });
+            const q = req.query.q ?? null;
+            const posts = await postService.getAllPosts({ genre, bookTag, q });
             return res.status(200).json(posts);
         } catch (error) {
             return res.status(500).json({ message: "Server Error", error: error.message });
