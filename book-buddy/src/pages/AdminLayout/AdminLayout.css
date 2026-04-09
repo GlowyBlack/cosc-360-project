@@ -1,0 +1,53 @@
+/* Row layout — overrides #root > * { flex-direction: column } */
+#root .admin-layout {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  font-family: var(--font-sans);
+}
+
+.admin-layout {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  font-family: var(--font-sans);
+}
+
+.admin-layout__sidebar {
+  flex-shrink: 0;
+  width: 17.5rem;
+  min-width: 17.5rem;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.admin-layout__main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-admin-canvas);
+}
+
+.admin-layout__scroll {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}

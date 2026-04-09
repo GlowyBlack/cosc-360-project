@@ -100,6 +100,10 @@
   opacity: 1;
 }
 
+.reg-nav-link--admin.reg-nav-link--active {
+  color: var(--color-admin-brand);
+}
+
 .reg-nav-link--profile {
   padding: 0.5rem;
   border-radius: 9999px;
@@ -165,6 +169,25 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+}
+
+.reg-nav-mobile-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.reg-nav-mobile-admin-link {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--color-admin-brand);
+}
+
+.reg-nav-mobile-admin-link:hover {
+  text-decoration: underline;
 }
 
 .reg-nav-mobile-brand {

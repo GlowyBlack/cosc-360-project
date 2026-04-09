@@ -1,0 +1,157 @@
+@import "./admin-shared.css";
+
+.admin-users__header {
+  margin-bottom: 1.5rem;
+}
+
+.admin-users__title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--color-on-surface);
+}
+
+.admin-users__subtitle {
+  margin: 0.35rem 0 0;
+  font-size: 0.9375rem;
+  color: var(--color-on-surface-variant);
+  max-width: 36rem;
+  line-height: 1.45;
+}
+
+.admin-users__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.admin-users__search-label {
+  width: 100%;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-on-surface-variant);
+}
+
+.admin-users__search {
+  flex: 1 1 16rem;
+  min-width: 0;
+  max-width: 24rem;
+  padding: 0.65rem 1.1rem;
+  font-size: 0.9375rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-container);
+  color: var(--color-on-surface);
+  outline: none;
+}
+
+.admin-users__search:focus {
+  border-color: var(--color-on-surface);
+  box-shadow: 0 0 0 1px var(--color-on-surface);
+}
+
+.admin-users__meta {
+  font-size: 0.8125rem;
+  color: var(--color-on-surface-variant);
+  margin-left: auto;
+}
+
+.admin-users__table-wrap {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.admin-users__username {
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
+.admin-users__status {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.admin-users__status--active {
+  color: var(--color-success);
+}
+
+.admin-users__status--suspended {
+  color: var(--color-warning);
+}
+
+.admin-users__status--banned {
+  color: var(--color-danger);
+}
+
+.admin-users__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.admin-users__action-btn {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.625rem;
+}
+
+.admin-users__protected {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+}
+
+.admin-users__note {
+  font-size: 0.75rem;
+  color: var(--color-on-surface-variant);
+}
+
+.admin-users__pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.admin-users__pagination-pages {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.admin-users__pagination-step {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.75rem;
+}
+
+.admin-users__pagination-num {
+  min-width: 2.25rem;
+  padding: 0.45rem 0.5rem;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-users__pagination-num.is-active {
+  pointer-events: none;
+}
+
+.admin-users__pagination-chunk {
+  min-width: 2.25rem;
+  padding: 0.45rem 0.5rem;
+  font-size: 1rem;
+  line-height: 1;
+  letter-spacing: 0.05em;
+}
