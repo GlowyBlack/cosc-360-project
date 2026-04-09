@@ -147,6 +147,22 @@ const AdminController = {
     }
   },
 
+  async unbanUser(req, res) {
+    try {
+      const user = await User.findByIdAndUpdate(
+        req.params.id,
+        { isBanned: false },
+        { returnDocument: "after" }
+      )
+        .select("-passwordHash")
+        .lean();
+      if (!user) return res.status(404).json({ message: "User not found" });
+      return res.json(user);
+    } catch {
+      return res.status(500).json({ message: "Server Error" });
+    }
+  },
+
   async getBooks(req, res) {
     try {
       const books = await Book.find().lean();
