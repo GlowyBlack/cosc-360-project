@@ -7,7 +7,8 @@ export function postTag(post) {
   const author = String(post?.bookTag?.author ?? "").trim();
   if (title && author) return `${title} (${author})`;
   if (title) return title;
-  return "General discussion";
+  if (author) return `(${author})`;
+  return "General Discussion";
 }
 
 export function sanitizePostHtml(html) {

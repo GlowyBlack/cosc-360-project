@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
 import { BOOK_GENRES } from "../constants/bookGenres.js";
 
+/*
+TODO:
+- Add is removed to book so even if users delete book, admins can still see them
+*/
+
 const BookSchema = new mongoose.Schema({
     bookTitle: {type: String, required: true, trim: true },
     bookAuthor: {type: String, required: true, trim: true },

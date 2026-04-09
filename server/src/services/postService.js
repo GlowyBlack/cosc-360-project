@@ -6,15 +6,15 @@ function isOwner(postDoc, userId) {
 }
 
 const PostService = {
-    async getAllPosts({ genre, bookTag }) {
-        return await postRepository.findAll({ genre, bookTag });
+     async getAllPosts({ genre, bookTag, q }) {
+        return await postRepository.findAll({ genre, bookTag, q });
     },
 
     async getPostById(postId) {
         const post = await postRepository.findById(postId);
         if (!post || post.isRemoved) return null;
 
-        const comments = await commentRepository.findByPostId(postId);
+        const comments = await commentRepository.findByPostId({ postId, includeRemoved: false });
         return { post, comments };
     },
 

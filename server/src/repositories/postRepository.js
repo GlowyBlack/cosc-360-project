@@ -1,7 +1,8 @@
 import post from "../models/post.js";
+import user from "../models/user.js";
 
 const PostRepository = {
-    async findAll({ genre, bookTag }) {
+    async findAll({ genre, bookTag, q }) {
         const query = { isRemoved: false };
 
         if (genre) {
@@ -15,6 +16,26 @@ const PostRepository = {
                 { "bookTag.author": { $regex: safe, $options: "i" } },
             ];
         }
+
+        const search = String(q ?? "").trim();
+        if (search) {
+            const safe = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            const usernameMatches = await user.find(
+                { username: { $regex: safe, $options: "i" } },
+                { _id: 1 },
+            ).lean();
+            const authorIds = usernameMatches.map((u) => u._id);
+            const searchOr = [
+                { title: { $regex: safe, $options: "i" } },
+                { "bookTag.title": { $regex: safe, $options: "i" } },
+                { "bookTag.author": { $regex: safe, $options: "i" } },
+            ];
+            if (authorIds.length > 0) {
+                searchOr.push({ authorId: { $in: authorIds } });
+            }
+            query.$and = [...(query.$and ?? []), { $or: searchOr }];
+        }
+
 
         return await post.find(query)
             .sort({ createdAt: -1 })
@@ -62,7 +83,7 @@ const PostRepository = {
     },
 
     async removeLike(postId, userId) {
-        return await Post.findOneAndUpdate(
+        return await post.findOneAndUpdate(
             { _id: postId, likes: userId },
             { $pull: { likes: userId }, $inc: { likeCount: -1 } },
             { returnDocument: "after", runValidators: false },

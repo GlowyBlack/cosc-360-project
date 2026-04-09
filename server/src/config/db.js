@@ -30,6 +30,16 @@ async function startup() {
             [{ $set: { dislikeCount: { $size: { $ifNull: ["$dislikes", []] } } } }],
             { updatePipeline: true },
         );
+        await Comment.updateMany(
+            { $or: [{ likeCount: { $exists: false } }, { likeCount: null }] },
+            [{ $set: { likeCount: { $size: { $ifNull: ["$likes", []] } } } }],
+            { updatePipeline: true },
+        );
+        await Comment.updateMany(
+            { $or: [{ dislikeCount: { $exists: false } }, { dislikeCount: null }] },
+            [{ $set: { dislikeCount: { $size: { $ifNull: ["$dislikes", []] } } } }],
+            { updatePipeline: true },
+        );
         console.log("Connected to MongoDB");
     } catch (error) {
         console.error("MongoDB connection error:", error);
