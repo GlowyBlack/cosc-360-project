@@ -19,26 +19,25 @@ export default function AddBookPage() {
     setSubmitting(true);
     setError("");
     try {
-      const bookImage = ""
-
-      const payload = {
-        bookTitle: values.title.trim(),
-        bookAuthor: values.author.trim(),
-        genre: Array.isArray(values.genres) ? values.genres : [],
-        condition: values.condition,
-        description: values.description.trim(),
-        ownerNote: values.ownerNote.trim(),
-        bookImage,
-        isAvailable: true,
-      };
+      if (!values.image) {
+        throw new Error("A real book cover image is required");
+      }
+      const payload = new FormData();
+      payload.append("bookTitle", values.title.trim());
+      payload.append("bookAuthor", values.author.trim());
+      payload.append("condition", values.condition);
+      payload.append("description", values.description.trim());
+      payload.append("ownerNote", values.ownerNote.trim());
+      payload.append("isAvailable", "true");
+      (Array.isArray(values.genres) ? values.genres : []).forEach((g) => payload.append("genre", g));
+      payload.append("image", values.image);
 
       const response = await fetch(`${API}/books`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           ...authHeader(),
         },
-        body: JSON.stringify(payload),
+        body: payload,
       });
 
       const data = await response.json().catch(() => ({}));

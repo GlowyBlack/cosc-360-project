@@ -3,6 +3,15 @@ import UserRepository from "../repositories/userRepository.js";
 import bookRepository from "../repositories/bookRepository.js";
 import requestRepository from "../repositories/requestRepository.js";
 
+function isAllowedRegistrationEmail(email) {
+  const value = String(email ?? "").trim().toLowerCase();
+  if (!value) return false;
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailPattern.test(value)) return false;
+  const domain = value.split("@")[1] ?? "";
+  return domain === "example.com" || domain === "gmail.com" || domain === "outlook.com";
+}
+
 function sanitizeUser(userDoc) {
   return {
     id: userDoc._id,
@@ -19,7 +28,7 @@ function sanitizeUser(userDoc) {
 }
 
 const AuthService = {
-  async register({ firstName, lastName, email, password, city, provinceState }) {
+  async register({ firstName, lastName, email, password, city, provinceState, profileImage }) {
     const first = String(firstName || "").trim();
     const last = String(lastName || "").trim();
     const emailNorm = String(email || "").trim().toLowerCase();
@@ -30,8 +39,15 @@ const AuthService = {
     if (!first || !last || !emailNorm || !passwordRaw) {
       throw new Error("registration_fields_required");
     }
+    if (!isAllowedRegistrationEmail(emailNorm)) {
+      throw new Error("invalid_email_domain");
+    }
     if (!cityTrim || !provinceTrim) {
       throw new Error("location_required");
+    }
+    const cleanProfileImage = String(profileImage || "").trim();
+    if (!cleanProfileImage) {
+      throw new Error("profile_image_required");
     }
     const location = `${cityTrim}, ${provinceTrim}`;
 
@@ -54,6 +70,7 @@ const AuthService = {
       passwordHash,
       role: "Registered",
       location,
+      profileImage: cleanProfileImage,
     });
 
     return sanitizeUser(created);

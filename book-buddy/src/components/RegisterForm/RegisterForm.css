@@ -61,6 +61,11 @@
   font-weight: 600;
 }
 
+.register-form-avatar-wrap {
+  display: flex;
+  justify-content: center;
+}
+
 @media (max-width: 520px) {
   .register-form-row {
     flex-direction: column;

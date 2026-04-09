@@ -4,6 +4,7 @@ import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import BookForm from "../../components/BookForm/BookForm.jsx";
 import API, { authHeader } from "../../config/api.js";
+import { FALLBACK_BOOK_COVER_IMAGE } from "../../config/images.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import "../AddBookPage/AddBookPage.css";
 
@@ -75,24 +76,31 @@ export default function EditBookPage() {
     setSubmitting(true);
     setError("");
     try {
-      const payload = {
-        bookTitle: values.title.trim(),
-        bookAuthor: values.author.trim(),
-        genre: Array.isArray(values.genres) ? values.genres : [],
-        condition: values.condition,
-        description: values.description.trim(),
-        ownerNote: values.ownerNote.trim(),
-        isAvailable: book?.isAvailable !== false,
-      };
-      payload.bookImage = "";
+      const existingImage = String(book?.bookImage ?? "").trim();
+      if (!values.image && (!existingImage || existingImage === FALLBACK_BOOK_COVER_IMAGE)) {
+        throw new Error("A real book cover image is required");
+      }
+
+      const payload = new FormData();
+      payload.append("bookTitle", values.title.trim());
+      payload.append("bookAuthor", values.author.trim());
+      payload.append("condition", values.condition);
+      payload.append("description", values.description.trim());
+      payload.append("ownerNote", values.ownerNote.trim());
+      payload.append("isAvailable", String(book?.isAvailable !== false));
+      (Array.isArray(values.genres) ? values.genres : []).forEach((g) => payload.append("genre", g));
+      if (values.image) {
+        payload.append("image", values.image);
+      } else {
+        payload.append("bookImage", existingImage);
+      }
 
       const response = await fetch(`${API}/books/${bookId}`, {
         method: "PATCH",
         headers: {
-          "Content-Type": "application/json",
           ...authHeader(),
         },
-        body: JSON.stringify(payload),
+        body: payload,
       });
 
       const data = await response.json().catch(() => ({}));
@@ -135,6 +143,7 @@ export default function EditBookPage() {
           <BookForm
             key={bookId}
             initialValues={initialValues}
+            existingImageUrl={book?.bookImage ?? ""}
             submitting={submitting}
             submitLabel={submitting ? "Saving…" : "Save changes"}
             onSubmit={handleUpdate}

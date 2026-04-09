@@ -3,10 +3,6 @@ import MaterialIcon from "../../../components/MaterialIcon/MaterialIcon.jsx";
 import API, { authHeader } from "../../../config/api.js";
 import "./AdminDashboardPage.css";
 
-/**
- * Metrics: GET /admin/users, GET /admin/users (counts).
- * Trends, borrows, investigations table: see docs/admin-endpoints-todo.md
- */
 export default function AdminDashboardPage() {
   const [users, setUsers] = useState([]);
   const [books, setBooks] = useState([]);

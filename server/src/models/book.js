@@ -9,7 +9,7 @@ TODO:
 const BookSchema = new mongoose.Schema({
     bookTitle: {type: String, required: true, trim: true },
     bookAuthor: {type: String, required: true, trim: true },
-    bookImage: {type: String, default: null,},
+    bookImage: { type: String, required: true, trim: true },
     description: {type: String, default: null, trim: true},
     genre: { type: [String], enum: BOOK_GENRES, default: [] },
     bookOwner: {type: mongoose.Schema.Types.ObjectId, ref: "User", required: true},

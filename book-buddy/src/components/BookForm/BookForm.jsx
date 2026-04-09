@@ -3,6 +3,7 @@ import TextField from "../TextField/TextField.jsx";
 import Button from "../Button/Button.jsx";
 import MaterialIcon from "../MaterialIcon/MaterialIcon.jsx";
 import API from "../../config/api.js";
+import { FALLBACK_BOOK_COVER_IMAGE } from "../../config/images.js";
 import "./BookForm.css";
 
 const CONDITION_OPTIONS = ["New", "Like New", "Good", "Fair", "Worn"];
@@ -39,10 +40,12 @@ export default function BookForm({
   onSubmit,
   submitLabel = "Save",
   submitting = false,
+  existingImageUrl = "",
 }) {
   const [values, setValues] = useState(() => buildInitialGenreValues(initialValues));
   const [errors, setErrors] = useState({});
   const [genreOptions, setGenreOptions] = useState([]);
+  const cleanExistingImageUrl = String(existingImageUrl ?? "").trim();
 
   useEffect(() => {
     let cancelled = false;
@@ -85,6 +88,12 @@ export default function BookForm({
     if (!values.genres?.length) e.genres = "Select at least one genre";
     if (!values.condition.trim()) e.condition = "Condition is required";
     if (!values.description.trim()) e.description = "Book summary is required";
+    const fallbackUrl = String(FALLBACK_BOOK_COVER_IMAGE ?? "").trim();
+    const noNewImage = !values.image;
+    const noExistingImage = !cleanExistingImageUrl || cleanExistingImageUrl === fallbackUrl;
+    if (noNewImage && noExistingImage) {
+      e.image = "A real book cover image is required";
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -100,6 +109,13 @@ export default function BookForm({
       <div className="book-form-field">
         <p className="book-form-label">Cover image (optional)</p>
         <label className="book-form-upload" htmlFor="book-image">
+          {cleanExistingImageUrl ? (
+            <img
+              src={cleanExistingImageUrl}
+              alt="Current book cover"
+              className="book-form-upload-preview"
+            />
+          ) : null}
           <span className="book-form-upload-icon-wrap" aria-hidden>
             <MaterialIcon name="add_a_photo" className="book-form-upload-icon" />
           </span>
@@ -122,6 +138,7 @@ export default function BookForm({
           }}
         />
       </div>
+      {errors.image && <p className="book-form-error">{errors.image}</p>}
 
       <TextField
         id="book-title"

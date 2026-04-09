@@ -22,6 +22,9 @@ const BookController = {
     async createBook(req, res) {
         try {
             const data = { ...req.body };
+            if (req.file?.path || req.file?.secure_url) {
+                data.bookImage = req.file.path ?? req.file.secure_url;
+            }
             const userID = req.user?._id ?? req.user?.id;
             if (!userID) {
                 return res.status(400).json({ message: "Unauthorized" });
@@ -36,6 +39,7 @@ const BookController = {
                 "Please provide the summary of the book",
                 "Select at least one genre",
                 "Book owner is required",
+                "Book cover image is required",
             ];
             if (badRequest.includes(msg)) {
                 return res.status(400).json({ message: msg });
@@ -94,7 +98,11 @@ const BookController = {
             if (!userId) {
                 return res.status(401).json({ message: "Unauthorized" });
             }
-            const book = await bookService.updateDetails(bookId, userId, req.body);
+            const payload = { ...req.body };
+            if (req.file?.path || req.file?.secure_url) {
+                payload.bookImage = req.file.path ?? req.file.secure_url;
+            }
+            const book = await bookService.updateDetails(bookId, userId, payload);
             return res.status(200).json(book);
         } catch (error) {
             const msg = error.message;
@@ -105,6 +113,9 @@ const BookController = {
                 return res.status(403).json({ message: msg });
             }
             if (msg === "Book ID is required." || msg === "User ID is required") {
+                return res.status(400).json({ message: msg });
+            }
+            if (msg === "Book cover image is required") {
                 return res.status(400).json({ message: msg });
             }
             return res.status(500).json({ message: "Server Error", error: msg });

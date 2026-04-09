@@ -4,12 +4,18 @@ import { signAccessToken } from "../middleware/auth.js";
 const AuthController = {
   async register(req, res) {
     try {
-      const user = await authService.register(req.body);
+      const payload = { ...req.body };
+      if (req.file?.path || req.file?.secure_url) {
+        payload.profileImage = req.file.path ?? req.file.secure_url;
+      }
+      const user = await authService.register(payload);
       return res.status(201).json(user);
     } catch (e) {
       const status =
         e.message === "registration_fields_required" ||
+        e.message === "invalid_email_domain" ||
         e.message === "location_required" ||
+        e.message === "profile_image_required" ||
         e.message === "username_taken" ||
         e.message === "email_taken"
           ? 400
@@ -18,8 +24,12 @@ const AuthController = {
       const detail =
         e.message === "registration_fields_required"
           ? "First name, last name, email, and password are required"
+          : e.message === "invalid_email_domain"
+          ? "Use a valid email from example.com, gmail.com, or outlook.com"
           : e.message === "location_required"
           ? "City and province or state are required"
+          : e.message === "profile_image_required"
+          ? "Profile picture is required"
           : e.message === "username_taken"
           ? "That display name is already taken"
           : e.message === "email_taken"

@@ -6,12 +6,14 @@ import PasswordField from "../PasswordField/PasswordField.jsx";
 import Button from "../Button/Button.jsx";
 import DividerWithLabel from "../DividerWithLabel/DividerWithLabel.jsx";
 import MaterialIcon from "../MaterialIcon/MaterialIcon.jsx";
+import AvatarUpload from "../AvatarUpload/AvatarUpload.jsx";
 import "./RegisterForm.css";
 
 export default function RegisterForm({
   loginHref = "/login",
   backHref = "/",
 }) {
+  const allowedEmailDomains = ["example.com", "gmail.com", "outlook.com"];
   const navigate = useNavigate();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -20,6 +22,7 @@ export default function RegisterForm({
   const [provinceState, setProvinceState] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [photoFile, setPhotoFile] = useState(null);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -39,6 +42,14 @@ export default function RegisterForm({
     confirmPassword.length > 0 && password !== confirmPassword;
   const showPasswordRequirementsWarning =
     password.length > 0 && !passwordMeetsRequirements;
+    
+  const emailIsAllowed = useMemo(() => {
+    const value = String(email ?? "").trim().toLowerCase();
+    const basicEmailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!basicEmailPattern.test(value)) return false;
+    const domain = value.split("@")[1] ?? "";
+    return allowedEmailDomains.includes(domain);
+  }, [email]);
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -54,20 +65,29 @@ export default function RegisterForm({
       setError("Please make sure your passwords match.");
       return;
     }
+    if (!emailIsAllowed) {
+      setError("Use a valid email from example.com, gmail.com, or outlook.com.");
+      return;
+    }
+    if (!photoFile) {
+      setError("Please upload a profile picture.");
+      return;
+    }
 
     setSubmitting(true);
     try {
+      const payload = new FormData();
+      payload.append("firstName", String(firstName || "").trim());
+      payload.append("lastName", String(lastName || "").trim());
+      payload.append("email", String(email || "").trim());
+      payload.append("city", String(city || "").trim());
+      payload.append("provinceState", String(provinceState || "").trim());
+      payload.append("password", password);
+      payload.append("image", photoFile);
+
       const response = await fetch(`${API}/auth/register`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          firstName: String(firstName || "").trim(),
-          lastName: String(lastName || "").trim(),
-          email: String(email || "").trim(),
-          city: String(city || "").trim(),
-          provinceState: String(provinceState || "").trim(),
-          password,
-        }),
+        body: payload,
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
@@ -95,6 +115,14 @@ export default function RegisterForm({
             {error}
           </p>
         ) : null}
+        <div className="register-form-avatar-wrap">
+          <AvatarUpload
+            value=""
+            file={photoFile}
+            onChange={(file) => setPhotoFile(file ?? null)}
+            label="Profile photo (required)"
+          />
+        </div>
         <div className="register-form-row">
           <TextField
             id="register-first-name"
@@ -132,6 +160,11 @@ export default function RegisterForm({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
+        {email.length > 0 && !emailIsAllowed ? (
+          <p className="register-form-inline-error" role="alert">
+            Only example.com, gmail.com, and outlook.com emails are accepted.
+          </p>
+        ) : null}
         <div className="register-form-row">
           <TextField
             id="register-city"
@@ -191,7 +224,9 @@ export default function RegisterForm({
           variant="terracotta"
           type="submit"
           className="register-form-submit"
-          disabled={submitting || !passwordMeetsRequirements || !passwordsMatch}
+          disabled={
+            submitting || !passwordMeetsRequirements || !passwordsMatch || !photoFile || !emailIsAllowed
+          }
         >
           <span className="register-form-submit-inner">
             {submitting ? "Creating…" : "Create account"}

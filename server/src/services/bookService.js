@@ -1,6 +1,19 @@
 import bookRepository from "../repositories/bookRepository.js"
 import fs from "fs";
 
+function normalizeGenreInput(rawGenre) {
+    if (Array.isArray(rawGenre)) {
+        return rawGenre.map((g) => String(g).trim()).filter(Boolean);
+    }
+    if (rawGenre == null) return [];
+    const one = String(rawGenre).trim();
+    if (!one) return [];
+    if (one.includes(",")) {
+        return one.split(",").map((g) => g.trim()).filter(Boolean);
+    }
+    return [one];
+}
+
 const BookService = {
     async getAllBooks() {
         return await bookRepository.findAll();
@@ -15,14 +28,15 @@ const BookService = {
         if (!description) throw new Error("Please provide the summary of the book");
         
         const rawGenre = data.genre ?? data.genres;
-        const genre = Array.isArray(rawGenre)
-            ? rawGenre.map((g) => String(g).trim()).filter(Boolean)
-            : [];
+        const genre = normalizeGenreInput(rawGenre);
 
         if (genre.length < 1) throw new Error("Select at least one genre");
 
         const bookOwner = data.bookOwner;
         if (!bookOwner) throw new Error("Book owner is required");
+
+        const image = String(data.bookImage ?? "").trim();
+        if (!image) throw new Error("Book cover image is required");
 
         const doc = {
             bookTitle,
@@ -30,13 +44,10 @@ const BookService = {
             description,
             genre,
             bookOwner,
-            bookImage:
-                data.bookImage != null && data.bookImage !== ""
-                    ? String(data.bookImage)
-                    : null,
+            bookImage: image,
             condition: data.condition ?? "Good",
             ownerNote: String(data.ownerNote ?? "").trim(),
-            isAvailable: data.isAvailable !== false,
+            isAvailable: String(data.isAvailable ?? "true") !== "false",
         };
 
         return await bookRepository.createBook(doc);
@@ -63,28 +74,31 @@ const BookService = {
         if (!existing) throw new Error("Book not found");
 
         const ownerId = String(existing.bookOwner?._id ?? existing.bookOwner);
-        if (!ownerId.equals(userId)) throw new Error("You can't edit a book that doesn't belong to you.");
+        if (ownerId !== String(userId)) throw new Error("You can't edit a book that doesn't belong to you.");
 
         const updates = {};
         if (body.bookTitle != null) updates.bookTitle = String(body.bookTitle).trim();
         if (body.bookAuthor != null) updates.bookAuthor = String(body.bookAuthor).trim();
         if (body.description != null) updates.description = String(body.description).trim();
 
-        if (Array.isArray(body.genre)) {
-            updates.genre = body.genre
-                .map((g) => String(g).trim())
-                .filter(Boolean);
+        if (body.genre !== undefined) {
+            updates.genre = normalizeGenreInput(body.genre);
         }
         if (body.condition != null) updates.condition = body.condition;
         if (body.ownerNote != null) updates.ownerNote = String(body.ownerNote).trim();
 
         if (body.bookImage !== undefined) {
-            updates.bookImage =
-                body.bookImage === "" || body.bookImage == null
-                    ? null
-                    : String(body.bookImage);
+            const nextImage = String(body.bookImage ?? "").trim();
+            if (!nextImage) throw new Error("Book cover image is required");
+            updates.bookImage = nextImage;
         }
-        if (body.isAvailable !== undefined) updates.isAvailable = Boolean(body.isAvailable);
+        if (body.isAvailable !== undefined) {
+            updates.isAvailable = String(body.isAvailable) !== "false";
+        }
+        if (updates.bookImage === undefined) {
+            const existingImage = String(existing.bookImage ?? "").trim();
+            if (!existingImage) throw new Error("Book cover image is required");
+        }
         return await bookRepository.updateBook(bookId, updates);
     },
     

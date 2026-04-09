@@ -284,3 +284,16 @@
   min-height: 48px;
   min-width: 48px;
 }
+
+.reg-nav-profile-avatar {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  object-fit: cover;
+  display: block;
+}
+
+.reg-nav-profile-avatar--mobile {
+  width: 1.5rem;
+  height: 1.5rem;
+}

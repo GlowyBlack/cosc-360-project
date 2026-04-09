@@ -20,6 +20,7 @@ export default function RegisteredNav({
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const counts = { messages: messageUnreadCount, requests: requestPendingCount };
+  const profileImage = String(user?.profileImage ?? "").trim();
 
   const handleLogout = () => {
     logout();
@@ -77,7 +78,15 @@ export default function RegisteredNav({
               aria-label={profileNav.label}
             >
               <span className="reg-nav-icon-wrap">
-                <MaterialIcon name={profileNav.icon} className="reg-nav-icon" />
+                {profileImage ? (
+                  <img
+                    src={profileImage}
+                    alt="Profile"
+                    className="reg-nav-profile-avatar"
+                  />
+                ) : (
+                  <MaterialIcon name={profileNav.icon} className="reg-nav-icon" />
+                )}
               </span>
             </NavLink>
             <button
@@ -141,7 +150,15 @@ export default function RegisteredNav({
             aria-label={profileNav.label}
           >
             <span className="reg-nav-icon-wrap">
-              <MaterialIcon name={profileNav.icon} className="reg-nav-bottom-icon" />
+              {profileImage ? (
+                <img
+                  src={profileImage}
+                  alt="Profile"
+                  className="reg-nav-profile-avatar reg-nav-profile-avatar--mobile"
+                />
+              ) : (
+                <MaterialIcon name={profileNav.icon} className="reg-nav-bottom-icon" />
+              )}
             </span>
           </NavLink>
         </div>
