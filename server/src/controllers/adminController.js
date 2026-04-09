@@ -165,7 +165,10 @@ const AdminController = {
 
   async getBooks(req, res) {
     try {
-      const books = await Book.find().lean();
+      const books = await Book.find()
+        .populate("bookOwner", "username email")
+        .sort({ createdAt: -1 })
+        .lean();
       return res.json(books);
     } catch {
       return res.status(500).json({ message: "Server Error" });

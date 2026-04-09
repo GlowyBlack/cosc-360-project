@@ -1,0 +1,229 @@
+
+
+
+
+
+
+@import "./admin-shared.css";
+
+.admin-listings__header {
+  margin-bottom: 1.5rem;
+}
+
+.admin-listings__title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--color-on-surface);
+}
+
+.admin-listings__subtitle {
+  margin: 0.35rem 0 0;
+  font-size: 0.9375rem;
+  color: var(--color-on-surface-variant);
+  max-width: 40rem;
+  line-height: 1.45;
+}
+
+.admin-listings__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.admin-listings__search-label {
+  width: 100%;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-on-surface-variant);
+}
+
+.admin-listings__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.65rem 1rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.admin-listings__search {
+  flex: 1 1 12rem;
+  min-width: 0;
+  max-width: 28rem;
+  padding: 0.65rem 1.1rem;
+  font-size: 0.9375rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-container);
+  color: var(--color-on-surface);
+  outline: none;
+}
+
+.admin-listings__search:focus {
+  border-color: var(--color-on-surface);
+  box-shadow: 0 0 0 1px var(--color-on-surface);
+}
+
+.admin-listings__genre-label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-on-surface-variant);
+  align-self: flex-end;
+  padding-bottom: 0.5rem;
+  margin-right: -0.35rem;
+}
+
+.admin-listings__genre {
+  min-width: 10.5rem;
+  padding: 0.65rem 1.1rem;
+  font-size: 0.9375rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-container);
+  color: var(--color-on-surface);
+  outline: none;
+  cursor: pointer;
+}
+
+.admin-listings__genre:focus {
+  border-color: var(--color-on-surface);
+  box-shadow: 0 0 0 1px var(--color-on-surface);
+}
+
+.admin-listings__meta {
+  font-size: 0.8125rem;
+  color: var(--color-on-surface-variant);
+  margin-left: auto;
+}
+
+.admin-listings__table-wrap {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  overflow-x: auto;
+}
+
+.admin-listings__col-cover {
+  width: 3.5rem;
+}
+
+.admin-listings__cover-cell {
+  vertical-align: middle;
+  width: 3.5rem;
+}
+
+.admin-listings__thumb {
+  display: block;
+  width: 2.5rem;
+  height: 3.25rem;
+  object-fit: cover;
+  border-radius: var(--radius-sm, 4px);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-container);
+}
+
+.admin-listings__no-cover {
+  font-size: 0.75rem;
+  color: var(--color-on-surface-variant);
+}
+
+.admin-listings__book-title {
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
+.admin-listings__owner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.admin-listings__owner-email {
+  font-size: 0.75rem;
+  color: var(--color-on-surface-variant);
+  word-break: break-word;
+}
+
+.admin-listings__genres {
+  font-size: 0.8125rem;
+  color: var(--color-on-surface-variant);
+  max-width: 12rem;
+}
+
+.admin-listings__avail {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.admin-listings__avail--yes {
+  color: var(--color-success);
+}
+
+.admin-listings__avail--no {
+  color: var(--color-on-surface-variant);
+}
+
+.admin-listings__date {
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-on-surface-variant);
+  white-space: nowrap;
+}
+
+.admin-listings__delete {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.625rem;
+}
+
+.admin-listings__pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.admin-listings__pagination-pages {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.admin-listings__pagination-step {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.75rem;
+}
+
+.admin-listings__pagination-num {
+  min-width: 2.25rem;
+  padding: 0.45rem 0.5rem;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-listings__pagination-num.is-active {
+  pointer-events: none;
+}
+
+.admin-listings__pagination-chunk {
+  min-width: 2.25rem;
+  padding: 0.45rem 0.5rem;
+  font-size: 1rem;
+  line-height: 1;
+  letter-spacing: 0.05em;
+}

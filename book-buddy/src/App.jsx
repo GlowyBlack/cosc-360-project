@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import AddBookPage from "./pages/AddBookPage/AddBookPage.jsx";
 import AdminLayout from "./pages/AdminLayout/AdminLayout.jsx";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage.jsx";
+import AdminListingsPage from "./pages/admin/AdminListingsPage.jsx";
 import AdminUsersPage from "./pages/admin/AdminUsersPage.jsx";
 import BlogsPage from "./pages/BlogsPage/BlogsPage.jsx";
 import BookDetailPage from "./pages/BookDetailPage/BookDetailPage.jsx";
@@ -35,6 +36,7 @@ function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboardPage />} />
           <Route path="users" element={<AdminUsersPage />} />
+          <Route path="listings" element={<AdminListingsPage />} />
         </Route>
       </Routes>
     </>
