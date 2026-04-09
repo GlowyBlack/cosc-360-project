@@ -1,9 +1,10 @@
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import MaterialIcon from "../MaterialIcon/MaterialIcon.jsx";
 import "./AvatarUpload.css";
 
 export default function AvatarUpload({
   value,
+  file,
   onChange,
   label = "Profile photo",
 }) {
@@ -11,12 +12,24 @@ export default function AvatarUpload({
   const fileRef = useRef(null);
   const [preview, setPreview] = useState(value || "");
 
+  useEffect(() => {
+    if (!file) {
+      setPreview(value || "");
+      return undefined;
+    }
+
+    const nextPreview = URL.createObjectURL(file);
+    setPreview(nextPreview);
+
+    return () => {
+      URL.revokeObjectURL(nextPreview);
+    };
+  }, [file, value]);
+
   const handleFile = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const url = URL.createObjectURL(file);
-    setPreview(url);
-    if (typeof onChange === "function") onChange(url);
+    if (typeof onChange === "function") onChange(file);
   };
 
   return (

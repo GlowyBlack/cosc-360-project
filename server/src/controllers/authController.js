@@ -80,6 +80,27 @@ const AuthController = {
     }
   },
 
+  async uploadMyImage(req, res) {
+    try {
+      const userId = req.user?._id ?? req.user?.id;
+      if (!userId) return res.status(401).json({ detail: "Not authenticated" });
+      if (!req.file) return res.status(400).json({ detail: "Image file is required" });
+
+      const imageUrl = req.file.path ?? req.file.secure_url ?? null;
+      if (!imageUrl) return res.status(500).json({ detail: "Upload failed" });
+
+      const updated = await authService.updateProfile(userId, { profileImage: imageUrl });
+      if (!updated) return res.status(404).json({ detail: "User not found" });
+
+      return res.status(200).json({
+        profileImage: imageUrl,
+        user: updated,
+      });
+    } catch {
+      return res.status(500).json({ detail: "Server Error" });
+    }
+  },
+
   async getMyStats(req, res) {
     try {
       const userId = req.user?._id ?? req.user?.id;
