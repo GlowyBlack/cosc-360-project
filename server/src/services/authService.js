@@ -76,6 +76,9 @@ const AuthService = {
     if (user.isSuspended) {
       throw new Error("account_suspended");
     }
+    if (user.isBanned) {
+      throw new Error("account_suspended");
+    }
 
     return sanitizeUser(user);
   },
