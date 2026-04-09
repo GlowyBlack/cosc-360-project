@@ -36,6 +36,7 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [bioDraft, setBioDraft] = useState("");
   const [photoDraft, setPhotoDraft] = useState("");
+  const [photoFile, setPhotoFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [errorText, setErrorText] = useState("");
   const [stats, setStats] = useState(null);
@@ -48,6 +49,7 @@ export default function ProfilePage() {
   useEffect(() => {
     setBioDraft(String(user?.bio ?? ""));
     setPhotoDraft(String(user?.profileImage ?? ""));
+    setPhotoFile(null);
   }, [user?.bio, user?.profileImage]);
 
   useEffect(() => {
@@ -142,12 +144,14 @@ export default function ProfilePage() {
 
   const hasChanges = isEditing && (
     String(bioDraft).trim() !== String(user?.bio ?? "").trim() ||
-    String(photoDraft).trim() !== String(user?.profileImage ?? "").trim()
+    String(photoDraft).trim() !== String(user?.profileImage ?? "").trim() ||
+    Boolean(photoFile)
   );
 
   const onCancel = () => {
     setBioDraft(String(user?.bio ?? ""));
     setPhotoDraft(String(user?.profileImage ?? ""));
+    setPhotoFile(null);
     setErrorText("");
     setIsEditing(false);
   };
@@ -157,27 +161,65 @@ export default function ProfilePage() {
     setSaving(true);
     setErrorText("");
     try {
-      const response = await fetch(`${API}/auth/me`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
-        body: JSON.stringify({
-          bio: bioDraft,
-          profileImage: photoDraft,
-        }),
-      });
-      const data = await response.json().catch(() => ({}));
-      if (response.status === 401) {
-        flashSessionExpired();
-        logout();
-        return;
+      let nextUser = user;
+      let nextImage = String(photoDraft).trim();
+
+      if (photoFile) {
+        const formData = new FormData();
+        formData.append("image", photoFile);
+
+        const uploadResponse = await fetch(`${API}/auth/me/image`, {
+          method: "POST",
+          headers: {
+            ...authHeader(),
+          },
+          body: formData,
+        });
+        const uploadData = await uploadResponse.json().catch(() => ({}));
+        if (uploadResponse.status === 401) {
+          flashSessionExpired();
+          logout();
+          return;
+        }
+        if (!uploadResponse.ok) {
+          throw new Error(uploadData.detail ?? uploadData.message ?? "Could not upload profile image");
+        }
+
+        nextImage = String(uploadData.profileImage ?? uploadData.user?.profileImage ?? "").trim();
+        nextUser = uploadData.user ?? nextUser;
       }
-      if (!response.ok) {
-        throw new Error(data.detail ?? data.message ?? "Could not save profile");
+
+      const shouldPatchProfile =
+        String(bioDraft).trim() !== String(nextUser?.bio ?? "").trim() ||
+        String(photoDraft).trim() !== String(nextImage).trim();
+
+      if (shouldPatchProfile) {
+        const response = await fetch(`${API}/auth/me`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+          body: JSON.stringify({
+            bio: bioDraft,
+            profileImage: nextImage,
+          }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (response.status === 401) {
+          flashSessionExpired();
+          logout();
+          return;
+        }
+        if (!response.ok) {
+          throw new Error(data.detail ?? data.message ?? "Could not save profile");
+        }
+        nextUser = data;
       }
-      setSessionUser(data);
+
+      setPhotoDraft(nextImage);
+      setPhotoFile(null);
+      setSessionUser(nextUser);
       setIsEditing(false);
     } catch (error) {
       setErrorText(error.message ?? "Could not save profile");
@@ -199,8 +241,9 @@ export default function ProfilePage() {
                 <AvatarUpload
                   key="editable-avatar"
                   value={photoDraft}
-                  onChange={(next) => {
-                    setPhotoDraft(String(next ?? ""));
+                  file={photoFile}
+                  onChange={(nextFile) => {
+                    setPhotoFile(nextFile ?? null);
                   }}
                   label="Edit photo"
                 />
