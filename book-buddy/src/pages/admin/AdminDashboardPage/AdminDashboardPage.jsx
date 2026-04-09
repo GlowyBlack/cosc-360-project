@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import MaterialIcon from "../../components/MaterialIcon/MaterialIcon.jsx";
-import API, { authHeader } from "../../config/api.js";
+import MaterialIcon from "../../../components/MaterialIcon/MaterialIcon.jsx";
+import API, { authHeader } from "../../../config/api.js";
 import "./AdminDashboardPage.css";
 
 /**

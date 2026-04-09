@@ -1,7 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import AddBookPage from "./pages/AddBookPage/AddBookPage.jsx";
 import AdminLayout from "./pages/AdminLayout/AdminLayout.jsx";
-import AdminDashboardPage from "./pages/AdminDashboardPage/AdminDashboardPage.jsx";
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage/AdminDashboardPage.jsx";
 import AdminListingsPage from "./pages/admin/AdminListingsPage/AdminListingsPage.jsx";
 import AdminPostsPage from "./pages/admin/AdminPostsPage/AdminPostsPage.jsx";
 import AdminUsersPage from "./pages/admin/AdminUsersPage/AdminUsersPage.jsx";
