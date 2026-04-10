@@ -5,6 +5,12 @@ const UserRepository = {
     return User.findById(id);
   },
 
+  async findPublicById(id) {
+    return User.findById(id)
+      .select("username bio profileImage location role isSuspended")
+      .lean();
+  },
+
   async findOneByUsernameOrEmail(usernameNorm, emailNorm) {
     return User.findOne({
       $or: [{ username: usernameNorm }, { email: emailNorm }],

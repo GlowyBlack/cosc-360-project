@@ -1,4 +1,5 @@
 import adminService from "../services/adminService.js";
+import reportService from "../services/reportService.js";
 
 function handleError(res, err) {
   if (err && typeof err.status === "number") {
@@ -131,6 +132,90 @@ const AdminController = {
       return res.json(comment);
     } catch (err) {
       return handleError(res, err);
+    }
+  },
+
+  async listReports(req, res) {
+    try {
+      const reports = await reportService.listReportsForAdmin({
+        status: req.query.status,
+        targetType: req.query.targetType,
+      });
+      return res.json(reports);
+    } catch (err) {
+      const msg = err?.message ?? "Server Error";
+      if (msg === "Invalid status" || msg === "Invalid target type") {
+        return res.status(400).json({ message: msg });
+      }
+      return res.status(500).json({ message: "Server Error" });
+    }
+  },
+
+  async getReportById(req, res) {
+    try {
+      const report = await reportService.getByIdForAdmin(req.params.reportId);
+      return res.json(report);
+    } catch (err) {
+      const msg = err?.message ?? "Server Error";
+      if (msg === "Invalid report id") {
+        return res.status(400).json({ message: msg });
+      }
+      if (msg === "Report not found") {
+        return res.status(404).json({ message: msg });
+      }
+      return res.status(500).json({ message: "Server Error" });
+    }
+  },
+
+  async patchReport(req, res) {
+    try {
+      const status = req.body?.status;
+      const report = await reportService.updateStatusForAdmin(
+        req.params.reportId,
+        status,
+      );
+      return res.json(report);
+    } catch (err) {
+      const msg = err?.message ?? "Server Error";
+      if (msg === "Invalid report id" || msg === "Status must be Open, Reviewed, or Dismissed") {
+        return res.status(400).json({ message: msg });
+      }
+      if (msg === "Report not found") {
+        return res.status(404).json({ message: msg });
+      }
+      return res.status(500).json({ message: "Server Error" });
+    }
+  },
+
+  async resolveReport(req, res) {
+    try {
+      const report = await reportService.resolveReportForAdmin(req.params.reportId);
+      return res.json(report);
+    } catch (err) {
+      const msg = err?.message ?? "Server Error";
+      if (msg === "Invalid report id") {
+        return res.status(400).json({ message: msg });
+      }
+      if (msg === "Report not found") {
+        return res.status(404).json({ message: msg });
+      }
+      return res.status(500).json({ message: "Server Error" });
+    }
+  },
+
+  async unresolveReport(req, res) {
+    try {
+      const report = await reportService.unresolveReportForAdmin(req.params.reportId);
+      return res.json(report);
+    } catch (err) {
+      const msg = err?.message ?? "Server Error";
+      if (msg === "Invalid report id") {
+        return res.status(400).json({ message: msg });
+      }
+      if (msg === "Report not found") {
+        return res.status(404).json({ message: msg });
+      }
+      return res.status(500).json({ message: "Server Error" });
     }
   },
 };

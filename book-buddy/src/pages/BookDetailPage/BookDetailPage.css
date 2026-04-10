@@ -125,6 +125,29 @@
   border-left: 3px solid var(--color-on-surface);
 }
 
+.book-detail-owner-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+
+.book-detail-owner-profile:disabled {
+  cursor: default;
+}
+
+.book-detail-owner-profile:not(:disabled):hover .book-detail-owner-name {
+  text-decoration: underline;
+}
+
 .book-detail-owner-avatar-wrap {
   width: 3rem;
   height: 3rem;

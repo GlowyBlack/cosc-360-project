@@ -9,10 +9,21 @@ function exec(cmd, value = null) {
   }
 }
 
-export default function CreatePostComposer({ onSubmit, submitting = false }) {
-  const [title, setTitle] = useState("");
-  const [bookTagTitle, setBookTagTitle] = useState("");
-  const [bookTagAuthor, setBookTagAuthor] = useState("");
+export default function CreatePostComposer({
+  onSubmit,
+  submitting = false,
+  initialValues = null,
+  onCancel = null,
+  submitLabel = null,
+  resetKey = "",
+}) {
+  const [title, setTitle] = useState(() => String(initialValues?.title ?? ""));
+  const [bookTagTitle, setBookTagTitle] = useState(() =>
+    String(initialValues?.bookTag?.title ?? ""),
+  );
+  const [bookTagAuthor, setBookTagAuthor] = useState(() =>
+    String(initialValues?.bookTag?.author ?? ""),
+  );
   const [error, setError] = useState("");
   const [editorEmpty, setEditorEmpty] = useState(true);
   const editorRef = useRef(null);
@@ -70,8 +81,24 @@ export default function CreatePostComposer({ onSubmit, submitting = false }) {
   }, [focusEditor, afterEdit]);
 
   useEffect(() => {
-    editorRef.current?.focus();
-  }, []);
+    if (initialValues) {
+      setTitle(String(initialValues.title ?? ""));
+      setBookTagTitle(String(initialValues.bookTag?.title ?? ""));
+      setBookTagAuthor(String(initialValues.bookTag?.author ?? ""));
+      const html = String(initialValues.content ?? "");
+      requestAnimationFrame(() => {
+        const el = editorRef.current;
+        if (el) {
+          el.innerHTML = html;
+          syncEmpty(el);
+        }
+      });
+    } else {
+      editorRef.current?.focus();
+    }
+    // initialValues read when resetKey/remount changes; omit from deps — parent often passes a new object each render in edit mode.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetKey, syncEmpty]);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -90,15 +117,17 @@ export default function CreatePostComposer({ onSubmit, submitting = false }) {
         author: bookTagAuthor.trim() ? bookTagAuthor.trim() : null,
       },
     }).catch((err) => {
-      setError(err?.message ?? "Could not create post");
+      setError(err?.message ?? "Could not save post");
     });
   };
+
+  const label = submitLabel ?? (initialValues ? "Save changes" : "Post");
 
   return (
     <form className="blogs-composer" onSubmit={submit}>
       <div className="blogs-composer-tabs" role="tablist" aria-label="Create post mode">
         <button type="button" role="tab" aria-selected className="blogs-tab blogs-tab--active">
-          <MaterialIcon name="edit_note" /> Post
+          <MaterialIcon name="edit_note" /> {initialValues ? "Edit post" : "Post"}
         </button>
       </div>
 
@@ -195,8 +224,18 @@ export default function CreatePostComposer({ onSubmit, submitting = false }) {
 
       {error ? <p className="blogs-error blogs-error--composer">{error}</p> : null}
       <div className="blogs-composer-actions">
+        {onCancel ? (
+          <button
+            type="button"
+            className="blogs-btn blogs-btn-close"
+            disabled={submitting}
+            onClick={onCancel}
+          >
+            Cancel
+          </button>
+        ) : null}
         <button type="submit" className="blogs-btn blogs-btn-primary" disabled={submitting}>
-          {submitting ? "Posting..." : "Post"}
+          {submitting ? "Saving…" : label}
         </button>
       </div>
     </form>

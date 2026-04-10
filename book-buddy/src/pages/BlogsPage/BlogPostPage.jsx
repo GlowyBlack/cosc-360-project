@@ -5,7 +5,16 @@ import Footer from "../../components/Footer/Footer.jsx";
 import API, { authHeader, flashSessionExpired } from "../../config/api.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import MaterialIcon from "../../components/MaterialIcon/MaterialIcon.jsx";
-import { PostBody, postTag, togglePostReaction } from "./blogPostShared.jsx";
+import CreatePostComposer from "./CreatePostComposer.jsx";
+import PostMoreMenu from "./PostMoreMenu.jsx";
+import {
+  PostBody,
+  deletePost,
+  isPostOwner,
+  patchPost,
+  postTag,
+  togglePostReaction,
+} from "./blogPostShared.jsx";
 import { getSessionUserId } from "../../commons/bookShared.js";
 import "./BlogsPage.css";
 
@@ -38,6 +47,8 @@ export default function BlogPostPage() {
   const [commentError, setCommentError] = useState("");
   const [commentReactingId, setCommentReactingId] = useState("");
   const [replyVisibleCount, setReplyVisibleCount] = useState({});
+  const [showEdit, setShowEdit] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -84,6 +95,10 @@ export default function BlogPostPage() {
     };
   }, [postId, logout]);
 
+  useEffect(() => {
+    setShowEdit(false);
+  }, [postId]);
+
   const author = String(post?.authorId?.username ?? "Unknown");
   const likedByMe = (post?.likes ?? []).some(
     (v) => String(v?._id ?? v?.id ?? v) === sessionUserId,
@@ -102,6 +117,39 @@ export default function BlogPostPage() {
     return map;
   }, [comments]);
   const rootComments = commentsByParent.get("") ?? [];
+
+  const handleUpdatePost = async (payload) => {
+    const id = String(post?._id ?? post?.id ?? "");
+    if (!id) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      const updated = await patchPost({ postId: id, body: payload, logout });
+      setPost(updated?.post ?? updated);
+      setShowEdit(false);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeletePost = async () => {
+    const id = String(post?._id ?? post?.id ?? "");
+    if (!id) return;
+    if (
+      !window.confirm(
+        "Remove this post? It will no longer appear for readers.",
+      )
+    ) {
+      return;
+    }
+    setError("");
+    try {
+      await deletePost({ postId: id, logout });
+      navigate("/blogs");
+    } catch (e) {
+      setError(e.message ?? "Could not delete post");
+    }
+  };
 
   const handleReact = async (mode) => {
     const id = String(post?._id ?? post?.id ?? "");
@@ -329,11 +377,38 @@ export default function BlogPostPage() {
         {loading ? <p className="blogs-hint">Loading post...</p> : null}
         {error ? <p className="blogs-error">{error}</p> : null}
 
-        {!loading && post ? (
+        {!loading && post && showEdit ? (
+          <section className="blogs-edit-wrap" aria-label="Edit post">
+            <CreatePostComposer
+              key={String(post._id ?? post.id ?? postId)}
+              resetKey={String(post._id ?? post.id ?? postId)}
+              initialValues={{
+                title: post.title,
+                content: post.content,
+                bookTag: post.bookTag ?? {},
+              }}
+              onSubmit={handleUpdatePost}
+              onCancel={() => setShowEdit(false)}
+              submitting={submitting}
+            />
+          </section>
+        ) : null}
+
+        {!loading && post && !showEdit ? (
           <article className="blogs-post blogs-post--detail">
-            <p className="blogs-post-meta">
-              <strong>{postTag(post)}</strong> · Posted by {author} · {since(post.createdAt)}
-            </p>
+            <div className="blogs-post-meta-row">
+              <p className="blogs-post-meta">
+                <strong>{postTag(post)}</strong> ·{" "}
+                <Link to={`/user/${post?.authorId?._id}`}>Posted by {author}</Link> ·{" "}
+                {since(post.createdAt)}
+              </p>
+              <PostMoreMenu
+                isOwner={isPostOwner(post, sessionUserId)}
+                onEdit={() => setShowEdit(true)}
+                onDelete={handleDeletePost}
+                disabled={submitting}
+              />
+            </div>
             <h1 className="blogs-post-title blogs-post-title--detail">{String(post?.title ?? "")}</h1>
             <PostBody content={post?.content} />
             <div className="blogs-post-actions">

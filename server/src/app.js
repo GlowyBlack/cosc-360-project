@@ -14,6 +14,7 @@ import messageService from './services/messageService.js';
 import postRoute from './routes/postRoute.js';
 import requestRoute from './routes/requestRoute.js';
 import reviewRoute from './routes/reviewRoute.js';
+import reportRoute from './routes/reportRoute.js';
 import userRoute from './routes/userRoute.js';
 
 dotenv.config()
@@ -36,6 +37,7 @@ app.use('/messages', messageRoute);
 app.use('/posts', postRoute);
 app.use('/requests', requestRoute);
 app.use('/reviews', reviewRoute);
+app.use('/reports', reportRoute);
 app.use('/user', userRoute);
 
 // wrapped express in a plain http server so socket.io can share the same port

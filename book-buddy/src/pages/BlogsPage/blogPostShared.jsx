@@ -58,6 +58,55 @@ export function PostBody({ content }) {
   return <p className="blogs-post-content">{raw}</p>;
 }
 
+export function getPostAuthorId(post) {
+  const a = post?.authorId;
+  if (a == null) return "";
+  if (typeof a === "object") return String(a._id ?? a.id ?? "");
+  return String(a);
+}
+
+export function isPostOwner(post, sessionUserId) {
+  if (!sessionUserId) return false;
+  return getPostAuthorId(post) === String(sessionUserId);
+}
+
+export async function patchPost({ postId, body, logout }) {
+  if (!postId) throw new Error("Post id is required");
+  const response = await fetch(`${API}/posts/${encodeURIComponent(postId)}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify(body),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (response.status === 401) {
+    flashSessionExpired();
+    logout?.();
+    throw new Error(data.message ?? "Not authenticated");
+  }
+  if (!response.ok) {
+    throw new Error(data.message ?? "Could not update post");
+  }
+  return data;
+}
+
+export async function deletePost({ postId, logout }) {
+  if (!postId) throw new Error("Post id is required");
+  const response = await fetch(`${API}/posts/${encodeURIComponent(postId)}`, {
+    method: "DELETE",
+    headers: { ...authHeader() },
+  });
+  const data = await response.json().catch(() => ({}));
+  if (response.status === 401) {
+    flashSessionExpired();
+    logout?.();
+    throw new Error(data.message ?? "Not authenticated");
+  }
+  if (!response.ok) {
+    throw new Error(data.message ?? "Could not delete post");
+  }
+  return data;
+}
+
 export async function togglePostReaction({ postId, mode, logout }) {
   if (!postId) throw new Error("Post id is required");
   if (mode !== "like" && mode !== "dislike") {

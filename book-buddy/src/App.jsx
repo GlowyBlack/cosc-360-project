@@ -18,6 +18,7 @@ import ProfilePage from "./pages/ProfilePage/ProfilePage.jsx";
 import RegisterPage from "./pages/RegisterPage/RegisterPage.jsx";
 import RequestPage from "./pages/RequestPage/RequestPage.jsx";
 import SearchResultsPage from "./pages/SearchResultsPage/SearchResultsPage.jsx";
+import UserProfilePage from "./pages/UserProfilePage/UserProfilePage.jsx";
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/requests" element={<RequestPage />} />
         <Route path="/search" element={<SearchResultsPage />} />
+        <Route path="/user/:userId" element={<UserProfilePage />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboardPage />} />
           <Route path="users" element={<AdminUsersPage />} />
