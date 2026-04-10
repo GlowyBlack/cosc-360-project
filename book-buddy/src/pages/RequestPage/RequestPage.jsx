@@ -14,6 +14,8 @@ import "./RequestPage.css";
 
 const LIST_PAGE_SIZE = 5;
 
+const socket = io("http://localhost:5001");
+
 function normalizeRequestPayload(data) {
   if (Array.isArray(data)) return data;
   if (data?.requests && Array.isArray(data.requests)) return data.requests;
@@ -373,12 +375,11 @@ export default function RequestPage() {
   }, [loadRequests]);
 
   useEffect(() => {
-    const socket = io("http://localhost:5001");
     if (sessionId) socket.emit("join_user_room", sessionId);
     socket.on("request_update", () => {
       loadRequests();
     });
-    return () => socket.disconnect();
+    return () => socket.off("request_update");
   }, [sessionId, loadRequests]);
 
   useEffect(() => {
@@ -500,6 +501,13 @@ export default function RequestPage() {
               (response.status === 404 ? "Not found." : `Request failed (${response.status})`),
           );
         }
+        const matchedReq = requests.find((r) => idString(r._id ?? r.id) === requestId);
+        if (matchedReq) {
+          socket.emit("request_status_changed", {
+            requesterId: idString(matchedReq.requesterId),
+            ownerId: idString(matchedReq.bookOwner),
+          });
+        }
         await loadRequests();
       } catch (e) {
         setActionError(e.message ?? "Action failed");
@@ -507,7 +515,7 @@ export default function RequestPage() {
         setActionBusyId("");
       }
     },
-    [loadRequests, logout],
+    [loadRequests, logout, requests], 
   );
 
   const cancelOutgoingRequest = useCallback(
@@ -541,6 +549,13 @@ export default function RequestPage() {
                 : `Request failed (${response.status})`),
           );
         }
+        const matchedReq = requests.find((r) => idString(r._id ?? r.id) === requestId);
+        if (matchedReq) {
+          socket.emit("request_status_changed", {
+            requesterId: idString(matchedReq.requesterId),
+            ownerId: idString(matchedReq.bookOwner),
+          });
+        }
         await loadRequests();
       } catch (e) {
         setActionError(e.message ?? "Could not cancel request");
@@ -548,7 +563,7 @@ export default function RequestPage() {
         setActionBusyId("");
       }
     },
-    [loadRequests, logout],
+    [loadRequests, logout, requests], 
   );
 
   if (!user) return <Navigate to="/login" replace />;
@@ -653,8 +668,7 @@ export default function RequestPage() {
                       onCancel={
                         isHistory || direction !== "outgoing"
                           ? undefined
-                          : (id) =>
-                              void cancelOutgoingRequest(id, requestKind)
+                          : (id) => void cancelOutgoingRequest(id, requestKind)
                       }
                     />
                   </li>
