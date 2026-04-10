@@ -1,0 +1,150 @@
+.user-profile-sheet-header .profile-avatar-static {
+  border-radius: var(--radius-lg);
+  width: 140px;
+  height: 140px;
+}
+
+.user-profile-kicker {
+  margin: 0 0 0.35rem;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--color-outline);
+  font-weight: 700;
+}
+
+.user-profile-bio {
+  margin: 0.75rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  font-style: italic;
+  color: var(--color-on-surface);
+}
+
+.user-profile-bio--empty {
+  color: var(--color-outline);
+  font-style: italic;
+}
+
+.user-profile-actions {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.user-profile-actions .profile-btn-secondary[href] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.user-profile-stats-grid {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .user-profile-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.user-profile-loans {
+  margin-top: 0.5rem;
+}
+
+.user-profile-loan-grid {
+  grid-template-columns: repeat(2, minmax(120px, 1fr));
+}
+
+@media (min-width: 960px) {
+  .user-profile-loan-grid {
+    grid-template-columns: repeat(4, minmax(130px, 1fr));
+  }
+}
+
+.user-profile-loan-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+}
+
+.user-profile-loan-cover-wrap {
+  position: relative;
+}
+
+.user-profile-condition-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+  border: 1px solid var(--color-border);
+  color: var(--color-on-surface);
+}
+
+.user-profile-book-author {
+  margin: 0.15rem 0.7rem 0;
+  font-size: 0.78rem;
+  color: var(--color-outline);
+}
+
+.user-profile-book-location {
+  margin: 0.35rem 0.7rem 0.75rem;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-outline);
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.user-profile-loc-icon {
+  font-size: 0.9rem !important;
+  width: 0.9rem !important;
+  height: 0.9rem !important;
+  opacity: 0.85;
+}
+
+.user-profile-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.user-profile-page-btn {
+  border-radius: var(--radius-pill);
+  min-height: 36px;
+  padding: 0 1.05rem;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  font: inherit;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--color-on-surface);
+}
+
+.user-profile-page-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.user-profile-page-indicator {
+  font-size: 0.75rem;
+  color: var(--color-outline);
+}

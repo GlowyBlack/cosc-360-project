@@ -100,6 +100,9 @@ export default function BookDetailPage() {
   const ownerId = book ? getBookOwnerId(book) : "";
   const sessionId = getSessionUserId(user);
   const isOwner = Boolean(ownerId && sessionId && ownerId === sessionId);
+  const canOpenOwnerProfile = Boolean(
+    ownerId && /^[a-f\d]{24}$/i.test(String(ownerId).trim()),
+  );
 
   const description =
     book?.description != null && String(book.description).trim() !== ""
@@ -236,24 +239,35 @@ export default function BookDetailPage() {
               </div>
 
               <div className="book-detail-owner">
-                <div className="book-detail-owner-avatar-wrap">
-                  {ownerAvatarUrl && !ownerAvatarFailed ? (
-                    <img
-                      src={ownerAvatarUrl}
-                      alt=""
-                      className="book-detail-owner-avatar"
-                      onError={() => setOwnerAvatarFailed(true)}
-                    />
-                  ) : (
-                    <span className="book-detail-owner-fallback" aria-hidden>
-                      <MaterialIcon
-                        name="person"
-                        className="book-detail-owner-fallback-icon"
+                <button
+                  type="button"
+                  className="book-detail-owner-profile"
+                  onClick={() => {
+                    if (!canOpenOwnerProfile) return;
+                    navigate(`/user/${encodeURIComponent(String(ownerId).trim())}`);
+                  }}
+                  disabled={!canOpenOwnerProfile}
+                  aria-label={`View profile: ${ownerName}`}
+                >
+                  <div className="book-detail-owner-avatar-wrap">
+                    {ownerAvatarUrl && !ownerAvatarFailed ? (
+                      <img
+                        src={ownerAvatarUrl}
+                        alt=""
+                        className="book-detail-owner-avatar"
+                        onError={() => setOwnerAvatarFailed(true)}
                       />
-                    </span>
-                  )}
-                </div>
-                <p className="book-detail-owner-name">{ownerName}</p>
+                    ) : (
+                      <span className="book-detail-owner-fallback" aria-hidden>
+                        <MaterialIcon
+                          name="person"
+                          className="book-detail-owner-fallback-icon"
+                        />
+                      </span>
+                    )}
+                  </div>
+                  <p className="book-detail-owner-name">{ownerName}</p>
+                </button>
               </div>
             </div>
 
