@@ -8,7 +8,7 @@ import TextField from "../../components/TextField/TextField.jsx";
 import Button from "../../components/Button/Button.jsx";
 import MaterialIcon from "../../components/MaterialIcon/MaterialIcon.jsx";
 import { DISCOVER_FILTERS } from "../../data/discoverBooks.js";
-import API from "../../config/api.js";
+import API, { authHeader, flashSessionExpired } from "../../config/api.js";
 import {
   bookGenreMatchesFilter,
   toDiscoverCardBook,
@@ -23,9 +23,10 @@ const DISCOVER_LOAD_MORE_STEP = 8;
 
 export default function DiscoverPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [activeFilter, setActiveFilter] = useState("All");
   const [books, setBooks] = useState([]);
+  const [wishlistIds, setWishlistIds] = useState(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(DISCOVER_INITIAL_VISIBLE);
 
@@ -58,6 +59,51 @@ export default function DiscoverPage() {
   useEffect(() => {
     loadBooks();
   }, [loadBooks]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadWishlist() {
+      if (!user) {
+        setWishlistIds(new Set());
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API}/user/wishlist`, {
+          headers: { ...authHeader() },
+        });
+        const data = await response.json().catch(() => ({}));
+
+        if (response.status === 401) {
+          flashSessionExpired();
+          logout();
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error(data.message ?? "Failed to load wishlist");
+        }
+
+        if (!cancelled) {
+          setWishlistIds(
+            new Set(
+              (Array.isArray(data) ? data : []).map((book) =>
+                String(book?._id ?? book?.id ?? ""),
+              ),
+            ),
+          );
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    loadWishlist();
+    return () => {
+      cancelled = true;
+    };
+  }, [user, logout]);
 
   useEffect(() => {
     socket.on("book_update", () => {
@@ -153,6 +199,19 @@ export default function DiscoverPage() {
                 owner={book.owner}
                 location={book.location}
                 status={book.status}
+                wishlisted={wishlistIds.has(String(book.id))}
+                onToggleWishlist={(nextWishlisted) => {
+                  setWishlistIds((prev) => {
+                    const next = new Set(prev);
+                    const bookId = String(book.id);
+                    if (nextWishlisted) {
+                      next.add(bookId);
+                    } else {
+                      next.delete(bookId);
+                    }
+                    return next;
+                  });
+                }}
                 onClick={() => navigate(`/book/${book.id}`)}
               />
             ))
