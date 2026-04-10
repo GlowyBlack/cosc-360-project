@@ -20,7 +20,7 @@ async function startup() {
         await Comment.syncIndexes();
         await Follow.syncIndexes();
         await Review.syncIndexes();
-       await Post.updateMany(
+        await Post.updateMany(
             { $or: [{ likeCount: { $exists: false } }, { likeCount: null }] },
             [{ $set: { likeCount: { $size: { $ifNull: ["$likes", []] } } } }],
             { updatePipeline: true },

@@ -278,6 +278,196 @@
   color: var(--color-on-surface);
 }
 
+.profile-activity-head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.profile-activity-blog {
+  margin-top: 1rem;
+}
+
+.profile-activity-blog-label {
+  margin: 0 0 0.5rem;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-outline);
+  font-weight: 700;
+}
+
+.profile-activity-blog-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  text-decoration: none;
+  color: inherit;
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.profile-activity-blog-card:hover {
+  border-color: var(--color-outline);
+  background: var(--color-surface-container-low);
+}
+
+.profile-activity-blog-icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-container-low);
+  color: var(--color-on-surface);
+}
+
+.profile-activity-blog-icon .material-symbols-outlined {
+  font-size: 1.35rem !important;
+}
+
+.profile-activity-blog-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-activity-blog-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.profile-activity-blog-tag {
+  margin: 0.2rem 0 0;
+  font-size: 0.75rem;
+  color: var(--color-outline);
+}
+
+.profile-activity-blog-preview {
+  margin: 0.45rem 0 0;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--color-on-surface);
+  opacity: 0.88;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.profile-activity-blog-time {
+  margin: 0.5rem 0 0 !important;
+}
+
+.profile-activity-blog-chevron {
+  flex-shrink: 0;
+  font-size: 1.35rem !important;
+  width: 1.35rem !important;
+  height: 1.35rem !important;
+  color: var(--color-outline);
+}
+
+.profile-comment-history {
+  margin-top: 1.6rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.profile-comment-history-list {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.profile-comment-history-item {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  padding: 0.85rem 1rem;
+}
+
+.profile-comment-history-item-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.45rem;
+}
+
+.profile-comment-history-post-link {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-on-surface);
+  text-decoration: none;
+}
+
+.profile-comment-history-post-link:hover {
+  text-decoration: underline;
+}
+
+.profile-comment-history-post-link--muted {
+  font-weight: 500;
+  color: var(--color-outline);
+  cursor: default;
+}
+
+.profile-comment-history-badge {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: var(--color-outline);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+}
+
+.profile-comment-history-body {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--color-on-surface);
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.profile-comment-history-meta {
+  margin: 0.5rem 0 0;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-outline);
+}
+
+.profile-comment-history-more {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.profile-comment-history-more-btn {
+  min-width: 12rem;
+}
+
+.profile-comment-history-end {
+  margin-top: 1rem;
+  text-align: center;
+}
+
 .profile-activity-grid {
   list-style: none;
   margin: 1rem 0 0;

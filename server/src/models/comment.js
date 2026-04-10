@@ -11,5 +11,6 @@ const CommentSchema = new mongoose.Schema({
 
 CommentSchema.index({ postId: 1, createdAt: 1 });
 CommentSchema.index({ parentId: 1, createdAt: 1 });
+CommentSchema.index({ authorId: 1, createdAt: -1 });
 
 export default mongoose.model("Comment", CommentSchema);
