@@ -10,7 +10,7 @@ import { getSessionUserId } from "../../commons/bookShared.js";
 import { postTag, previewPlainContent } from "../BlogsPage/blogPostShared.jsx";
 import "./ProfilePage.css";
 
-const PROFILE_COMMENT_PAGE_SIZE = 5;
+const PROFILE_COMMENT_PAGE_SIZE = 3;
 
 function formatMemberSince(value) {
   const date = new Date(value);

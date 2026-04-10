@@ -6,6 +6,7 @@ import Footer from "../../components/Footer/Footer.jsx";
 import API, { authHeader, flashSessionExpired } from "../../config/api.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import MaterialIcon from "../../components/MaterialIcon/MaterialIcon.jsx";
+import ReportReasonModal from "../../components/ReportReasonModal/ReportReasonModal.jsx";
 import CreatePostComposer from "./CreatePostComposer.jsx";
 import PostMoreMenu from "./PostMoreMenu.jsx";
 import {
@@ -52,6 +53,8 @@ export default function BlogPostPage() {
   const [replyVisibleCount, setReplyVisibleCount] = useState({});
   const [showEdit, setShowEdit] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [reportTarget, setReportTarget] = useState(null);
+  const [reportNotice, setReportNotice] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -95,6 +98,12 @@ export default function BlogPostPage() {
     void load();
     return () => { cancelled = true; };
   }, [postId, logout]);
+
+  useEffect(() => {
+    if (!reportNotice) return undefined;
+    const t = window.setTimeout(() => setReportNotice(""), 5000);
+    return () => window.clearTimeout(t);
+  }, [reportNotice]);
 
   useEffect(() => {
     setShowEdit(false);
@@ -326,6 +335,26 @@ export default function BlogPostPage() {
               >
                 Reply
               </button>
+              <button
+                type="button"
+                className="blogs-link-btn"
+                onClick={() => {
+                  if (!user) {
+                    navigate(
+                      `/login?next=${encodeURIComponent(`/blogs/${postId}`)}`,
+                    );
+                    return;
+                  }
+                  if (!id) return;
+                  setReportTarget({
+                    targetType: "Comment",
+                    targetId: id,
+                    subjectHint: `Comment by ${authorName}`,
+                  });
+                }}
+              >
+                <MaterialIcon name="flag" /> Report
+              </button>
             </div>
             {replyOpen ? (
               <div className="blog-reply-composer">
@@ -395,6 +424,11 @@ export default function BlogPostPage() {
 
         {loading ? <p className="blogs-hint">Loading post...</p> : null}
         {error ? <p className="blogs-error">{error}</p> : null}
+        {!loading && reportNotice ? (
+          <p className="blogs-hint blogs-report-success" role="status">
+            {reportNotice}
+          </p>
+        ) : null}
 
         {!loading && post && showEdit ? (
           <section className="blogs-edit-wrap" aria-label="Edit post">
@@ -446,7 +480,31 @@ export default function BlogPostPage() {
               <button type="button" className="blogs-link-btn">
                 <MaterialIcon name="share" /> Share
               </button>
-              <button type="button" className="blogs-link-btn">
+              <button
+                type="button"
+                className="blogs-link-btn"
+                onClick={() => {
+                  if (!user) {
+                    navigate(
+                      `/login?next=${encodeURIComponent(`/blogs/${postId}`)}`,
+                    );
+                    return;
+                  }
+                  const pid = String(post?._id ?? post?.id ?? postId ?? "");
+                  if (!pid) return;
+                  const title = String(post?.title ?? "").trim();
+                  const subjectHint = title
+                    ? title.length > 80
+                      ? `${title.slice(0, 77)}…`
+                      : title
+                    : "";
+                  setReportTarget({
+                    targetType: "Post",
+                    targetId: pid,
+                    subjectHint,
+                  });
+                }}
+              >
                 <MaterialIcon name="flag" /> Report
               </button>
               <button
@@ -510,6 +568,16 @@ export default function BlogPostPage() {
         ) : null}
       </main>
       <Footer />
+      <ReportReasonModal
+        open={Boolean(reportTarget)}
+        onClose={() => setReportTarget(null)}
+        targetType={reportTarget?.targetType}
+        targetId={reportTarget?.targetId}
+        subjectHint={reportTarget?.subjectHint}
+        onSuccess={() =>
+          setReportNotice("Thanks — moderators will review your report.")
+        }
+      />
     </div>
   );
 }

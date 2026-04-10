@@ -112,6 +112,15 @@ function isHistoryStatus(rawStatus) {
   return ["accepted", "returned", "cancelled", "declined"].includes(st);
 }
 
+function normalizeActionErrorMessage(raw, fallback) {
+  const base = String(raw ?? "").trim();
+  if (!base) return fallback;
+  if (/one of the book/i.test(base) && /not available|unavailable/i.test(base)) {
+    return "Accept failed: one of the books is currently unavailable.";
+  }
+  return base;
+}
+
 function RequestPageCard({
   req,
   direction,
@@ -269,7 +278,7 @@ function RequestPageCard({
           </button>
         ) : null}
 
-        {actionError && busyId === id ? (
+        {actionError ? (
           <p className="request-page-card-inline-error" role="alert">{actionError}</p>
         ) : null}
       </div>
@@ -341,6 +350,7 @@ export default function RequestPage() {
   const [listTab, setListTab] = useState("incoming");
   const [actionBusyId, setActionBusyId] = useState("");
   const [actionError, setActionError] = useState("");
+  const [actionErrorId, setActionErrorId] = useState("");
   const [listPage, setListPage] = useState(0);
 
   const loadRequests = useCallback(async () => {
@@ -476,6 +486,7 @@ export default function RequestPage() {
   const respondToRequest = useCallback(
     async (requestId, decision, kind) => {
       setActionError("");
+      setActionErrorId("");
       setActionBusyId(requestId);
       const sub = decision === "accept" ? "accept" : "decline";
       const segment = kind === "exchange" ? "exchange" : "borrow";
@@ -510,7 +521,8 @@ export default function RequestPage() {
         }
         await loadRequests();
       } catch (e) {
-        setActionError(e.message ?? "Action failed");
+        setActionError(normalizeActionErrorMessage(e.message, "Action failed"));
+        setActionErrorId(requestId);
       } finally {
         setActionBusyId("");
       }
@@ -521,6 +533,7 @@ export default function RequestPage() {
   const cancelOutgoingRequest = useCallback(
     async (requestId, kind) => {
       setActionError("");
+      setActionErrorId("");
       setActionBusyId(requestId);
       const segment = kind === "exchange" ? "exchange" : "borrow";
       const url = `${API}/requests/${segment}/${encodeURIComponent(requestId)}/cancel`;
@@ -558,7 +571,8 @@ export default function RequestPage() {
         }
         await loadRequests();
       } catch (e) {
-        setActionError(e.message ?? "Could not cancel request");
+        setActionError(normalizeActionErrorMessage(e.message, "Could not cancel request"));
+        setActionErrorId(requestId);
       } finally {
         setActionBusyId("");
       }
@@ -661,7 +675,7 @@ export default function RequestPage() {
                       direction={direction}
                       isHistory={isHistory}
                       busyId={actionBusyId}
-                      actionError={actionError}
+                      actionError={actionErrorId === rid ? actionError : ""}
                       onAccept={isHistory ? undefined : (id) => void respondToRequest(id, "accept", requestKind)}
                       onDecline={isHistory ? undefined : (id) => void respondToRequest(id, "decline", requestKind)}
                       onMessage={isHistory ? undefined : () => navigate("/messages")}

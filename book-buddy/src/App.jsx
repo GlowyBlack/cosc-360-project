@@ -5,6 +5,7 @@ import AdminCommentsPage from "./pages/admin/AdminCommentsPage/AdminCommentsPage
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage/AdminDashboardPage.jsx";
 import AdminListingsPage from "./pages/admin/AdminListingsPage/AdminListingsPage.jsx";
 import AdminPostsPage from "./pages/admin/AdminPostsPage/AdminPostsPage.jsx";
+import AdminReportsPage from "./pages/admin/AdminReportsPage/AdminReportsPage.jsx";
 import AdminUsersPage from "./pages/admin/AdminUsersPage/AdminUsersPage.jsx";
 import BlogsPage from "./pages/BlogsPage/BlogsPage.jsx";
 import BlogPostPage from "./pages/BlogsPage/BlogPostPage.jsx";
@@ -44,6 +45,7 @@ function App() {
           <Route path="listings" element={<AdminListingsPage />} />
           <Route path="posts" element={<AdminPostsPage />} />
           <Route path="comments" element={<AdminCommentsPage />} />
+          <Route path="reports" element={<AdminReportsPage />} />
         </Route>
       </Routes>
     </>

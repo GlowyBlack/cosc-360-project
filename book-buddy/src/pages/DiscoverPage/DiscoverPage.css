@@ -119,3 +119,14 @@
   color: var(--color-outline);
   font-size: 0.9375rem;
 }
+
+.discover-page-load-more-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.discover-page-load-more {
+  min-width: 12rem;
+  padding: 0.75rem;
+}
