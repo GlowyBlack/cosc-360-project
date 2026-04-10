@@ -22,15 +22,10 @@ router.get("/comments", requireAuth, requireAdmin, adminController.listComments)
 router.put("/comments/:id/remove", requireAuth, requireAdmin, adminController.removeComment);
 router.put("/comments/:id/restore", requireAuth, requireAdmin, adminController.restoreComment);
 
-// router.get("/reports", requireAuth, requireAdmin, adminController.listReports);
-// router.get("/reports/:reportId", requireAuth, requireAdmin, adminController.getReportById);
-// router.put("/reports/:reportId/resolve", requireAuth, requireAdmin, adminController.resolveReport);
-// router.put("/reports/:reportId/unresolve", requireAuth, requireAdmin, adminController.unresolveReport);
-// router.put("/reports/:reportId/delete", requireAuth, requireAdmin, adminController.deleteReport);
-// router.put("/reports/:reportId/restore", requireAuth, requireAdmin, adminController.restoreReport);
-// router.put("/reports/:reportId/ignore", requireAuth, requireAdmin, adminController.ignoreReport);
-// router.put("/reports/:reportId/unignore", requireAuth, requireAdmin, adminController.unignoreReport);
-// router.put("/reports/:reportId/delete", requireAuth, requireAdmin, adminController.deleteReport);
-// router.put("/reports/:reportId/restore", requireAuth, requireAdmin, adminController.restoreReport);
+router.get("/reports", requireAuth, requireAdmin, adminController.listReports);
+router.get("/reports/:reportId", requireAuth, requireAdmin, adminController.getReportById);
+router.patch("/reports/:reportId", requireAuth, requireAdmin, adminController.patchReport);
+router.put("/reports/:reportId/resolve", requireAuth, requireAdmin, adminController.resolveReport);
+router.put("/reports/:reportId/unresolve", requireAuth, requireAdmin, adminController.unresolveReport);
 
 export default router;

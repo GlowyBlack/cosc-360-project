@@ -18,7 +18,6 @@ import ProfilePage from "./pages/ProfilePage/ProfilePage.jsx";
 import RegisterPage from "./pages/RegisterPage/RegisterPage.jsx";
 import RequestPage from "./pages/RequestPage/RequestPage.jsx";
 import SearchResultsPage from "./pages/SearchResultsPage/SearchResultsPage.jsx";
-import ProfilePage from "./pages/ProfilePage/ProfilePage.jsx";
 import UserProfilePage from "./pages/UserProfilePage/UserProfilePage.jsx";
 
 function App() {

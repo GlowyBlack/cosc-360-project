@@ -5,8 +5,11 @@ import Footer from "../../components/Footer/Footer.jsx";
 import API, { authHeader, flashSessionExpired } from "../../config/api.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import CreatePostComposer from "./CreatePostComposer.jsx";
+import PostMoreMenu from "./PostMoreMenu.jsx";
 import {
   PREVIEW_MAX_CHARS,
+  deletePost,
+  isPostOwner,
   postTag,
   previewPlainContent,
   togglePostReaction,
@@ -39,6 +42,7 @@ export default function BlogsPage() {
   const [sortMode, setSortMode] = useState("top");
   const [reactingPostId, setReactingPostId] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [editingPost, setEditingPost] = useState(null);
 
   const loadPosts = async () => {
     setLoading(true);
@@ -77,6 +81,56 @@ export default function BlogsPage() {
   useEffect(() => {
     if (!user) setShowComposer(false);
   }, [user]);
+
+  const updatePost = async (payload) => {
+    const id = String(editingPost?._id ?? editingPost?.id ?? "");
+    if (!id) return;
+    setSubmitting(true);
+    try {
+      const response = await fetch(`${API}/posts/${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...authHeader() },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.status === 401) {
+        flashSessionExpired();
+        logout();
+        return;
+      }
+      if (!response.ok) {
+        throw new Error(data.message ?? "Could not update post");
+      }
+      setEditingPost(null);
+      await loadPosts();
+    } catch (e) {
+      throw e;
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    const id = String(postId ?? "").trim();
+    if (!id) return;
+    if (
+      !window.confirm(
+        "Remove this post? It will no longer appear for readers.",
+      )
+    ) {
+      return;
+    }
+    try {
+      await deletePost({ postId: id, logout });
+      setEditingPost((cur) => {
+        const curId = String(cur?._id ?? cur?.id ?? "");
+        return curId === id ? null : cur;
+      });
+      await loadPosts();
+    } catch (e) {
+      setError(e.message ?? "Could not delete post");
+    }
+  };
 
   const createPost = async (payload) => {
     setSubmitting(true);
@@ -189,18 +243,35 @@ export default function BlogsPage() {
           )}
         </section>
 
-        {user && showComposer ? (
+        {user && showComposer && !editingPost ? (
           <CreatePostComposer submitting={submitting} onSubmit={createPost} />
         ) : null}
 
-        {!(user && showComposer) && loading ? (
+        {user && editingPost ? (
+          <section className="blogs-edit-wrap" aria-label="Edit post">
+            <CreatePostComposer
+              key={String(editingPost._id ?? editingPost.id)}
+              resetKey={String(editingPost._id ?? editingPost.id)}
+              initialValues={{
+                title: editingPost.title,
+                content: editingPost.content,
+                bookTag: editingPost.bookTag ?? {},
+              }}
+              onSubmit={updatePost}
+              onCancel={() => setEditingPost(null)}
+              submitting={submitting}
+            />
+          </section>
+        ) : null}
+
+        {!(user && showComposer) && !(user && editingPost) && loading ? (
           <p className="blogs-hint">Loading posts...</p>
         ) : null}
-        {!(user && showComposer) && error ? (
+        {!(user && showComposer) && !(user && editingPost) && error ? (
           <p className="blogs-error">{error}</p>
         ) : null}
 
-        {!(user && showComposer) ? (
+        {!(user && showComposer) && !(user && editingPost) ? (
           <section className="blogs-feed" aria-label="Post feed">
             {ordered.map((post, index) => {
               const id = String(post?._id ?? post?.id ?? "");
@@ -219,10 +290,21 @@ export default function BlogsPage() {
               const reacting = reactingPostId === id;
               return (
                 <article key={id || `post-${index}`} className="blogs-post">
-                  <p className="blogs-post-meta">
-                    <strong>{postTag(post)}</strong> · Posted by {author} ·{" "}
-                    {since(post.createdAt)}
-                  </p>
+                  <div className="blogs-post-meta-row">
+                    <p className="blogs-post-meta">
+                      <strong>{postTag(post)}</strong> · Posted by {author} ·{" "}
+                      {since(post.createdAt)}
+                    </p>
+                    <PostMoreMenu
+                      isOwner={isPostOwner(post, sessionUserId)}
+                      onEdit={() => {
+                        setShowComposer(false);
+                        setEditingPost(post);
+                      }}
+                      onDelete={() => handleDeletePost(id)}
+                      disabled={Boolean(editingPost)}
+                    />
+                  </div>
                   <h2 className="blogs-post-title">
                     <Link to={`/blogs/${id}`} className="blogs-post-title-link">
                       {String(post?.title ?? "")}
@@ -247,9 +329,6 @@ export default function BlogsPage() {
                     >
                       <MaterialIcon name="chat_bubble" /> Comments
                     </Link>
-                    <button type="button" className="blogs-link-btn">
-                      <MaterialIcon name="share" /> Share
-                    </button>
                     <button type="button" className="blogs-link-btn">
                       <MaterialIcon name="flag" /> Report
                     </button>
