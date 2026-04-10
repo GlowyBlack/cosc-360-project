@@ -7,8 +7,7 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
-    "seed": "node src/mock/seed.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.config.js"
   },
   "keywords": [],
   "author": "",
@@ -29,7 +28,11 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@jest/globals": "^30.3.0",
+    "jest": "^30.3.0",
+    "mongodb-memory-server": "^11.0.1",
     "nodemon": "^3.1.14",
+    "supertest": "^7.2.2",
     "swagger-autogen": "^2.23.7"
   }
 }

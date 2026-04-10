@@ -37,12 +37,12 @@ const RequestRepository = {
             ]})
             .populate({ path: "bookOwner", select: "username" })
             .populate({ path: "requesterId", select: "username" })
-            .populate({ path: "bookId", select: "bookTitle"})
-            .populate({ path: "offeredBookId", select: "bookTitle"})
+            .populate({ path: "bookId", select: "bookTitle bookImage"})
+            .populate({ path: "offeredBookId", select: "bookTitle bookImage"})
             .sort({ createdAt: -1 });
     },
 
-     async countCompletedExchangesForUser(userId) {
+    async countCompletedExchangesForUser(userId) {
         return await request.countDocuments({
             type: "Exchange",
             status: "Accepted",
@@ -62,7 +62,7 @@ const RequestRepository = {
         return await request.create(
             [{bookId: book, bookOwner: owner,
               requesterId: requester, type: "Exchange",
-              offeredBookId: offeredBook, status:"Pending"}], 
+              offeredBookId: offeredBook, status:"Pending"}],
               {session}
             );
     },
@@ -88,7 +88,7 @@ const RequestRepository = {
     },
 
     async declineExchange({id, session = null}){
-                return await request.findByIdAndUpdate(
+        return await request.findByIdAndUpdate(
             id,
             { $set: {status: 'Declined'}},
             { returnDocument: "after", session }
@@ -105,25 +105,28 @@ const RequestRepository = {
 
     async cancelAllRequestsForBook({id, session = null}){
         return await request.updateMany(
-            { 
+            {
                 $or: [
                     { bookId: id },
                     { offeredBookId: id }
                 ],
-                status: "Pending" 
+                status: "Pending"
             },
-            { 
-                $set: { status: "Cancelled" } 
+            {
+                $set: { status: "Cancelled" }
             },
             { session }
         );
     },
 
-    async createBorrow({book, owner, requester}){
-        return await request.create({bookId: book, bookOwner: owner,
-                                    requesterId: requester, type: "Borrow",
-                                    status:"Pending"});
+    async createBorrow({ book, owner, requester, returnBy, session = null }) {
+        return await request.create(
+            [{ bookId: book, bookOwner: owner,
+               requesterId: requester, type: "Borrow",
+               returnBy: returnBy, status: "Pending" }],
+            { session }
+        );
     },
-}
+};
 
 export default RequestRepository;

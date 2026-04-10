@@ -31,6 +31,10 @@ export default function BookDetailPage() {
   const [error, setError] = useState("");
   const [ownerAvatarFailed, setOwnerAvatarFailed] = useState(false);
   const [exchangeOpen, setExchangeOpen] = useState(false);
+  const [borrowOpen, setBorrowOpen] = useState(false);
+  const [returnBy, setReturnBy] = useState("");
+  const [borrowError, setBorrowError] = useState("");
+  const [borrowing, setBorrowing] = useState(false);
 
   const closeExchange = useCallback(() => setExchangeOpen(false), []);
 
@@ -45,14 +49,10 @@ export default function BookDetailPage() {
       setLoading(true);
       setError("");
       try {
-        const response = await fetch(
-          `${API}/books/${encodeURIComponent(bookId)}`,
-        );
+        const response = await fetch(`${API}/books/${encodeURIComponent(bookId)}`);
         const data = await response.json().catch(() => ({}));
         if (!response.ok) {
-          throw new Error(
-            data.message ?? data.detail ?? "Could not load this book",
-          );
+          throw new Error(data.message ?? data.detail ?? "Could not load this book");
         }
         if (!cancelled) setBook(data);
       } catch (e) {
@@ -65,34 +65,28 @@ export default function BookDetailPage() {
       }
     }
     load();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [bookId]);
 
   const title = book ? getBookTitle(book) : "";
   const author = book ? getBookAuthor(book) : "";
   const coverUrl = book ? getCoverUrlFromRaw(book) : "";
-  const coverAlt =
-    coverUrl && title ? `Cover: ${title}` : "No cover image";
+  const coverAlt = coverUrl && title ? `Cover: ${title}` : "No cover image";
   const { displaySrc, onImgError } = useBookCoverDisplaySrc(coverUrl);
 
   useEffect(() => {
     setOwnerAvatarFailed(false);
     setExchangeOpen(false);
+    setBorrowOpen(false);
   }, [bookId]);
 
   const ownerName = useMemo(() => {
-    if (!book?.bookOwner || typeof book.bookOwner !== "object") {
-      return "Community member";
-    }
+    if (!book?.bookOwner || typeof book.bookOwner !== "object") return "Community member";
     return book.bookOwner.username ?? "Community member";
   }, [book]);
 
   const ownerAvatarUrl =
-    book?.bookOwner &&
-    typeof book.bookOwner === "object" &&
-    book.bookOwner.profileImage
+    book?.bookOwner && typeof book.bookOwner === "object" && book.bookOwner.profileImage
       ? String(book.bookOwner.profileImage).trim()
       : "";
 
@@ -100,9 +94,7 @@ export default function BookDetailPage() {
   const ownerId = book ? getBookOwnerId(book) : "";
   const sessionId = getSessionUserId(user);
   const isOwner = Boolean(ownerId && sessionId && ownerId === sessionId);
-  const canOpenOwnerProfile = Boolean(
-    ownerId && /^[a-f\d]{24}$/i.test(String(ownerId).trim()),
-  );
+  const canOpenOwnerProfile = Boolean(ownerId && /^[a-f\d]{24}$/i.test(String(ownerId).trim()));
 
   const description =
     book?.description != null && String(book.description).trim() !== ""
@@ -113,102 +105,96 @@ export default function BookDetailPage() {
       ? String(book.ownerNote).trim()
       : null;
   const conditionLabel = book?.condition ?? "";
-
   const recordId = book ? getBookRecordId(book) : "";
-
-  const handleBack = () => {
-    navigate(-1);
-  };
-
+  const handleBack = () => navigate(-1);
   const actionsDisabled = !isAvailable || !user;
+
+  const handleRequestBorrow = useCallback(async () => {
+    if (!returnBy) {
+      setBorrowError("Please select a return date.");
+      return;
+    }
+    setBorrowError("");
+    setBorrowing(true);
+    try {
+      const freshRes = await fetch(`${API}/books/${encodeURIComponent(bookId)}`);
+      const freshBook = await freshRes.json().catch(() => ({}));
+      if (!freshRes.ok) throw new Error(freshBook.message ?? "Could not verify this listing.");
+      if (freshBook.isAvailable !== true) throw new Error("This book is no longer available.");
+      const oid = String(getBookOwnerId(freshBook)).trim();
+      if (!/^[a-f\d]{24}$/i.test(oid)) throw new Error("Could not determine the current owner. Try again.");
+
+      const response = await fetch(`${API}/requests/borrow`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeader() },
+        body: JSON.stringify({ bookId, ownerId: oid, returnBy }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.status === 401) {
+        flashSessionExpired();
+        logout();
+        throw new Error(data.message ?? "Session expired. Please sign in again.");
+      }
+      if (!response.ok) throw new Error(data.message ?? "Could not send borrow request.");
+
+      socket.emit("new_request", { ownerId: oid });
+      setBorrowOpen(false);
+      setReturnBy("");
+    } catch (e) {
+      setBorrowError(e.message ?? "Could not send borrow request.");
+    } finally {
+      setBorrowing(false);
+    }
+  }, [bookId, returnBy, logout]);
 
   const handleProposeExchange = useCallback(
     async ({ offeredBookIds }) => {
       const offeredBookId = offeredBookIds[0];
       const targetBookId = bookId ? String(bookId).trim() : "";
       const obid = offeredBookId ? String(offeredBookId).trim() : "";
-      if (!/^[a-f\d]{24}$/i.test(targetBookId)) {
-        throw new Error("Invalid book.");
-      }
-      if (!/^[a-f\d]{24}$/i.test(obid)) {
-        throw new Error("Invalid offered book.");
-      }
+      if (!/^[a-f\d]{24}$/i.test(targetBookId)) throw new Error("Invalid book.");
+      if (!/^[a-f\d]{24}$/i.test(obid)) throw new Error("Invalid offered book.");
 
-      const verifyRes = await fetch(
-        `${API}/books/${encodeURIComponent(targetBookId)}`,
-      );
+      const verifyRes = await fetch(`${API}/books/${encodeURIComponent(targetBookId)}`);
       const freshBook = await verifyRes.json().catch(() => ({}));
-      if (!verifyRes.ok) {
-        throw new Error(
-          freshBook.message ??
-            freshBook.detail ??
-            "Could not verify this listing.",
-        );
-      }
-      if (freshBook.isAvailable !== true) {
-        throw new Error("This book is no longer available to request.");
-      }
+      if (!verifyRes.ok) throw new Error(freshBook.message ?? freshBook.detail ?? "Could not verify this listing.");
+      if (freshBook.isAvailable !== true) throw new Error("This book is no longer available to request.");
       const oid = String(getBookOwnerId(freshBook)).trim();
-      if (!/^[a-f\d]{24}$/i.test(oid)) {
-        throw new Error("Could not determine the current owner. Try again.");
-      }
+      if (!/^[a-f\d]{24}$/i.test(oid)) throw new Error("Could not determine the current owner. Try again.");
 
       const response = await fetch(`${API}/requests/exchange`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
-        body: JSON.stringify({
-          bookId: targetBookId,
-          ownerId: oid,
-          offeredBookId: obid,
-        }),
+        headers: { "Content-Type": "application/json", ...authHeader() },
+        body: JSON.stringify({ bookId: targetBookId, ownerId: oid, offeredBookId: obid }),
       });
       const data = await response.json().catch(() => ({}));
       if (response.status === 401) {
         flashSessionExpired();
         logout();
-        throw new Error(
-          data.message ?? "Session expired. Please sign in again.",
-        );
+        throw new Error(data.message ?? "Session expired. Please sign in again.");
       }
-      if (!response.ok) {
-        throw new Error(
-          data.error ??
-            data.detail ??
-            data.message ??
-            "Could not send exchange proposal.",
-        );
-      }
+      if (!response.ok) throw new Error(data.error ?? data.detail ?? data.message ?? "Could not send exchange proposal.");
 
-      // exchange saved successfully
-      // notify the book owner in real time so their RequestPage updates instantly
-      // oid is the owner's userId — they are in a socket room named after their id
       socket.emit("new_request", { ownerId: oid });
     },
     [bookId, logout],
   );
 
+  const minDate = new Date();
+  minDate.setDate(minDate.getDate() + 1);
+  const minDateStr = minDate.toISOString().split("T")[0];
+
   return (
     <div className="book-detail-page">
       <Header variant={user ? "user" : "guest"} />
       <main className="book-detail-page-main">
-        <button
-          type="button"
-          className="book-detail-back"
-          onClick={handleBack}
-        >
+        <button type="button" className="book-detail-back" onClick={handleBack}>
           <MaterialIcon name="west" className="book-detail-back-icon" aria-hidden />
           <span>Back</span>
         </button>
 
-        {loading ? (
-          <p className="book-detail-state">Loading…</p>
-        ) : null}
-        {error ? (
-          <p className="book-detail-state book-detail-state--error">{error}</p>
-        ) : null}
+        {loading ? <p className="book-detail-state">Loading…</p> : null}
+        {error ? <p className="book-detail-state book-detail-state--error">{error}</p> : null}
 
         {!loading && !error && book ? (
           <div className="book-detail-layout">
@@ -223,9 +209,7 @@ export default function BookDetailPage() {
                 <div className="book-detail-badges">
                   <span
                     className={`book-detail-badge book-detail-badge--status ${
-                      isAvailable
-                        ? "book-detail-badge--available"
-                        : "book-detail-badge--unavailable"
+                      isAvailable ? "book-detail-badge--available" : "book-detail-badge--unavailable"
                     }`.trim()}
                   >
                     {isAvailable ? "Available now" : "Unavailable"}
@@ -259,10 +243,7 @@ export default function BookDetailPage() {
                       />
                     ) : (
                       <span className="book-detail-owner-fallback" aria-hidden>
-                        <MaterialIcon
-                          name="person"
-                          className="book-detail-owner-fallback-icon"
-                        />
+                        <MaterialIcon name="person" className="book-detail-owner-fallback-icon" />
                       </span>
                     )}
                   </div>
@@ -278,16 +259,14 @@ export default function BookDetailPage() {
               <section className="book-detail-section">
                 <h2 className="book-detail-section-label">Summary</h2>
                 <p className="book-detail-section-body">
-                  {description ??
-                    "No summary has been added for this listing yet."}
+                  {description ?? "No summary has been added for this listing yet."}
                 </p>
               </section>
 
               <section className="book-detail-section">
                 <h2 className="book-detail-section-label">Condition detail</h2>
                 <p className="book-detail-section-body book-detail-section-body--note">
-                  {ownerNote ??
-                    "The owner has not added extra condition notes."}
+                  {ownerNote ?? "The owner has not added extra condition notes."}
                 </p>
               </section>
 
@@ -299,13 +278,10 @@ export default function BookDetailPage() {
                       actionsDisabled ? "book-detail-action--disabled" : ""
                     }`.trim()}
                     disabled={actionsDisabled}
+                    onClick={() => setBorrowOpen((prev) => !prev)}
                   >
                     Request to borrow
-                    <MaterialIcon
-                      name="arrow_forward"
-                      className="book-detail-action-icon"
-                      aria-hidden
-                    />
+                    <MaterialIcon name="arrow_forward" className="book-detail-action-icon" aria-hidden />
                   </button>
                   <button
                     type="button"
@@ -320,28 +296,49 @@ export default function BookDetailPage() {
                 </div>
               ) : null}
 
+              {borrowOpen && !actionsDisabled ? (
+                <div className="book-detail-borrow-form">
+                  <p className="book-detail-borrow-label">When will you return it?</p>
+                  <input
+                    type="date"
+                    className="book-detail-borrow-date"
+                    value={returnBy}
+                    min={minDateStr}
+                    onChange={(e) => setReturnBy(e.target.value)}
+                  />
+                  {borrowError ? (
+                    <p className="book-detail-borrow-error">{borrowError}</p>
+                  ) : null}
+                  <div className="book-detail-borrow-actions">
+                    <button
+                      type="button"
+                      className="book-detail-borrow-cancel"
+                      onClick={() => { setBorrowOpen(false); setBorrowError(""); setReturnBy(""); }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      className="book-detail-borrow-submit"
+                      disabled={!returnBy || borrowing}
+                      onClick={handleRequestBorrow}
+                    >
+                      {borrowing ? "Sending…" : "Send request"}
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+
               <div className="book-detail-footer-row">
                 <span className="book-detail-id">ID: {recordId}</span>
                 <div className="book-detail-util-icons">
-                  <button
-                    type="button"
-                    className="book-detail-util-btn"
-                    aria-label="Share"
-                  >
+                  <button type="button" className="book-detail-util-btn" aria-label="Share">
                     <MaterialIcon name="share" />
                   </button>
-                  <button
-                    type="button"
-                    className="book-detail-util-btn"
-                    aria-label="Bookmark"
-                  >
+                  <button type="button" className="book-detail-util-btn" aria-label="Bookmark">
                     <MaterialIcon name="bookmark_border" />
                   </button>
-                  <button
-                    type="button"
-                    className="book-detail-util-btn"
-                    aria-label="Report"
-                  >
+                  <button type="button" className="book-detail-util-btn" aria-label="Report">
                     <MaterialIcon name="flag" />
                   </button>
                 </div>

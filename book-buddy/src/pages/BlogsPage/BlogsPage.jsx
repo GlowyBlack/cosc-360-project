@@ -17,6 +17,7 @@ import {
 } from "./blogPostShared.jsx";
 import "./BlogsPage.css";
 import MaterialIcon from "../../components/MaterialIcon/MaterialIcon.jsx";
+import ReportReasonModal from "../../components/ReportReasonModal/ReportReasonModal.jsx";
 import { getSessionUserId } from "../../commons/bookShared.js";
 
 const socket = createAppSocket();
@@ -46,6 +47,8 @@ export default function BlogsPage() {
   const [reactingPostId, setReactingPostId] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [editingPost, setEditingPost] = useState(null);
+  const [reportTarget, setReportTarget] = useState(null);
+  const [reportNotice, setReportNotice] = useState("");
 
   const loadPosts = useCallback(async () => {
     setLoading(true);
@@ -80,6 +83,12 @@ export default function BlogsPage() {
   useEffect(() => {
     void loadPosts();
   }, [loadPosts]);
+
+  useEffect(() => {
+    if (!reportNotice) return undefined;
+    const t = window.setTimeout(() => setReportNotice(""), 5000);
+    return () => window.clearTimeout(t);
+  }, [reportNotice]);
 
   useEffect(() => {
     socket.on("post_update", () => {
@@ -286,6 +295,11 @@ export default function BlogsPage() {
         {!(user && showComposer) && !(user && editingPost) && error ? (
           <p className="blogs-error">{error}</p>
         ) : null}
+        {!(user && showComposer) && !(user && editingPost) && reportNotice ? (
+          <p className="blogs-hint blogs-report-success" role="status">
+            {reportNotice}
+          </p>
+        ) : null}
 
         {!(user && showComposer) && !(user && editingPost) ? (
           <section className="blogs-feed" aria-label="Post feed">
@@ -341,7 +355,29 @@ export default function BlogsPage() {
                     >
                       <MaterialIcon name="chat_bubble" /> Comments
                     </Link>
-                    <button type="button" className="blogs-link-btn">
+                    <button
+                      type="button"
+                      className="blogs-link-btn"
+                      onClick={() => {
+                        if (!user) {
+                          navigate(
+                            `/login?next=${encodeURIComponent(`/blogs/${id}`)}`,
+                          );
+                          return;
+                        }
+                        const title = String(post?.title ?? "").trim();
+                        const subjectHint = title
+                          ? title.length > 80
+                            ? `${title.slice(0, 77)}…`
+                            : title
+                          : "";
+                        setReportTarget({
+                          targetType: "Post",
+                          targetId: id,
+                          subjectHint,
+                        });
+                      }}
+                    >
                       <MaterialIcon name="flag" /> Report
                     </button>
                     <button
@@ -369,6 +405,16 @@ export default function BlogsPage() {
         ) : null}
       </main>
       <Footer />
+      <ReportReasonModal
+        open={Boolean(reportTarget)}
+        onClose={() => setReportTarget(null)}
+        targetType={reportTarget?.targetType}
+        targetId={reportTarget?.targetId}
+        subjectHint={reportTarget?.subjectHint}
+        onSuccess={() =>
+          setReportNotice("Thanks — moderators will review your report.")
+        }
+      />
     </div>
   );
 }

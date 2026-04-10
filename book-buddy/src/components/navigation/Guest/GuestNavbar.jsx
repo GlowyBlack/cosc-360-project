@@ -4,9 +4,7 @@ import "./GuestNavbar.css";
 
 const defaultLinks = [
   { to: "/", label: "Discover" },
-  { to: "/browse", label: "Browse" },
   { to: "/blogs", label: "Blog" },
-  { to: "/about", label: "About" },
 ];
 
 export default function GuestNavbar({
