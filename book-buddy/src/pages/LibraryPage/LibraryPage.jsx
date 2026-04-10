@@ -4,7 +4,7 @@ import { io } from "socket.io-client";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import API, { authHeader, flashSessionExpired } from "../../config/api.js";
-import { toLibraryPageCardBook, getSessionUserId } from "../../commons/bookShared.js";
+import { toLibraryPageCardBook, getSessionUserId, coverSrcOrFallback } from "../../commons/bookShared.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import LibraryBookCard from "./LibraryBookCard.jsx";
 import "./LibraryPage.css";
@@ -17,10 +17,18 @@ const TABS = [
 
 const socket = io("http://localhost:5001");
 
+function idString(ref) {
+  if (ref == null) return "";
+  if (typeof ref === "object") return String(ref._id ?? ref.id ?? "");
+  return String(ref);
+}
+
 export default function LibraryPage() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const sessionId = getSessionUserId(user);
   const [books, setBooks] = useState([]);
+  const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("my");
@@ -87,19 +95,26 @@ export default function LibraryPage() {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch(`${API}/books/me`, {
-        headers: { ...authHeader() },
-      });
-      const data = await response.json().catch(() => ({}));
-      if (response.status === 401) {
+      const [booksRes, requestsRes] = await Promise.all([
+        fetch(`${API}/books/me`, { headers: { ...authHeader() } }),
+        fetch(`${API}/requests/me`, { headers: { ...authHeader() } }),
+      ]);
+
+      if (booksRes.status === 401 || requestsRes.status === 401) {
         flashSessionExpired();
         logout();
         return;
       }
-      if (!response.ok) {
-        throw new Error(data.message ?? data.detail ?? "Failed to load your books");
+
+      const booksData = await booksRes.json().catch(() => ({}));
+      if (!booksRes.ok) throw new Error(booksData.message ?? "Failed to load your books");
+      setBooks(Array.isArray(booksData) ? booksData : []);
+
+      const requestsData = await requestsRes.json().catch(() => ({}));
+      if (requestsRes.ok) {
+        const list = Array.isArray(requestsData) ? requestsData : [];
+        setRequests(list);
       }
-      setBooks(Array.isArray(data) ? data : []);
     } catch (e) {
       setError(e.message ?? "Failed to load your books");
     } finally {
@@ -112,18 +127,35 @@ export default function LibraryPage() {
   }, [loadMyBooks]);
 
   useEffect(() => {
-    const sessionId = getSessionUserId(user);
     if (sessionId) socket.emit("join_user_room", sessionId);
     socket.on("request_update", () => {
       loadMyBooks();
     });
     return () => socket.off("request_update");
-  }, [user, loadMyBooks]);
+  }, [sessionId, loadMyBooks]);
 
   const cardBooks = useMemo(
     () => books.map((b) => toLibraryPageCardBook(b, user)),
     [books, user],
   );
+
+  const borrowedBooks = useMemo(() => {
+    return requests.filter((r) => {
+      const type = String(r.type ?? "").toLowerCase();
+      const status = String(r.status ?? "").toLowerCase();
+      const requesterId = idString(r.requesterId);
+      return type === "borrow" && status === "accepted" && requesterId === sessionId;
+    });
+  }, [requests, sessionId]);
+
+  const lentBooks = useMemo(() => {
+    return requests.filter((r) => {
+      const type = String(r.type ?? "").toLowerCase();
+      const status = String(r.status ?? "").toLowerCase();
+      const ownerId = idString(r.bookOwner);
+      return type === "borrow" && status === "accepted" && ownerId === sessionId;
+    });
+  }, [requests, sessionId]);
 
   if (!user) return <Navigate to="/login" replace />;
 
@@ -196,17 +228,63 @@ export default function LibraryPage() {
 
         {!loading && !error && activeTab === "borrowed" ? (
           <section className="library-page-grid" aria-labelledby="library-tab-borrowed">
-            <p className="library-page-state library-page-state--empty">
-              No borrowed books yet. When you borrow from someone, they&apos;ll show up here.
-            </p>
+            {borrowedBooks.length === 0 ? (
+              <p className="library-page-state library-page-state--empty">
+                No borrowed books yet. When a borrow request is accepted, it will appear here.
+              </p>
+            ) : (
+              borrowedBooks.map((req) => {
+                const book = req.bookId;
+                const id = idString(req._id ?? req.id);
+                const title = book?.bookTitle ?? book?.title ?? "Untitled";
+                const author = book?.bookAuthor ?? book?.author ?? "Unknown";
+                const coverSrc = coverSrcOrFallback(book?.bookImage ?? "");
+                return (
+                  <LibraryBookCard
+                    key={id}
+                    title={title}
+                    author={author}
+                    coverSrc={coverSrc}
+                    coverAlt={`Cover: ${title}`}
+                    isAvailable={false}
+                    onLoan={true}
+                  />
+                );
+              })
+            )}
           </section>
         ) : null}
 
         {!loading && !error && activeTab === "lent" ? (
           <section className="library-page-grid" aria-labelledby="library-tab-lent">
-            <p className="library-page-state library-page-state--empty">
-              Nothing lent out yet. Active loans will appear here.
-            </p>
+            {lentBooks.length === 0 ? (
+              <p className="library-page-state library-page-state--empty">
+                Nothing lent out yet. Active loans will appear here.
+              </p>
+            ) : (
+              lentBooks.map((req) => {
+                const book = req.bookId;
+                const id = idString(req._id ?? req.id);
+                const title = book?.bookTitle ?? book?.title ?? "Untitled";
+                const author = book?.bookAuthor ?? book?.author ?? "Unknown";
+                const coverSrc = coverSrcOrFallback(book?.bookImage ?? "");
+                const borrower = req.requesterId?.username
+                  ? `@${req.requesterId.username}`
+                  : "a reader";
+                return (
+                  <LibraryBookCard
+                    key={id}
+                    title={title}
+                    author={author}
+                    coverSrc={coverSrc}
+                    coverAlt={`Cover: ${title}`}
+                    isAvailable={false}
+                    onLoan={true}
+                    requestCount={0}
+                  />
+                );
+              })
+            )}
           </section>
         ) : null}
       </main>
