@@ -31,4 +31,11 @@ export function consumeSessionExpiredFlash() {
   return false;
 }
 
+export async function apiFetch(input, init) {
+  const response = await fetch(input, init);
+  const renewed = response.headers.get("X-Renewed-Token");
+  if (renewed) localStorage.setItem("token", renewed);
+  return response;
+}
+
 export default API;

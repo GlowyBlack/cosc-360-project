@@ -1,5 +1,11 @@
 import adminRepository from "../repositories/adminRepository.js";
 
+function httpError(status, message) {
+  const err = new Error(message);
+  err.status = status;
+  return err;
+}
+
 function parseIncludeRemoved(query) {
   return (
     String(query?.includeRemoved ?? "").toLowerCase() === "true" ||
@@ -69,7 +75,7 @@ const AdminService = {
     const user = await adminRepository.updateUserByIdLean(userId, {
       isSuspended: true,
     });
-    if (!user) throw new Error("User not found");
+    if (!user) throw httpError(404, "User not found");
     return user;
   },
 
@@ -77,7 +83,7 @@ const AdminService = {
     const user = await adminRepository.updateUserByIdLean(userId, {
       isSuspended: false,
     });
-    if (!user) throw new Error("User not found");
+    if (!user) throw httpError(404, "User not found");
     return user;
   },
 
@@ -85,7 +91,7 @@ const AdminService = {
     const user = await adminRepository.updateUserByIdLean(userId, {
       isBanned: true,
     });
-    if (!user) throw new Error("User not found");
+    if (!user) throw httpError(404, "User not found");
     return user;
   },
 
@@ -93,7 +99,7 @@ const AdminService = {
     const user = await adminRepository.updateUserByIdLean(userId, {
       isBanned: false,
     });
-    if (!user) throw new Error("User not found");
+    if (!user) throw httpError(404, "User not found");
     return user;
   },
 
@@ -103,10 +109,15 @@ const AdminService = {
 
   async deleteBook(bookId) {
     const active = await adminRepository.existsActiveRequestForBook(bookId);
-    if (active) throw new Error("Cannot delete book: it has active loans or pending requests");
-    
+    if (active) {
+      throw httpError(
+        400,
+        "Cannot delete book: it has active loans or pending requests"
+      );
+    }
+
     const deleted = await adminRepository.deleteBookById(bookId);
-    if (!deleted) throw new Error("Book not found");
+    if (!deleted) throw httpError(404, "Book not found");
     return { message: "Book deleted", id: bookId };
   },
 
@@ -118,13 +129,13 @@ const AdminService = {
 
   async removePost(postId) {
     const post = await adminRepository.updatePostRemovedLean(postId, true);
-    if (!post) throw new Error("Post not found");
+    if (!post) throw httpError(404, "Post not found");
     return post;
   },
 
   async restorePost(postId) {
     const post = await adminRepository.updatePostRemovedLean(postId, false);
-    if (!post) throw new Error("Post not found");
+    if (!post) throw httpError(404, "Post not found");
     return post;
   },
 
@@ -139,7 +150,7 @@ const AdminService = {
       commentId,
       true
     );
-    if (!comment) throw new Error("Comment not found");
+    if (!comment) throw httpError(404, "Comment not found");
     return comment;
   },
 
@@ -148,7 +159,7 @@ const AdminService = {
       commentId,
       false
     );
-    if (!comment) throw new Error("Comment not found");
+    if (!comment) throw httpError(404, "Comment not found");
     return comment;
   },
 };
