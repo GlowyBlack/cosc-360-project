@@ -16,7 +16,8 @@ router.get("/:id/is-following", requireAuth, followController.isFollowing)
 router.get("/:id/following", requireAuth, followController.getUserFollowingsForViewer)
 router.get("/:id/followers", requireAuth, followController.getUserFollowersForViewer)
 
-router.patch("/favourites/:bookId", requireAuth, userController.updateFavourites);
+router.get("/wishlist", requireAuth, userController.getWishlist);
+router.patch("/wishlist/:bookId", requireAuth, userController.updateWishlist);
 
 router.post("/:id/follow", requireAuth, followController.followUser)
 router.delete("/:id/follow", requireAuth, followController.unFollowUser)

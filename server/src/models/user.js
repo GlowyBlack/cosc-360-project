@@ -10,7 +10,7 @@ const UserSchema = new mongoose.Schema({
     role: { type: String, enum: ["Registered", "Admin"], default: "Registered" },
     isSuspended: { type: Boolean, default: false },
     isBanned: { type: Boolean, default: false },
-    favourites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Book" }]
+    wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Book" }]
 }, { timestamps: true });
 
 export default mongoose.model("User", UserSchema);

@@ -24,9 +24,9 @@ export default function BookCard({
   const coverAlt = resolveCoverAlt(cover, rawSrc);
   const { displaySrc, onImgError } = useBookCoverDisplaySrc(rawSrc);
 
-  const wishlistBook = async () => {
+  const toggleWishlist = async () => {
     try {
-      const response = await fetch(`${API}/user/favourites/${id}`, {
+      const response = await fetch(`${API}/user/wishlist/${id}`, {
         method: "PATCH",
         headers: { ...authHeader() },
       });
@@ -47,7 +47,7 @@ export default function BookCard({
       }
 
       if (typeof onToggleWishlist === "function") {
-        onToggleWishlist(data.favourited);
+        onToggleWishlist(data.wishlisted);
       }
     } catch (error) {
       console.log(error.message);
@@ -77,16 +77,18 @@ export default function BookCard({
         />
         <button
           type="button"
-          className="book-card-wishlist"
+          className={`book-card-wishlist ${
+            wishlisted ? "book-card-wishlist--active" : ""
+          }`.trim()}
           aria-pressed={wishlisted}
           aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
           onClick={(e) => {
             e.stopPropagation();
-            wishlistBook();
+            toggleWishlist();
           }}
         >
           <MaterialIcon
-            name={wishlisted ? "favorite" : "favorite_border"}
+            name={wishlisted ? "bookmark_star" : "bookmark"}
             className="book-card-wish-icon"
           />
         </button>

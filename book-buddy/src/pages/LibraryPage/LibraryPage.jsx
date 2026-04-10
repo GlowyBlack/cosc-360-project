@@ -14,6 +14,7 @@ const TABS = [
   { id: "my", label: "MY BOOKS" },
   { id: "borrowed", label: "BORROWED BOOKS" },
   { id: "lent", label: "LENT OUT" },
+  { id: "wishlist", label: "WISHLIST" },
 ];
 
 const socket = createAppSocket();
@@ -29,6 +30,7 @@ export default function LibraryPage() {
   const { user, logout } = useAuth();
   const sessionId = getSessionUserId(user);
   const [books, setBooks] = useState([]);
+  const [wishlistBooks, setWishlistBooks] = useState([]);
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -96,12 +98,13 @@ export default function LibraryPage() {
     setLoading(true);
     setError("");
     try {
-      const [booksRes, requestsRes] = await Promise.all([
+      const [booksRes, requestsRes, wishlistRes] = await Promise.all([
         fetch(`${API}/books/me`, { headers: { ...authHeader() } }),
         fetch(`${API}/requests/me`, { headers: { ...authHeader() } }),
+        fetch(`${API}/user/wishlist`, { headers: { ...authHeader() } }),
       ]);
 
-      if (booksRes.status === 401 || requestsRes.status === 401) {
+      if (booksRes.status === 401 || requestsRes.status === 401 || wishlistRes.status === 401) {
         flashSessionExpired();
         logout();
         return;
@@ -116,8 +119,14 @@ export default function LibraryPage() {
         const list = Array.isArray(requestsData) ? requestsData : [];
         setRequests(list);
       }
+
+      const wishlistData = await wishlistRes.json().catch(() => ({}));
+      if (!wishlistRes.ok) {
+        throw new Error(wishlistData.message ?? "Failed to load your wishlist");
+      }
+      setWishlistBooks(Array.isArray(wishlistData) ? wishlistData : []);
     } catch (e) {
-      setError(e.message ?? "Failed to load your books");
+      setError(e.message ?? "Failed to load your library");
     } finally {
       setLoading(false);
     }
@@ -138,6 +147,11 @@ export default function LibraryPage() {
   const cardBooks = useMemo(
     () => books.map((b) => toLibraryPageCardBook(b, user)),
     [books, user],
+  );
+
+  const wishlistCardBooks = useMemo(
+    () => wishlistBooks.map((b) => toLibraryPageCardBook(b, user)),
+    [wishlistBooks, user],
   );
 
   const borrowedBooks = useMemo(() => {
@@ -285,6 +299,29 @@ export default function LibraryPage() {
                   />
                 );
               })
+            )}
+          </section>
+        ) : null}
+
+        {!loading && !error && activeTab === "wishlist" ? (
+          <section className="library-page-grid" aria-labelledby="library-tab-wishlist">
+            {wishlistCardBooks.length === 0 ? (
+              <p className="library-page-state library-page-state--empty">
+                Your wishlist is empty. Tap the heart on a book to save it here.
+              </p>
+            ) : (
+              wishlistCardBooks.map((book) => (
+                <LibraryBookCard
+                  key={book.id}
+                  title={book.title}
+                  author={book.author}
+                  coverSrc={book.cover.src}
+                  coverAlt={book.cover.alt}
+                  isAvailable={book.isAvailable}
+                  onLoan={book.onLoan}
+                  metaText={book.location ?? "Saved to your wishlist"}
+                />
+              ))
             )}
           </section>
         ) : null}
