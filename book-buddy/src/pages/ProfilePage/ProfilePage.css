@@ -94,6 +94,19 @@
   color: var(--color-outline);
 }
 
+.profile-follow-stats {
+  margin: 0.65rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  font-size: 0.82rem;
+  color: var(--color-outline);
+}
+
+.profile-follow-stats span {
+  white-space: nowrap;
+}
+
 .profile-bio-label {
   display: inline-block;
   margin-top: 1rem;
