@@ -1,9 +1,9 @@
 import { Routes, Route } from "react-router-dom";
 import AddBookPage from "./pages/AddBookPage/AddBookPage.jsx";
 import AdminLayout from "./pages/AdminLayout/AdminLayout.jsx";
+import AdminCommentsPage from "./pages/admin/AdminCommentsPage/AdminCommentsPage.jsx";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage/AdminDashboardPage.jsx";
 import AdminListingsPage from "./pages/admin/AdminListingsPage/AdminListingsPage.jsx";
-import AdminCommentsPage from "./pages/admin/AdminCommentsPage/AdminCommentsPage.jsx";
 import AdminPostsPage from "./pages/admin/AdminPostsPage/AdminPostsPage.jsx";
 import AdminUsersPage from "./pages/admin/AdminUsersPage/AdminUsersPage.jsx";
 import BlogsPage from "./pages/BlogsPage/BlogsPage.jsx";
@@ -19,8 +19,7 @@ import RegisterPage from "./pages/RegisterPage/RegisterPage.jsx";
 import RequestPage from "./pages/RequestPage/RequestPage.jsx";
 import SearchResultsPage from "./pages/SearchResultsPage/SearchResultsPage.jsx";
 
-function AppContent() {
- 
+function App() {
   return (
     <>
       <Routes>
@@ -47,10 +46,6 @@ function AppContent() {
       </Routes>
     </>
   );
-}
-
-function App() {
-  return <AppContent />;
 }
 
 export default App;
