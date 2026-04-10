@@ -6,6 +6,11 @@ function isOwner(commentDoc, userId) {
 }
 
 const CommentService = {
+    async getMyCommentHistory({ userId, limit, skip }) {
+        if (!userId) throw new Error("Not authenticated");
+        return await commentRepository.findByAuthorPaginated(userId, { limit, skip });
+    },
+
     async getComments({ postId, showRemoved = false, userRole = "Registered" }) {
         if (!postId) throw new Error("postId is required");
 

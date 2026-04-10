@@ -4,6 +4,7 @@ import commentController from "../controllers/commentController.js";
 
 const router = express.Router();
 
+router.get("/me", requireAuth, commentController.getMyComments);
 router.get("/", optionalAuth, commentController.getComments);
 router.post("/", requireAuth, commentController.createComment);
 router.patch("/:commentId", requireAuth, commentController.editComment);

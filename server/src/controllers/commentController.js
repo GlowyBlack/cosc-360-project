@@ -7,6 +7,25 @@ function parseBoolean(value) {
 }
 
 const CommentController = {
+    // GET /comments/me?limit=&skip=
+    async getMyComments(req, res) {
+        try {
+            const userId = req.user?._id ?? req.user?.id;
+            if (!userId) return res.status(401).json({ message: "Not authenticated" });
+
+            const limit = Number(req.query.limit);
+            const skip = Number(req.query.skip);
+            const { items, hasMore } = await commentService.getMyCommentHistory({
+                userId,
+                limit: Number.isFinite(limit) ? limit : 10,
+                skip: Number.isFinite(skip) ? skip : 0,
+            });
+            return res.status(200).json({ comments: items, hasMore });
+        } catch (error) {
+            return res.status(500).json({ message: "Server Error", error: error.message });
+        }
+    },
+
     // GET /comments?postId=&showRemoved=true
     async getComments(req, res) {
         try {

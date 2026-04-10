@@ -13,6 +13,21 @@ const CommentRepository = {
         ).populate({ path: "authorId", select: "username profileImage role" });
     },
 
+    async findByAuthorPaginated(authorId, { limit = 10, skip = 0 } = {}) {
+        const take = Math.min(Math.max(Number(limit) || 10, 1), 50);
+        const s = Math.max(Number(skip) || 0, 0);
+        const rows = await comment
+            .find({ authorId, isRemoved: false })
+            .sort({ createdAt: -1, _id: -1 })
+            .skip(s)
+            .limit(take + 1)
+            .populate({ path: "postId", select: "title isRemoved" })
+            .lean();
+        const hasMore = rows.length > take;
+        const items = hasMore ? rows.slice(0, take) : rows;
+        return { items, hasMore };
+    },
+
     async findByPostId({ postId, includeRemoved = false }) {
         const query = { postId };
         if (!includeRemoved) {
