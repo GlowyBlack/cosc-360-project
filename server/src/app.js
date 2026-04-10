@@ -69,14 +69,17 @@ io.on("connection", (socket) => {
         }
     });
 
-    // Request notifications (realtime)
-
     socket.on("join_user_room", (userId) => {
         socket.join(userId);
     });
 
     socket.on("new_request", ({ ownerId }) => {
         io.to(ownerId).emit("request_update");
+    });
+
+    socket.on("request_status_changed", ({ requesterId, ownerId }) => {
+        if (requesterId) io.to(requesterId).emit("request_update");
+        if (ownerId) io.to(ownerId).emit("request_update");
     });
 
     socket.on("disconnect", () => {
