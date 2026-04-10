@@ -84,6 +84,10 @@ io.on("connection", (socket) => {
 
 const PORT = process.env.PORT || 5001;
 
-httpServer.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server started on http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== "test") {
+  httpServer.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server started on http://localhost:${PORT}`);
+  });
+}
+
+export { app };
