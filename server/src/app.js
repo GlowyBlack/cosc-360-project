@@ -40,7 +40,6 @@ app.use('/reviews', reviewRoute);
 app.use('/reports', reportRoute);
 app.use('/user', userRoute);
 
-// wrapped express in a plain http server so socket.io can share the same port
 const httpServer = http.createServer(app);
 
 const io = new Server(httpServer, {
@@ -52,14 +51,10 @@ const io = new Server(httpServer, {
 
 io.on("connection", (socket) => {
 
-    // Messaging
-
     socket.on("join_thread", (requestId) => {
         socket.join(requestId);
     });
 
-    // frontend calls this when a user sends a message
-    // saves to MongoDB via messageService then broadcasts to everyone in the room
     socket.on("send_message", async ({ requestId, senderId, content }) => {
         try {
             const message = await messageService.send({ requestId, senderId, content });
@@ -80,6 +75,10 @@ io.on("connection", (socket) => {
     socket.on("request_status_changed", ({ requesterId, ownerId }) => {
         if (requesterId) io.to(requesterId).emit("request_update");
         if (ownerId) io.to(ownerId).emit("request_update");
+    });
+
+    socket.on("book_update", () => {
+        io.emit("book_update");
     });
 
     socket.on("disconnect", () => {
