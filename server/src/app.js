@@ -4,6 +4,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import http from 'http'
 import { Server } from 'socket.io'
+import { setIO } from './socket.js';
 
 import adminRoute from './routes/adminRoute.js';
 import authRoute from './routes/authRoute.js';
@@ -48,6 +49,8 @@ const io = new Server(httpServer, {
         credentials: true
     }
 });
+
+setIO(io);
 
 io.on("connection", (socket) => {
 

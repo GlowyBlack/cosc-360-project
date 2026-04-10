@@ -7,9 +7,12 @@ import {
   useEffect,
 } from "react";
 import { useLocation } from "react-router-dom";
+import { io } from "socket.io-client";
 import API, { authHeader, flashSessionExpired } from "../config/api.js";
 
 const STORAGE_KEY = "bookbuddy:user";
+
+const socket = io("http://localhost:5001");
 
 function tokenPresentInStorage() {
   const raw = String(localStorage.getItem("token") ?? "");
@@ -65,6 +68,18 @@ export function AuthProvider({ children }) {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem("token");
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    const userId = String(user._id ?? user.id ?? "");
+    if (!userId) return;
+    socket.emit("join_user_room", userId);
+    socket.on("force_logout", () => {
+      flashSessionExpired();
+      logout();
+    });
+    return () => socket.off("force_logout");
+  }, [user, logout]);
 
   useEffect(() => {
     let cancelled = false;

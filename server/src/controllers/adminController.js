@@ -1,5 +1,6 @@
 import adminService from "../services/adminService.js";
 import reportService from "../services/reportService.js";
+import { getIO } from "../socket.js";
 
 function handleError(res, err) {
   if (err && typeof err.status === "number") {
@@ -30,6 +31,7 @@ const AdminController = {
   async suspendUser(req, res) {
     try {
       const user = await adminService.suspendUser(req.params.id);
+      getIO().to(req.params.id).emit("force_logout");
       return res.json(user);
     } catch (err) {
       return handleError(res, err);
@@ -48,6 +50,7 @@ const AdminController = {
   async banUser(req, res) {
     try {
       const user = await adminService.banUser(req.params.id);
+      getIO().to(req.params.id).emit("force_logout");
       return res.json(user);
     } catch (err) {
       return handleError(res, err);
