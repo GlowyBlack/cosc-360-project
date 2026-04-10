@@ -1,52 +1,16 @@
-# DB_TARGET=local → MongoDB in the "mongo" service (seed + TAs without Atlas).
-# DB_TARGET=atlas → set to atlas and the API uses ATLAS_MONGO_URI (team / real Atlas data).
 services:
-  mongo:
-    image: mongo:7
-    volumes:
-      - mongo_data:/data/db
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand({ ping: 1 })"]
-      interval: 5s
-      timeout: 5s
-      retries: 8
-      start_period: 10s
-
-  seed:
-    build:
-      context: ./server
-      dockerfile: Dockerfile
-    command: ["node", "src/mock/seed.js"]
-    environment:
-      - MONGO_URI=mongodb://mongo:27017/bookbuddy
-      - NODE_ENV=production
-    depends_on:
-      mongo:
-        condition: service_healthy
-    restart: on-failure
-
   server:
     build:
       context: ./server
       dockerfile: Dockerfile
     environment:
-      - DB_TARGET=local
-      - MONGODB_URI=mongodb://mongo:27017/bookbuddy
-      - MONGO_URI=mongodb://mongo:27017/bookbuddy
-      - ATLAS_MONGO_URI=mongodb+srv://admin:YfzX1PxSHYz4KWwB@book-buddy-backend.al6fubm.mongodb.net/bookbuddy?retryWrites=true&w=majority
+      - "MONGODB_URI=mongodb+srv://admin:YfzX1PxSHYz4KWwB@book-buddy-backend.al6fubm.mongodb.net/bookbuddy?retryWrites=true&w=majority"
       - JWT_SECRET=db5af6e71b90b3577b6a2bbc66f9c9f0ebfe7da493effb2f09709f9a6d69bf3c
       - NODE_ENV=production
       - PORT=4000
       - CLOUDINARY_CLOUD_NAME=dpgjeiiga
       - CLOUDINARY_API_KEY=335291581858376
       - CLOUDINARY_API_SECRET=VRfy4TjuneADsd0yh12Utx8-d_Y
-    depends_on:
-      mongo:
-        condition: service_healthy
-      seed:
-        condition: service_completed_successfully
-    restart: on-failure
 
   client:
     build:
@@ -58,7 +22,3 @@ services:
       - "4000:80"
     depends_on:
       - server
-    restart: unless-stopped
-
-volumes:
-  mongo_data:
