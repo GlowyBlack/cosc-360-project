@@ -15,12 +15,12 @@ import {
   useBookCoverDisplaySrc,
 } from "../../commons/bookShared.js";
 import { useAuth } from "../../context/AuthContext.jsx";
-import { io } from "socket.io-client";
+import { createAppSocket } from "../../config/socket.js";
 import "./BookDetailPage.css";
 
 // create one socket connection for this page
 // used to notify the book owner in real time when an exchange is proposed
-const socket = io("http://localhost:5001");
+const socket = createAppSocket();
 
 export default function BookDetailPage() {
   const { bookId } = useParams();

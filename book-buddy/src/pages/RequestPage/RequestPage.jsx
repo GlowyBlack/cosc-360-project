@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import MaterialIcon from "../../components/MaterialIcon/MaterialIcon.jsx";
 import API, { authHeader, flashSessionExpired } from "../../config/api.js";
+import { createAppSocket } from "../../config/socket.js";
 import {
   coverSrcOrFallback,
   getSessionUserId,
@@ -14,7 +14,7 @@ import "./RequestPage.css";
 
 const LIST_PAGE_SIZE = 5;
 
-const socket = io("http://localhost:5001");
+const socket = createAppSocket();
 
 function normalizeRequestPayload(data) {
   if (Array.isArray(data)) return data;

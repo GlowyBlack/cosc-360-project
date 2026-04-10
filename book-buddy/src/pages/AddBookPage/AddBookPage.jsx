@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import BookForm from "../../components/BookForm/BookForm.jsx";
 import API, { authHeader } from "../../config/api.js";
+import { createAppSocket } from "../../config/socket.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import "./AddBookPage.css";
 
-const socket = io("http://localhost:5001");
+const socket = createAppSocket();
 
 export default function AddBookPage() {
   const { user } = useAuth();

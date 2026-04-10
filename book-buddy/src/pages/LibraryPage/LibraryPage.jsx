@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import API, { authHeader, flashSessionExpired } from "../../config/api.js";
+import { createAppSocket } from "../../config/socket.js";
 import { toLibraryPageCardBook, getSessionUserId } from "../../commons/bookShared.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import LibraryBookCard from "./LibraryBookCard.jsx";
@@ -15,7 +15,7 @@ const TABS = [
   { id: "lent", label: "LENT OUT" },
 ];
 
-const socket = io("http://localhost:5001");
+const socket = createAppSocket();
 
 export default function LibraryPage() {
   const navigate = useNavigate();

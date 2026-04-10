@@ -138,6 +138,8 @@ async function seed() {
           password: u.password,
           city: u.city,
           provinceState: u.provinceState,
+          profileImage:
+            u.profileImage ?? "https://example.com/seed-placeholder-avatar.png",
         });
 
         // Apply any extra seeded fields not handled by register().

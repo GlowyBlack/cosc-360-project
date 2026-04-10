@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import BookCard from "../../components/BookCard/BookCard.jsx";
@@ -9,6 +8,7 @@ import Button from "../../components/Button/Button.jsx";
 import MaterialIcon from "../../components/MaterialIcon/MaterialIcon.jsx";
 import { DISCOVER_FILTERS } from "../../data/discoverBooks.js";
 import API from "../../config/api.js";
+import { createAppSocket } from "../../config/socket.js";
 import {
   bookGenreMatchesFilter,
   toDiscoverCardBook,
@@ -16,7 +16,7 @@ import {
 import { useAuth } from "../../context/AuthContext.jsx";
 import "./DiscoverPage.css";
 
-const socket = io("http://localhost:5001");
+const socket = createAppSocket();
 
 export default function DiscoverPage() {
   const navigate = useNavigate();

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import API, { authHeader, flashSessionExpired } from "../../config/api.js";
+import { createAppSocket } from "../../config/socket.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import CreatePostComposer from "./CreatePostComposer.jsx";
 import PostMoreMenu from "./PostMoreMenu.jsx";
@@ -19,7 +19,7 @@ import "./BlogsPage.css";
 import MaterialIcon from "../../components/MaterialIcon/MaterialIcon.jsx";
 import { getSessionUserId } from "../../commons/bookShared.js";
 
-const socket = io("http://localhost:5001");
+const socket = createAppSocket();
 
 function since(value) {
   const t = new Date(value).getTime();
