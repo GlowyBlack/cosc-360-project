@@ -64,6 +64,10 @@ io.on("connection", (socket) => {
         }
     });
 
+    socket.on("message_sent", ({ requestId, message }) => {
+        io.to(requestId).emit("receive_message", message);
+    });
+
     socket.on("join_user_room", (userId) => {
         socket.join(userId);
     });

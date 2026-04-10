@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
+import { io } from "socket.io-client";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import ConversationBubble from "../../components/ConversationBubble/ConversationBubble.jsx";
@@ -8,6 +9,8 @@ import API, { authHeader, flashSessionExpired } from "../../config/api.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { getSessionUserId } from "../../commons/bookShared.js";
 import "./MessagesPage.css";
+
+const socket = io("http://localhost:5001");
 
 function idString(ref) {
   if (ref == null) return "";
@@ -196,6 +199,25 @@ export default function MessagesPage() {
 
   useEffect(() => {
     if (!activeThreadId) return;
+    socket.emit("join_thread", activeThreadId);
+  }, [activeThreadId]);
+
+  useEffect(() => {
+    socket.on("receive_message", (message) => {
+      const incomingId = idString(message._id ?? message.id);
+      const incomingRequestId = idString(message.requestId);
+      setMessages((prev) => {
+        if (incomingRequestId !== activeThreadId) return prev;
+        const exists = prev.some((m) => idString(m._id ?? m.id) === incomingId);
+        if (exists) return prev;
+        return [...prev, message];
+      });
+    });
+    return () => socket.off("receive_message");
+  }, [activeThreadId]);
+
+  useEffect(() => {
+    if (!activeThreadId) return;
     let cancelled = false;
     (async () => {
       try {
@@ -218,7 +240,6 @@ export default function MessagesPage() {
           ),
         );
       } catch {
-        // non-blocking
       }
     })();
     return () => {
@@ -291,6 +312,7 @@ export default function MessagesPage() {
       }
       setComposer("");
       setMessages((previous) => [...previous, data]);
+      socket.emit("message_sent", { requestId: activeThreadId, message: data });
       void loadThreads();
     } catch (error) {
       setMessagesError(error.message ?? "Could not send message");
