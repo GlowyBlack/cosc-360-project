@@ -1,0 +1,11 @@
+node_modules
+server/node_modules
+book-buddy/node_modules
+.env
+**/.env
+.git
+*/node_modules
+*/.env
+**/dist
+.gitignore
+tests

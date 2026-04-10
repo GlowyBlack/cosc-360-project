@@ -8,12 +8,16 @@ import Post from '../models/post.js'
 
 dotenv.config()
 
-const mongoURI = process.env.MONGO_URI
+/** Docker Compose: DB_TARGET=atlas uses ATLAS_MONGO_URI; otherwise MONGODB_URI / MONGO_URI (local mongo). */
+const mongoURI =
+  process.env.DB_TARGET === "atlas"
+    ? process.env.ATLAS_MONGO_URI || process.env.MONGODB_URI || process.env.MONGO_URI
+    : process.env.MONGODB_URI || process.env.MONGO_URI;
 
 async function startup() {
     try {
         if (!mongoURI) {
-            throw new Error("MONGO_URI is missing. Create a .env file (see .env.example).");
+            throw new Error("MONGODB_URI or MONGO_URI is missing. Create a .env file (see .env.example).");
         }
         await mongoose.connect(mongoURI);
         await Request.syncIndexes();
