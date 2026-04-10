@@ -81,6 +81,22 @@ io.on("connection", (socket) => {
         io.emit("book_update");
     });
 
+    socket.on("post_update", () => {
+        io.emit("post_update");
+    });
+
+    socket.on("join_post_room", (postId) => {
+        socket.join(`post:${postId}`);
+    });
+
+    socket.on("new_comment", ({ postId, comment }) => {
+        io.to(`post:${postId}`).emit("new_comment", comment);
+    });
+
+    socket.on("post_reacted", ({ postId, post }) => {
+        io.emit("post_reacted", { postId, post });
+    });
+
     socket.on("disconnect", () => {
         console.log("user disconnected from socket");
     });

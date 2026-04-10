@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { io } from "socket.io-client";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import API, { authHeader, flashSessionExpired } from "../../config/api.js";
@@ -17,6 +18,8 @@ import {
 } from "./blogPostShared.jsx";
 import { getSessionUserId } from "../../commons/bookShared.js";
 import "./BlogsPage.css";
+
+const socket = io("http://localhost:5001");
 
 function since(value) {
   const t = new Date(value).getTime();
@@ -90,13 +93,31 @@ export default function BlogPostPage() {
       }
     }
     void load();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [postId, logout]);
 
   useEffect(() => {
     setShowEdit(false);
+  }, [postId]);
+
+  useEffect(() => {
+    if (!postId) return;
+    socket.emit("join_post_room", postId);
+    socket.on("new_comment", (comment) => {
+      setComments((prev) => {
+        const id = String(comment?._id ?? comment?.id ?? "");
+        const exists = prev.some((c) => String(c?._id ?? c?.id ?? "") === id);
+        if (exists) return prev;
+        return [...prev, comment];
+      });
+    });
+    socket.on("post_reacted", ({ postId: reactedPostId, post: updatedPost }) => {
+      if (reactedPostId === postId) setPost(updatedPost);
+    });
+    return () => {
+      socket.off("new_comment");
+      socket.off("post_reacted");
+    };
   }, [postId]);
 
   const author = String(post?.authorId?.username ?? "Unknown");
@@ -135,11 +156,7 @@ export default function BlogPostPage() {
   const handleDeletePost = async () => {
     const id = String(post?._id ?? post?.id ?? "");
     if (!id) return;
-    if (
-      !window.confirm(
-        "Remove this post? It will no longer appear for readers.",
-      )
-    ) {
+    if (!window.confirm("Remove this post? It will no longer appear for readers.")) {
       return;
     }
     setError("");
@@ -163,6 +180,7 @@ export default function BlogPostPage() {
     try {
       const updated = await togglePostReaction({ postId: id, mode, logout });
       setPost(updated);
+      socket.emit("post_reacted", { postId: id, post: updated });
     } catch (e) {
       setError(e.message ?? "Could not update reaction");
     } finally {
@@ -210,6 +228,7 @@ export default function BlogPostPage() {
       }
       if (!response.ok) throw new Error(data.message ?? "Could not post comment");
       setComments((prev) => [...prev, data]);
+      socket.emit("new_comment", { postId: id, comment: data });
       if (parentId) {
         setReplyDrafts((prev) => ({ ...prev, [parentId]: "" }));
         setOpenReplyFor("");
@@ -432,9 +451,7 @@ export default function BlogPostPage() {
               </button>
               <button
                 type="button"
-                className={`blogs-link-btn blogs-vote-btn${
-                  likedByMe ? " blogs-vote-btn--active" : ""
-                }`}
+                className={`blogs-link-btn blogs-vote-btn${likedByMe ? " blogs-vote-btn--active" : ""}`}
                 onClick={() => handleReact("like")}
                 disabled={reacting}
               >
@@ -443,9 +460,7 @@ export default function BlogPostPage() {
               <span className="blogs-post-score">{score}</span>
               <button
                 type="button"
-                className={`blogs-link-btn blogs-vote-btn${
-                  dislikedByMe ? " blogs-vote-btn--active" : ""
-                }`}
+                className={`blogs-link-btn blogs-vote-btn${dislikedByMe ? " blogs-vote-btn--active" : ""}`}
                 onClick={() => handleReact("dislike")}
                 disabled={reacting}
               >
