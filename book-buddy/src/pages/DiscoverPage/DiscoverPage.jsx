@@ -18,12 +18,16 @@ import "./DiscoverPage.css";
 
 const socket = io("http://localhost:5001");
 
+const DISCOVER_INITIAL_VISIBLE = 8;
+const DISCOVER_LOAD_MORE_STEP = 8;
+
 export default function DiscoverPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [activeFilter, setActiveFilter] = useState("All");
   const [books, setBooks] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [visibleCount, setVisibleCount] = useState(DISCOVER_INITIAL_VISIBLE);
 
   const cardBooks = useMemo(() => books.map(toDiscoverCardBook), [books]);
 
@@ -33,6 +37,13 @@ export default function DiscoverPage() {
       bookGenreMatchesFilter(b.genre, activeFilter),
     );
   }, [activeFilter, cardBooks]);
+
+  const visibleBooks = useMemo(
+    () => filteredBooks.slice(0, visibleCount),
+    [filteredBooks, visibleCount],
+  );
+
+  const hasMoreBooks = visibleCount < filteredBooks.length;
 
   const loadBooks = useCallback(async () => {
     try {
@@ -116,7 +127,10 @@ export default function DiscoverPage() {
                 activeFilter === label ? "discover-page-filter--active" : ""
               }`.trim()}
               aria-pressed={activeFilter === label}
-              onClick={() => setActiveFilter(label)}
+              onClick={() => {
+                setActiveFilter(label);
+                setVisibleCount(DISCOVER_INITIAL_VISIBLE);
+              }}
             >
               {label}
             </button>
@@ -129,7 +143,7 @@ export default function DiscoverPage() {
               No books in this genre yet. Try another filter.
             </p>
           ) : (
-            filteredBooks.map((book) => (
+            visibleBooks.map((book) => (
               <BookCard
                 key={book.id}
                 id={book.id}
@@ -144,6 +158,23 @@ export default function DiscoverPage() {
             ))
           )}
         </section>
+
+        {hasMoreBooks ? (
+          <div className="discover-page-load-more-wrap">
+            <Button
+              type="button"
+              variant="terracotta"
+              className="discover-page-load-more"
+              onClick={() =>
+                setVisibleCount((c) =>
+                  Math.min(c + DISCOVER_LOAD_MORE_STEP, filteredBooks.length),
+                )
+              }
+            >
+              Load more ({filteredBooks.length - visibleCount} left)
+            </Button>
+          </div>
+        ) : null}
       </main>
       <Footer />
     </div>

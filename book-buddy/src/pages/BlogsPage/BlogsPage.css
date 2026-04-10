@@ -617,3 +617,8 @@ a.blogs-btn-link {
   font-size: 0.84rem;
   color: var(--color-outline);
 }
+
+.blogs-report-success {
+  color: var(--color-success, #15803d);
+  font-weight: 600;
+}
