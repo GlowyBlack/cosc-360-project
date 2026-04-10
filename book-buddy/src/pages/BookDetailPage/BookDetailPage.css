@@ -325,3 +325,87 @@
   color: var(--color-on-surface);
   background: var(--color-surface-container);
 }
+.book-detail-borrow-form {
+  margin: 0.75rem 0 1.5rem;
+  padding: 1.25rem;
+  background: var(--color-surface-container);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.book-detail-borrow-label {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
+.book-detail-borrow-date {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 0.85rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.book-detail-borrow-date:focus {
+  outline: 2px solid color-mix(in srgb, var(--color-on-surface) 20%, transparent);
+  outline-offset: 1px;
+}
+
+.book-detail-borrow-error {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-danger, #9b2c2c);
+}
+
+.book-detail-borrow-actions {
+  display: flex;
+  gap: 0.65rem;
+  justify-content: flex-end;
+}
+
+.book-detail-borrow-cancel {
+  padding: 0.55rem 1.1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-on-surface-variant);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.book-detail-borrow-cancel:hover {
+  background: var(--color-surface-container);
+}
+
+.book-detail-borrow-submit {
+  padding: 0.55rem 1.25rem;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-success, #2d6a4f);
+  color: #fff;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+}
+
+.book-detail-borrow-submit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.book-detail-borrow-submit:not(:disabled):hover {
+  filter: brightness(1.05);
+}
