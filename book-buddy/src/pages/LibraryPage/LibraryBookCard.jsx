@@ -10,6 +10,7 @@ export default function LibraryBookCard({
   isAvailable,
   onLoan = false,
   requestCount = 0,
+  metaText,
   onEdit,
   onDelete,
   onToggleAvailability,
@@ -108,9 +109,13 @@ export default function LibraryBookCard({
         <p className="library-book-card-author">
           {(author ?? "").toUpperCase()}
         </p>
-        <p className="library-book-card-meta">
-          {requestCount} ACTIVE {requestCount === 1 ? "REQUEST" : "REQUESTS"}
-        </p>
+        {metaText ? (
+          <p className="library-book-card-meta">{metaText}</p>
+        ) : (
+          <p className="library-book-card-meta">
+            {requestCount} ACTIVE {requestCount === 1 ? "REQUEST" : "REQUESTS"}
+          </p>
+        )}
       </div>
     </article>
   );

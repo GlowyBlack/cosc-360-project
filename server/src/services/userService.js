@@ -4,14 +4,27 @@ import bookRepository from "../repositories/bookRepository.js";
 import requestRepository from "../repositories/requestRepository.js";
 
 const UserService = {
-    async updateFavourites(userId, bookId) {
+    async getWishlist(userId) {
+        if (!userId) throw new Error("User ID is required");
+
+        const wishlist = await userRepository.findWishlistByUserId(userId);
+        if (!wishlist) throw new Error("User not found");
+
+        return wishlist;
+    },
+
+    async updateWishlist(userId, bookId) {
         const user = await userRepository.findById(userId);
         if (!user) throw new Error("User not found");
 
         const book = await bookRepository.findByID({ id: bookId });
         if (!book) throw new Error("Book not found");
+        const ownerId = String(book.bookOwner?._id ?? book.bookOwner ?? "");
+        if (ownerId === String(userId)) {
+            throw new Error("You can't add your own book to your wishlist");
+        }
 
-        return await userRepository.updateFavourites(userId, bookId);
+        return await userRepository.updateWishlist(userId, bookId);
     },
 
     async getPublicProfile(userId) {

@@ -5,6 +5,23 @@ const UserRepository = {
     return User.findById(id);
   },
 
+  async findWishlistByUserId(id) {
+    const user = await User.findById(id)
+      .select("wishlist")
+      .populate({
+        path: "wishlist",
+        options: { sort: { createdAt: -1 } },
+        populate: {
+          path: "bookOwner",
+          select: "username location profileImage",
+        },
+      })
+      .lean();
+
+    if (!user) return null;
+    return Array.isArray(user.wishlist) ? user.wishlist : [];
+  },
+
   async findPublicById(id) {
     return User.findById(id)
       .select("username bio profileImage location role isSuspended")
@@ -25,26 +42,29 @@ const UserRepository = {
     return User.create(data);
   },
 
-  async updateFavourites(userId, bookId) {
+  async updateWishlist(userId, bookId) {
     const user = await User.findById(userId);
     if (!user) return null;
 
-    const alreadyFavourited = user.favourites.some(
-      (fav) => fav.toString() === bookId.toString()
+    const wishlist = Array.isArray(user.wishlist) ? user.wishlist : [];
+    user.wishlist = wishlist;
+
+    const alreadyWishlisted = wishlist.some(
+      (entry) => entry.toString() === bookId.toString()
     );
 
-    if (alreadyFavourited) {
-      user.favourites = user.favourites.filter(
-        (fav) => fav.toString() !== bookId.toString()
+    if (alreadyWishlisted) {
+      user.wishlist = wishlist.filter(
+        (entry) => entry.toString() !== bookId.toString()
       );
     } else {
-      user.favourites.push(bookId);
+      user.wishlist = [...wishlist, bookId];
     }
 
     await user.save();
     return {
       user,
-      favourited: !alreadyFavourited,
+      wishlisted: !alreadyWishlisted,
     };
   },
 

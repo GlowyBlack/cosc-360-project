@@ -37,12 +37,19 @@
   border-radius: 9999px;
   border: none;
   background-color: color-mix(in srgb, #fff 92%, transparent);
+  color: var(--color-on-surface);
   cursor: pointer;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .book-card-wishlist:hover {
   color: var(--color-on-surface);
+}
+
+.book-card-wishlist--active {
+  background-color: var(--color-on-surface);
+  color: var(--color-surface);
 }
 
 .book-card-wish-icon {
