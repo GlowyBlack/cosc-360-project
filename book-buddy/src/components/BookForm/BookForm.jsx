@@ -107,7 +107,7 @@ export default function BookForm({
   return (
     <form className="book-form" onSubmit={handleSubmit} noValidate>
       <div className="book-form-field">
-        <p className="book-form-label">Cover image (optional)</p>
+        <p className="book-form-label">Cover Image</p>
         <label className="book-form-upload" htmlFor="book-image">
           {cleanExistingImageUrl ? (
             <img

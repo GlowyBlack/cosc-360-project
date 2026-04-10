@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import BookForm from "../../components/BookForm/BookForm.jsx";
 import API, { authHeader } from "../../config/api.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import "./AddBookPage.css";
+
+const socket = io("http://localhost:5001");
 
 export default function AddBookPage() {
   const { user } = useAuth();
@@ -34,9 +37,7 @@ export default function AddBookPage() {
 
       const response = await fetch(`${API}/books`, {
         method: "POST",
-        headers: {
-          ...authHeader(),
-        },
+        headers: { ...authHeader() },
         body: payload,
       });
 
@@ -50,6 +51,7 @@ export default function AddBookPage() {
         throw new Error(msg);
       }
 
+      socket.emit("book_update");
       navigate("/library", { replace: true });
     } catch (e) {
       setError(e.message ?? "Failed to add book");

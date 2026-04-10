@@ -23,6 +23,19 @@ const BookRepository = {
         return await book.countDocuments({ bookOwner: userId });
     },
 
+    async countAvailableByOwner(userId) {
+        return await book.countDocuments({ bookOwner: userId, isAvailable: true });
+    },
+
+    async findAvailableByOwnerPaginated(userId, { skip = 0, limit = 8 }) {
+        return await book
+            .find({ bookOwner: userId, isAvailable: true })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .lean();
+    },
+
     async findByID({ id, lean = false, session = null }) {
         let q = book.findById(id)
             .populate({ path: "bookOwner", select: "username location profileImage" });

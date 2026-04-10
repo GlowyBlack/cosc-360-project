@@ -1,5 +1,6 @@
-import { useMemo, useState, useEffect } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import BookCard from "../../components/BookCard/BookCard.jsx";
@@ -7,15 +8,15 @@ import TextField from "../../components/TextField/TextField.jsx";
 import Button from "../../components/Button/Button.jsx";
 import MaterialIcon from "../../components/MaterialIcon/MaterialIcon.jsx";
 import { DISCOVER_FILTERS } from "../../data/discoverBooks.js";
-
 import API from "../../config/api.js";
 import {
   bookGenreMatchesFilter,
   toDiscoverCardBook,
 } from "../../commons/bookShared.js";
 import { useAuth } from "../../context/AuthContext.jsx";
-
 import "./DiscoverPage.css";
+
+const socket = io("http://localhost:5001");
 
 export default function DiscoverPage() {
   const navigate = useNavigate();
@@ -33,19 +34,26 @@ export default function DiscoverPage() {
     );
   }, [activeFilter, cardBooks]);
 
-  useEffect(() => {
-    async function loadBooks() {
-      try {
-        const response = await fetch(`${API}/books/`);
-        const data = await response.json();
-        setBooks(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.log(error);
-      }
+  const loadBooks = useCallback(async () => {
+    try {
+      const response = await fetch(`${API}/books/`);
+      const data = await response.json();
+      setBooks(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.log(error);
     }
-
-    loadBooks();
   }, []);
+
+  useEffect(() => {
+    loadBooks();
+  }, [loadBooks]);
+
+  useEffect(() => {
+    socket.on("book_update", () => {
+      loadBooks();
+    });
+    return () => socket.off("book_update");
+  }, [loadBooks]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -115,10 +123,7 @@ export default function DiscoverPage() {
           ))}
         </div>
 
-        <section
-          className="discover-page-grid"
-          aria-label="Book listings"
-        >
+        <section className="discover-page-grid" aria-label="Book listings">
           {filteredBooks.length === 0 ? (
             <p className="discover-page-empty">
               No books in this genre yet. Try another filter.

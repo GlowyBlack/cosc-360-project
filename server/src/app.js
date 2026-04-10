@@ -14,6 +14,7 @@ import messageService from './services/messageService.js';
 import postRoute from './routes/postRoute.js';
 import requestRoute from './routes/requestRoute.js';
 import reviewRoute from './routes/reviewRoute.js';
+import reportRoute from './routes/reportRoute.js';
 import userRoute from './routes/userRoute.js';
 
 dotenv.config()
@@ -36,9 +37,9 @@ app.use('/messages', messageRoute);
 app.use('/posts', postRoute);
 app.use('/requests', requestRoute);
 app.use('/reviews', reviewRoute);
+app.use('/reports', reportRoute);
 app.use('/user', userRoute);
 
-// wrapped express in a plain http server so socket.io can share the same port
 const httpServer = http.createServer(app);
 
 const io = new Server(httpServer, {
@@ -50,14 +51,10 @@ const io = new Server(httpServer, {
 
 io.on("connection", (socket) => {
 
-    // Messaging
-
     socket.on("join_thread", (requestId) => {
         socket.join(requestId);
     });
 
-    // frontend calls this when a user sends a message
-    // saves to MongoDB via messageService then broadcasts to everyone in the room
     socket.on("send_message", async ({ requestId, senderId, content }) => {
         try {
             const message = await messageService.send({ requestId, senderId, content });
@@ -67,7 +64,9 @@ io.on("connection", (socket) => {
         }
     });
 
-    // Request notifications (realtime)
+    socket.on("message_sent", ({ requestId, message }) => {
+        io.to(requestId).emit("receive_message", message);
+    });
 
     socket.on("join_user_room", (userId) => {
         socket.join(userId);
@@ -77,6 +76,31 @@ io.on("connection", (socket) => {
         io.to(ownerId).emit("request_update");
     });
 
+    socket.on("request_status_changed", ({ requesterId, ownerId }) => {
+        if (requesterId) io.to(requesterId).emit("request_update");
+        if (ownerId) io.to(ownerId).emit("request_update");
+    });
+
+    socket.on("book_update", () => {
+        io.emit("book_update");
+    });
+
+    socket.on("post_update", () => {
+        io.emit("post_update");
+    });
+
+    socket.on("join_post_room", (postId) => {
+        socket.join(`post:${postId}`);
+    });
+
+    socket.on("new_comment", ({ postId, comment }) => {
+        io.to(`post:${postId}`).emit("new_comment", comment);
+    });
+
+    socket.on("post_reacted", ({ postId, post }) => {
+        io.emit("post_reacted", { postId, post });
+    });
+
     socket.on("disconnect", () => {
         console.log("user disconnected from socket");
     });
@@ -84,6 +108,7 @@ io.on("connection", (socket) => {
 
 const PORT = process.env.PORT || 5001;
 
+<<<<<<< admin-feats
 if (process.env.NODE_ENV !== "test") {
   httpServer.listen(PORT, "0.0.0.0", () => {
     console.log(`Server started on http://localhost:${PORT}`);
@@ -91,3 +116,8 @@ if (process.env.NODE_ENV !== "test") {
 }
 
 export { app };
+=======
+httpServer.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server started on http://localhost:${PORT}`);
+});
+>>>>>>> main

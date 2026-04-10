@@ -5,11 +5,13 @@ import { requireAuth } from "../middleware/auth.js";
 
 const router = express.Router();
 
+router.get("/me/following", requireAuth, followController.getMyFollowings);
+router.get("/me/followers", requireAuth, followController.getMyFollowers);
 
-router.get("/me/following", requireAuth, followController.getMyFollowings)
-router.get("/me/followers", requireAuth, followController.getMyFollowers)
+router.get("/:id/profile", userController.getPublicProfile);
+router.get("/:id/books", userController.getUserAvailableBooks);
 
-router.get("/:id/follow-stats", followController.getFollowStats)
+router.get("/:id/follow-stats", followController.getFollowStats);
 router.get("/:id/is-following", requireAuth, followController.isFollowing)
 router.get("/:id/following", requireAuth, followController.getUserFollowingsForViewer)
 router.get("/:id/followers", requireAuth, followController.getUserFollowersForViewer)

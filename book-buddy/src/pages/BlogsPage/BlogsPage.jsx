@@ -1,12 +1,16 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import API, { authHeader, flashSessionExpired } from "../../config/api.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import CreatePostComposer from "./CreatePostComposer.jsx";
+import PostMoreMenu from "./PostMoreMenu.jsx";
 import {
   PREVIEW_MAX_CHARS,
+  deletePost,
+  isPostOwner,
   postTag,
   previewPlainContent,
   togglePostReaction,
@@ -14,6 +18,8 @@ import {
 import "./BlogsPage.css";
 import MaterialIcon from "../../components/MaterialIcon/MaterialIcon.jsx";
 import { getSessionUserId } from "../../commons/bookShared.js";
+
+const socket = io("http://localhost:5001");
 
 function since(value) {
   const t = new Date(value).getTime();
@@ -39,8 +45,9 @@ export default function BlogsPage() {
   const [sortMode, setSortMode] = useState("top");
   const [reactingPostId, setReactingPostId] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [editingPost, setEditingPost] = useState(null);
 
-  const loadPosts = async () => {
+  const loadPosts = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
@@ -68,15 +75,78 @@ export default function BlogsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchQuery, logout]);
 
   useEffect(() => {
     void loadPosts();
-  }, [searchQuery]);
+  }, [loadPosts]);
+
+  useEffect(() => {
+    socket.on("post_update", () => {
+      void loadPosts();
+    });
+    socket.on("post_reacted", ({ postId, post }) => {
+      setPosts((prev) =>
+        prev.map((p) => (String(p._id ?? p.id) === postId ? post : p)),
+      );
+    });
+    return () => {
+      socket.off("post_update");
+      socket.off("post_reacted");
+    };
+  }, [loadPosts]);
 
   useEffect(() => {
     if (!user) setShowComposer(false);
   }, [user]);
+
+  const updatePost = async (payload) => {
+    const id = String(editingPost?._id ?? editingPost?.id ?? "");
+    if (!id) return;
+    setSubmitting(true);
+    try {
+      const response = await fetch(`${API}/posts/${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...authHeader() },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.status === 401) {
+        flashSessionExpired();
+        logout();
+        return;
+      }
+      if (!response.ok) {
+        throw new Error(data.message ?? "Could not update post");
+      }
+      setEditingPost(null);
+      socket.emit("post_update");
+      await loadPosts();
+    } catch (e) {
+      throw e;
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    const id = String(postId ?? "").trim();
+    if (!id) return;
+    if (!window.confirm("Remove this post? It will no longer appear for readers.")) {
+      return;
+    }
+    try {
+      await deletePost({ postId: id, logout });
+      setEditingPost((cur) => {
+        const curId = String(cur?._id ?? cur?.id ?? "");
+        return curId === id ? null : cur;
+      });
+      socket.emit("post_update");
+      await loadPosts();
+    } catch (e) {
+      setError(e.message ?? "Could not delete post");
+    }
+  };
 
   const createPost = async (payload) => {
     setSubmitting(true);
@@ -96,6 +166,7 @@ export default function BlogsPage() {
         throw new Error(data.message ?? "Could not create post");
       }
       setShowComposer(false);
+      socket.emit("post_update");
       await loadPosts();
     } finally {
       setSubmitting(false);
@@ -111,13 +182,14 @@ export default function BlogsPage() {
     if (reactingPostId === postId) return;
     setReactingPostId(postId);
     try {
-      const data = await togglePostReaction({ postId, mode, logout });
+      const updated = await togglePostReaction({ postId, mode, logout });
       setPosts((prev) =>
         prev.map((p) => {
           const id = String(p?._id ?? p?.id ?? "");
-          return id === String(postId) ? data : p;
+          return id === String(postId) ? updated : p;
         }),
       );
+      socket.emit("post_reacted", { postId, post: updated });
     } catch (e) {
       setError(e.message ?? "Could not update reaction");
     } finally {
@@ -142,9 +214,7 @@ export default function BlogsPage() {
     <div className="blogs-page">
       <Header variant={user ? "user" : "guest"} />
       <main className="blogs-main">
-        <section
-          className={`blogs-header${showComposer ? " blogs-header--composer" : ""}`}
-        >
+        <section className={`blogs-header${showComposer ? " blogs-header--composer" : ""}`}>
           <div className="blogs-header-left">
             <button
               type="button"
@@ -189,18 +259,35 @@ export default function BlogsPage() {
           )}
         </section>
 
-        {user && showComposer ? (
+        {user && showComposer && !editingPost ? (
           <CreatePostComposer submitting={submitting} onSubmit={createPost} />
         ) : null}
 
-        {!(user && showComposer) && loading ? (
+        {user && editingPost ? (
+          <section className="blogs-edit-wrap" aria-label="Edit post">
+            <CreatePostComposer
+              key={String(editingPost._id ?? editingPost.id)}
+              resetKey={String(editingPost._id ?? editingPost.id)}
+              initialValues={{
+                title: editingPost.title,
+                content: editingPost.content,
+                bookTag: editingPost.bookTag ?? {},
+              }}
+              onSubmit={updatePost}
+              onCancel={() => setEditingPost(null)}
+              submitting={submitting}
+            />
+          </section>
+        ) : null}
+
+        {!(user && showComposer) && !(user && editingPost) && loading ? (
           <p className="blogs-hint">Loading posts...</p>
         ) : null}
-        {!(user && showComposer) && error ? (
+        {!(user && showComposer) && !(user && editingPost) && error ? (
           <p className="blogs-error">{error}</p>
         ) : null}
 
-        {!(user && showComposer) ? (
+        {!(user && showComposer) && !(user && editingPost) ? (
           <section className="blogs-feed" aria-label="Post feed">
             {ordered.map((post, index) => {
               const id = String(post?._id ?? post?.id ?? "");
@@ -219,10 +306,21 @@ export default function BlogsPage() {
               const reacting = reactingPostId === id;
               return (
                 <article key={id || `post-${index}`} className="blogs-post">
-                  <p className="blogs-post-meta">
-                    <strong>{postTag(post)}</strong> · Posted by {author} ·{" "}
-                    {since(post.createdAt)}
-                  </p>
+                  <div className="blogs-post-meta-row">
+                    <p className="blogs-post-meta">
+                      <strong>{postTag(post)}</strong> · Posted by {author} ·{" "}
+                      {since(post.createdAt)}
+                    </p>
+                    <PostMoreMenu
+                      isOwner={isPostOwner(post, sessionUserId)}
+                      onEdit={() => {
+                        setShowComposer(false);
+                        setEditingPost(post);
+                      }}
+                      onDelete={() => handleDeletePost(id)}
+                      disabled={Boolean(editingPost)}
+                    />
+                  </div>
                   <h2 className="blogs-post-title">
                     <Link to={`/blogs/${id}`} className="blogs-post-title-link">
                       {String(post?.title ?? "")}
@@ -238,26 +336,17 @@ export default function BlogsPage() {
                   ) : null}
                   <div className="blogs-post-actions">
                     <Link
-                      to={
-                        user
-                          ? `/blogs/${id}`
-                          : `/login?next=${encodeURIComponent(`/blogs/${id}`)}`
-                      }
+                      to={user ? `/blogs/${id}` : `/login?next=${encodeURIComponent(`/blogs/${id}`)}`}
                       className="blogs-link-btn"
                     >
                       <MaterialIcon name="chat_bubble" /> Comments
                     </Link>
                     <button type="button" className="blogs-link-btn">
-                      <MaterialIcon name="share" /> Share
-                    </button>
-                    <button type="button" className="blogs-link-btn">
                       <MaterialIcon name="flag" /> Report
                     </button>
                     <button
                       type="button"
-                      className={`blogs-link-btn blogs-vote-btn${
-                        likedByMe ? " blogs-vote-btn--active" : ""
-                      }`}
+                      className={`blogs-link-btn blogs-vote-btn${likedByMe ? " blogs-vote-btn--active" : ""}`}
                       onClick={() => handleReact(id, "like")}
                       disabled={reacting}
                     >
@@ -266,9 +355,7 @@ export default function BlogsPage() {
                     <span className="blogs-post-score">{score}</span>
                     <button
                       type="button"
-                      className={`blogs-link-btn blogs-vote-btn${
-                        dislikedByMe ? " blogs-vote-btn--active" : ""
-                      }`}
+                      className={`blogs-link-btn blogs-vote-btn${dislikedByMe ? " blogs-vote-btn--active" : ""}`}
                       onClick={() => handleReact(id, "dislike")}
                       disabled={reacting}
                     >
