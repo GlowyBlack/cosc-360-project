@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
+import { io } from "socket.io-client";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import BookForm from "../../components/BookForm/BookForm.jsx";
@@ -7,6 +8,8 @@ import API, { authHeader } from "../../config/api.js";
 import { FALLBACK_BOOK_COVER_IMAGE } from "../../config/images.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import "../AddBookPage/AddBookPage.css";
+
+const socket = io("http://localhost:5001");
 
 export default function EditBookPage() {
   const { bookId } = useParams();
@@ -23,10 +26,7 @@ export default function EditBookPage() {
     async function load() {
       setLoading(true);
       setLoadError("");
-      if (
-        !bookId ||
-        !/^[a-f\d]{24}$/i.test(String(bookId).trim())
-      ) {
+      if (!bookId || !/^[a-f\d]{24}$/i.test(String(bookId).trim())) {
         setLoadError("Invalid book link.");
         setLoading(false);
         return;
@@ -38,10 +38,7 @@ export default function EditBookPage() {
         const data = await response.json().catch(() => ({}));
         if (!response.ok) {
           throw new Error(
-            data.message ??
-              data.detail ??
-              data.error ??
-              `Failed to load book (${response.status})`,
+            data.message ?? data.detail ?? data.error ?? `Failed to load book (${response.status})`,
           );
         }
         if (!cancelled) setBook(data);
@@ -52,9 +49,7 @@ export default function EditBookPage() {
       }
     }
     load();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [bookId]);
 
   const initialValues = useMemo(() => {
@@ -97,22 +92,18 @@ export default function EditBookPage() {
 
       const response = await fetch(`${API}/books/${bookId}`, {
         method: "PATCH",
-        headers: {
-          ...authHeader(),
-        },
+        headers: { ...authHeader() },
         body: payload,
       });
 
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
         const msg =
-          data.message ??
-          data.detail ??
-          data.error ??
-          `Could not update book (${response.status})`;
+          data.message ?? data.detail ?? data.error ?? `Could not update book (${response.status})`;
         throw new Error(msg);
       }
 
+      socket.emit("book_update");
       navigate("/library", { replace: true });
     } catch (e) {
       setError(e.message ?? "Failed to update book");
@@ -130,14 +121,9 @@ export default function EditBookPage() {
           <h1 className="add-book-page-title">Update Book Betails</h1>
         </header>
 
-        {loadError ? (
-          <p className="add-book-page-error">{loadError}</p>
-        ) : null}
+        {loadError ? <p className="add-book-page-error">{loadError}</p> : null}
         {error ? <p className="add-book-page-error">{error}</p> : null}
-
-        {loading ? (
-          <p className="library-page-state">Loading book…</p>
-        ) : null}
+        {loading ? <p className="library-page-state">Loading book…</p> : null}
 
         {!loading && !loadError && initialValues ? (
           <BookForm
