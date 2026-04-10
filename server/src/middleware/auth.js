@@ -35,6 +35,8 @@ export async function requireAuth(req, res, next) {
     }
 
     req.user = { ...user, id: user._id };
+    const freshToken = signAccessToken({ id: user._id, role: user.role });
+    res.setHeader("X-Renewed-Token", freshToken);
     return next();
   } catch {
     return res.status(401).json({ message: "Invalid or expired token" });
