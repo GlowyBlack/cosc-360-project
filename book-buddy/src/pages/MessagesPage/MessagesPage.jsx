@@ -1,17 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { io } from "socket.io-client";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import ConversationBubble from "../../components/ConversationBubble/ConversationBubble.jsx";
 import MaterialIcon from "../../components/MaterialIcon/MaterialIcon.jsx";
 import ReviewInteractionModal from "../../components/ReviewInteractionModal/ReviewInteractionModal.jsx";
 import API, { authHeader, flashSessionExpired } from "../../config/api.js";
+import { createAppSocket } from "../../config/socket.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { getSessionUserId } from "../../commons/bookShared.js";
 import "./MessagesPage.css";
 
-const socket = io("http://localhost:5001");
+const socket = createAppSocket();
 
 function idString(ref) {
   if (ref == null) return "";

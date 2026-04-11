@@ -1,0 +1,24 @@
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    environment:
+      - "MONGODB_URI=mongodb+srv://admin:YfzX1PxSHYz4KWwB@book-buddy-backend.al6fubm.mongodb.net/bookbuddy?retryWrites=true&w=majority"
+      - JWT_SECRET=db5af6e71b90b3577b6a2bbc66f9c9f0ebfe7da493effb2f09709f9a6d69bf3c
+      - NODE_ENV=production
+      - PORT=4000
+      - CLOUDINARY_CLOUD_NAME=dpgjeiiga
+      - CLOUDINARY_API_KEY=335291581858376
+      - CLOUDINARY_API_SECRET=VRfy4TjuneADsd0yh12Utx8-d_Y
+
+  client:
+    build:
+      context: ./book-buddy
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:4000
+    ports:
+      - "4000:80"
+    depends_on:
+      - server

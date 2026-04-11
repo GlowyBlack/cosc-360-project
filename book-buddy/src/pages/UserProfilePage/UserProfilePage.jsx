@@ -47,6 +47,10 @@ export default function UserProfilePage() {
   const [following, setFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
   const [followError, setFollowError] = useState("");
+  const [followStats, setFollowStats] = useState({
+    followersCount: 0,
+    followingCount: 0,
+  });
 
   const idOk = Boolean(userId && /^[a-f\d]{24}$/i.test(String(userId).trim()));
 
@@ -118,6 +122,30 @@ export default function UserProfilePage() {
     }
   }, [user, idOk, userId, sessionId, isSelf]);
 
+  const loadFollowStats = useCallback(async () => {
+    if (!idOk) {
+      setFollowStats({ followersCount: 0, followingCount: 0 });
+      return;
+    }
+    try {
+      const response = await fetch(
+        `${API}/user/${encodeURIComponent(userId)}/follow-stats`,
+      );
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(
+          data.message ?? data.detail ?? "Could not load follow stats",
+        );
+      }
+      setFollowStats({
+        followersCount: Number(data.data?.followersCount) || 0,
+        followingCount: Number(data.data?.followingCount) || 0,
+      });
+    } catch {
+      setFollowStats({ followersCount: 0, followingCount: 0 });
+    }
+  }, [idOk, userId]);
+
   useEffect(() => {
     setPage(1);
   }, [userId]);
@@ -133,6 +161,10 @@ export default function UserProfilePage() {
   useEffect(() => {
     loadFollowState();
   }, [loadFollowState]);
+
+  useEffect(() => {
+    loadFollowStats();
+  }, [loadFollowStats]);
 
   const displayName = String(profile?.username ?? "Reader");
   const bioText = String(profile?.bio ?? "").trim();
@@ -162,6 +194,13 @@ export default function UserProfilePage() {
         throw new Error(data.message ?? data.detail ?? "Could not update follow");
       }
       setFollowing(!following);
+      setFollowStats((current) => ({
+        ...current,
+        followersCount: Math.max(
+          0,
+          current.followersCount + (following ? -1 : 1),
+        ),
+      }));
     } catch (e) {
       setFollowError(e.message ?? "Could not update follow");
     } finally {
@@ -250,6 +289,10 @@ export default function UserProfilePage() {
                       </Link>
                     ) : null}
                   </div>
+                  <p className="user-profile-follow-stats" aria-label="Follower counts">
+                    <span>{formatStatNumber(followStats.followersCount)} Followers</span>
+                    <span>{formatStatNumber(followStats.followingCount)} Following</span>
+                  </p>
                   {followError ? (
                     <p className="profile-error">{followError}</p>
                   ) : null}

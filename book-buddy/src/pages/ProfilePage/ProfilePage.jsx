@@ -56,6 +56,10 @@ export default function ProfilePage() {
   const [photoFile, setPhotoFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [errorText, setErrorText] = useState("");
+  const [followStats, setFollowStats] = useState({
+    followersCount: 0,
+    followingCount: 0,
+  });
   const [stats, setStats] = useState(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const [statsError, setStatsError] = useState("");
@@ -74,6 +78,45 @@ export default function ProfilePage() {
     setPhotoDraft(String(user?.profileImage ?? ""));
     setPhotoFile(null);
   }, [user?.bio, user?.profileImage]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const sessionId = getSessionUserId(user);
+    if (!sessionId) {
+      setFollowStats({ followersCount: 0, followingCount: 0 });
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    (async () => {
+      try {
+        const response = await fetch(
+          `${API}/user/${encodeURIComponent(sessionId)}/follow-stats`,
+        );
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(
+            data.message ?? data.detail ?? "Could not load follow stats",
+          );
+        }
+        if (!cancelled) {
+          setFollowStats({
+            followersCount: Number(data.data?.followersCount) || 0,
+            followingCount: Number(data.data?.followingCount) || 0,
+          });
+        }
+      } catch {
+        if (!cancelled) {
+          setFollowStats({ followersCount: 0, followingCount: 0 });
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   useEffect(() => {
     let cancelled = false;
@@ -381,6 +424,10 @@ export default function ProfilePage() {
               <h1 className="profile-name">{displayName}</h1>
               <p className="profile-member-since">
                 {memberSince ? `Member since ${memberSince}` : "Member"}
+              </p>
+              <p className="profile-follow-stats" aria-label="Follow counts">
+                <span>{formatStatNumber(followStats.followersCount)} Followers</span>
+                <span>{formatStatNumber(followStats.followingCount)} Following</span>
               </p>
 
               <label className="profile-bio-label" htmlFor="profile-bio">
