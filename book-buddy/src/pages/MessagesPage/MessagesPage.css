@@ -49,6 +49,13 @@
   min-height: 30rem;
 }
 
+.messages-thread-panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .messages-sidebar-header {
   padding: 1rem;
   border-bottom: 1px solid var(--color-border);
@@ -148,7 +155,61 @@
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
+}
+
+.messages-thread-pagination {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem 0.65rem;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface-container-low);
+}
+
+.messages-thread-pagination-meta {
+  font-size: 0.72rem;
+  color: var(--color-on-surface-variant);
+}
+
+.messages-thread-pagination-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.messages-thread-pagination-page {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-on-surface);
+  flex: 1;
+  text-align: center;
+}
+
+.messages-thread-pagination-btn {
+  min-height: 32px;
+  padding: 0 0.65rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.messages-thread-pagination-btn:hover:not(:disabled) {
+  background: var(--color-surface-container);
+}
+
+.messages-thread-pagination-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .messages-thread-item {

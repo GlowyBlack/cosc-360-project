@@ -114,7 +114,7 @@ export default function ReviewInteractionModal({
       blockedMessage = "You already rated this interaction.";
     } else if (reason === "request_not_reviewable") {
       blockedMessage =
-        "Reviews are available only after a borrow is marked returned (owner), or once an exchange is accepted. Pending and declined requests cannot be reviewed.";
+        "Reviews are available only after the lender marks the book returned, or once an exchange is accepted. Pending and declined requests cannot be reviewed.";
     } else if (reason === "not_participant") {
       blockedMessage = "You are not part of this request.";
     } else if (reason === "request_not_found") {

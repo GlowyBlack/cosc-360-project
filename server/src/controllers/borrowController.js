@@ -58,7 +58,11 @@ const BorrowController = {
             const result = await borrowService.markBorrowReturned({ requestId, userId });
             return res.status(200).json({ success: true, data: result });
         } catch (error) {
-            return res.status(400).json({ message: error.message });
+            const msg = error.message;
+            if (msg.includes("Only the lender")) {
+                return res.status(403).json({ message: msg });
+            }
+            return res.status(400).json({ message: msg });
         }
     },
 };
