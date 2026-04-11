@@ -297,3 +297,13 @@
   width: 1.5rem;
   height: 1.5rem;
 }
+
+.reg-nav-badge--dot {
+  min-width: 10px;
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  background-color: var(--color-signal-red, #e53e3e);
+  top: -2px;
+  right: -4px;
+}

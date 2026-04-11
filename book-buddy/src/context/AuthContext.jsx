@@ -7,12 +7,12 @@ import {
   useEffect,
 } from "react";
 import { useLocation } from "react-router-dom";
-import { io } from "socket.io-client";
+import { createAppSocket } from "../config/socket.js";
 import API, { authHeader, flashSessionExpired } from "../config/api.js";
 
 const STORAGE_KEY = "bookbuddy:user";
 
-const socket = io("http://localhost:5001");
+const socket = createAppSocket();
 
 function tokenPresentInStorage() {
   const raw = String(localStorage.getItem("token") ?? "");
@@ -38,6 +38,7 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => readStoredUser());
+  const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -65,8 +66,13 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(() => {
     setUser(null);
+    setHasUnreadMessages(false);
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem("token");
+  }, []);
+
+  const clearMessageUnread = useCallback(() => {
+    setHasUnreadMessages(false);
   }, []);
 
   useEffect(() => {
@@ -78,7 +84,15 @@ export function AuthProvider({ children }) {
       flashSessionExpired();
       logout();
     });
-    return () => socket.off("force_logout");
+    socket.on("new_message_notification", () => {
+      if (window.location.pathname !== "/messages") {
+        setHasUnreadMessages(true);
+      }
+    });
+    return () => {
+      socket.off("force_logout");
+      socket.off("new_message_notification");
+    };
   }, [user, logout]);
 
   useEffect(() => {
@@ -119,8 +133,8 @@ export function AuthProvider({ children }) {
   }, [location.pathname, logout]);
 
   const value = useMemo(
-    () => ({ user, setSessionUser, logout }),
-    [user, setSessionUser, logout],
+    () => ({ user, setSessionUser, logout, hasUnreadMessages, clearMessageUnread }),
+    [user, setSessionUser, logout, hasUnreadMessages, clearMessageUnread],
   );
 
   return (

@@ -14,12 +14,11 @@ const mainNavItems = [
 const profileNav = { to: "/profile", label: "Profile", icon: "person" };
 
 export default function RegisteredNav({
-  messageUnreadCount = 0,
   requestPendingCount = 0,
 }) {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
-  const counts = { messages: messageUnreadCount, requests: requestPendingCount };
+  const { user, logout, hasUnreadMessages } = useAuth();
+  const counts = { messages: hasUnreadMessages, requests: requestPendingCount };
   const profileImage = String(user?.profileImage ?? "").trim();
 
   const handleLogout = () => {
@@ -45,7 +44,10 @@ export default function RegisteredNav({
                 >
                   <span className="reg-nav-icon-wrap">
                     <MaterialIcon name={icon} className="reg-nav-icon" />
-                    {badgeKey && counts[badgeKey] > 0 && (
+                    {badgeKey === "messages" && counts[badgeKey] && (
+                      <span className="reg-nav-badge reg-nav-badge--dot" />
+                    )}
+                    {badgeKey && badgeKey !== "messages" && counts[badgeKey] > 0 && (
                       <span className="reg-nav-badge">
                         {counts[badgeKey] > 99 ? "99+" : counts[badgeKey]}
                       </span>
@@ -133,7 +135,10 @@ export default function RegisteredNav({
             >
               <span className="reg-nav-icon-wrap">
                 <MaterialIcon name={icon} className="reg-nav-bottom-icon" />
-                {badgeKey && counts[badgeKey] > 0 && (
+                {badgeKey === "messages" && counts[badgeKey] && (
+                  <span className="reg-nav-badge-small reg-nav-badge--dot" />
+                )}
+                {badgeKey && badgeKey !== "messages" && counts[badgeKey] > 0 && (
                   <span className="reg-nav-badge-small">
                     {counts[badgeKey] > 9 ? "9+" : counts[badgeKey]}
                   </span>
