@@ -40,6 +40,13 @@ const UserService = {
             bookRepository.countByOwner(userId),
         ]);
 
+        const totalScore = Number(user.totalScore) || 0;
+        const reviewCounts = Number(user.reviewCounts) || 0;
+        const rating =
+            reviewCounts > 0 && Number.isFinite(totalScore)
+                ? totalScore / reviewCounts
+                : null;
+
         return {
             id: user._id,
             username: user.username,
@@ -49,7 +56,9 @@ const UserService = {
             stats: {
                 booksBorrowed,
                 inLibrary,
-                rating: null,
+                rating,
+                reviewCounts,
+                totalScore,
             },
         };
     },

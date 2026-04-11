@@ -22,6 +22,8 @@ function sanitizeUser(userDoc) {
     profileImage: userDoc.profileImage ?? null,
     bio: userDoc.bio ?? "",
     isSuspended: userDoc.isSuspended ?? false,
+    totalScore: Number(userDoc.totalScore) || 0,
+    reviewCounts: Number(userDoc.reviewCounts) || 0,
     createdAt: userDoc.createdAt,
     updatedAt: userDoc.updatedAt,
   };

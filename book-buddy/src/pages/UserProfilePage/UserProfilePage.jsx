@@ -287,8 +287,8 @@ export default function UserProfilePage() {
                       aria-hidden
                     />
                     <p className="profile-stat-value">
-                      {stats?.rating != null && stats.rating !== ""
-                        ? String(stats.rating)
+                      {stats?.rating != null && Number.isFinite(Number(stats.rating))
+                        ? Number(stats.rating).toFixed(1)
                         : "—"}
                     </p>
                     <p className="profile-stat-label">Rating</p>

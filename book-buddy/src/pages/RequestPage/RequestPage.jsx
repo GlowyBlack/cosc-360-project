@@ -4,6 +4,7 @@ import { io } from "socket.io-client";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import MaterialIcon from "../../components/MaterialIcon/MaterialIcon.jsx";
+import ReviewInteractionModal from "../../components/ReviewInteractionModal/ReviewInteractionModal.jsx";
 import API, { authHeader, flashSessionExpired } from "../../config/api.js";
 import {
   coverSrcOrFallback,
@@ -125,10 +126,13 @@ function RequestPageCard({
   req,
   direction,
   isHistory,
+  sessionUserId,
   onAccept,
   onDecline,
   onCancel,
   onMessage,
+  onMarkBorrowReturned,
+  onOpenReview,
   actionError,
   busyId,
 }) {
@@ -183,7 +187,18 @@ function RequestPageCard({
     !isExchange &&
     typeof onMessage === "function";
 
-  const showRate = !isHistory && status === "returned";
+  const ownerId = idString(req.bookOwner);
+  const showMarkReturned =
+    isHistory &&
+    !isExchange &&
+    status === "accepted" &&
+    ownerId === sessionUserId &&
+    typeof onMarkBorrowReturned === "function";
+  const showReviewCTA =
+    isHistory &&
+    typeof onOpenReview === "function" &&
+    ((!isExchange && status === "returned") ||
+      (isExchange && status === "accepted"));
   const showCompletedBtn =
     isHistory ||
     status === "returned" ||
@@ -271,11 +286,30 @@ function RequestPageCard({
           </div>
         ) : null}
 
-        {showRate ? (
-          <button type="button" className="request-page-card-rate" disabled>
-            <MaterialIcon name="star" className="request-page-card-rate-icon" />
-            Rate this exchange
-          </button>
+        {showMarkReturned || showReviewCTA ? (
+          <div className="request-page-card-review-row">
+            {showMarkReturned ? (
+              <button
+                type="button"
+                className="request-page-btn request-page-btn--solid request-page-card-review-btn"
+                disabled={busyId === id}
+                onClick={() => onMarkBorrowReturned(id)}
+              >
+                Mark book returned
+              </button>
+            ) : null}
+            {showReviewCTA ? (
+              <button
+                type="button"
+                className="request-page-btn request-page-btn--ghost request-page-card-review-btn"
+                disabled={busyId === id}
+                onClick={() => onOpenReview(id, counterparty)}
+              >
+                <MaterialIcon name="star" className="request-page-card-rate-icon" />
+                Rate interaction
+              </button>
+            ) : null}
+          </div>
         ) : null}
 
         {actionError ? (
@@ -313,7 +347,11 @@ function RequestPageCard({
             Message
           </button>
         ) : null}
-        {showCompletedBtn && !showPendingActions && !showMessage ? (
+        {showCompletedBtn &&
+        !showPendingActions &&
+        !showMessage &&
+        !showMarkReturned &&
+        !showReviewCTA ? (
           <span className="request-page-btn request-page-btn--done" aria-disabled>
             {isHistory ? historyLabel : status === "returned" ? "Completed" : "Closed"}
           </span>
@@ -352,6 +390,7 @@ export default function RequestPage() {
   const [actionError, setActionError] = useState("");
   const [actionErrorId, setActionErrorId] = useState("");
   const [listPage, setListPage] = useState(0);
+  const [reviewModal, setReviewModal] = useState(null);
 
   const loadRequests = useCallback(async () => {
     setLoading(true);
@@ -580,6 +619,54 @@ export default function RequestPage() {
     [loadRequests, logout, requests], 
   );
 
+  const markBorrowReturned = useCallback(
+    async (requestId) => {
+      setActionError("");
+      setActionErrorId("");
+      setActionBusyId(requestId);
+      try {
+        const response = await fetch(
+          `${API}/requests/borrow/${encodeURIComponent(requestId)}/return`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+            body: JSON.stringify({ requestId }),
+          },
+        );
+        const data = await response.json().catch(() => ({}));
+        if (response.status === 401) {
+          flashSessionExpired();
+          logout();
+          return;
+        }
+        if (!response.ok) {
+          throw new Error(
+            data.message ??
+              data.detail ??
+              (response.status === 404 ? "Not found." : `Request failed (${response.status})`),
+          );
+        }
+        const matchedReq = requests.find((r) => idString(r._id ?? r.id) === requestId);
+        if (matchedReq) {
+          socket.emit("request_status_changed", {
+            requesterId: idString(matchedReq.requesterId),
+            ownerId: idString(matchedReq.bookOwner),
+          });
+        }
+        await loadRequests();
+      } catch (e) {
+        setActionError(e.message ?? "Could not mark borrow as returned");
+        setActionErrorId(requestId);
+      } finally {
+        setActionBusyId("");
+      }
+    },
+    [loadRequests, logout, requests],
+  );
+
   if (!user) return <Navigate to="/login" replace />;
 
   return (
@@ -674,6 +761,7 @@ export default function RequestPage() {
                       req={req}
                       direction={direction}
                       isHistory={isHistory}
+                      sessionUserId={sessionId}
                       busyId={actionBusyId}
                       actionError={actionErrorId === rid ? actionError : ""}
                       onAccept={isHistory ? undefined : (id) => void respondToRequest(id, "accept", requestKind)}
@@ -683,6 +771,15 @@ export default function RequestPage() {
                         isHistory || direction !== "outgoing"
                           ? undefined
                           : (id) => void cancelOutgoingRequest(id, requestKind)
+                      }
+                      onMarkBorrowReturned={
+                        isHistory ? (id) => void markBorrowReturned(id) : undefined
+                      }
+                      onOpenReview={
+                        isHistory
+                          ? (requestId, interactionLabel) =>
+                              setReviewModal({ requestId, interactionLabel })
+                          : undefined
                       }
                     />
                   </li>
@@ -733,6 +830,13 @@ export default function RequestPage() {
         </section>
       </main>
       <Footer />
+      <ReviewInteractionModal
+        open={Boolean(reviewModal)}
+        onClose={() => setReviewModal(null)}
+        requestId={reviewModal?.requestId}
+        interactionLabel={reviewModal?.interactionLabel}
+        onSubmitted={() => void loadRequests()}
+      />
     </div>
   );
 }

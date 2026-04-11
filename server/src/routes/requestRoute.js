@@ -9,6 +9,7 @@ const router = express.Router();
 router.post("/borrow", requireAuth, borrowController.createBorrow)
 router.post("/borrow/:requestId/accept", requireAuth, borrowController.acceptBorrow)
 router.post("/borrow/:requestId/decline", requireAuth, borrowController.declineBorrow)
+router.post("/borrow/:requestId/return", requireAuth, borrowController.markBorrowReturned)
 
 router.post("/exchange", requireAuth, exchangeController.createExchange)
 router.patch("/exchange/:requestId", requireAuth, exchangeController.editExchange)

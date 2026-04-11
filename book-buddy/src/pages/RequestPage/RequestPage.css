@@ -378,6 +378,22 @@
   height: 1rem !important;
 }
 
+.request-page-card-review-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.65rem;
+  align-items: center;
+}
+
+.request-page-card-review-btn {
+  min-height: 36px;
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 600;
+  font-size: 0.8125rem;
+}
+
 .request-page-card-inline-error {
   margin: 0.5rem 0 0;
   font-size: 0.75rem;

@@ -127,6 +127,14 @@ const RequestRepository = {
             { session }
         );
     },
+
+    async markBorrowReturned({ id, session = null }) {
+        return await request.findByIdAndUpdate(
+            id,
+            { $set: { status: "Returned" } },
+            { returnDocument: "after", session, runValidators: true },
+        );
+    },
 };
 
 export default RequestRepository;

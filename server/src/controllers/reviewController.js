@@ -44,6 +44,17 @@ const reviewController = {
         }
     },
 
+    async getEligibilitySummary(req, res) {
+        try {
+            const userId = req.user?._id ?? req.user?.id;
+            if (!userId) return res.status(401).json({ message: "Not authenticated" });
+            const summary = await reviewService.getEligibilitySummaryForUser(userId);
+            return res.status(200).json(summary);
+        } catch (error) {
+            return res.status(500).json({ message: "Server Error", error: error.message });
+        }
+    },
+
     async createReview(req, res) {
         try {
             const reviewerId = req.user?._id ?? req.user?.id;

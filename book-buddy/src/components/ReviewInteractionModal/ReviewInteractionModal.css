@@ -1,0 +1,125 @@
+.review-interaction-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 130;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+}
+
+.review-interaction-dialog {
+  width: 100%;
+  max-width: 26rem;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface, #fff);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.14);
+}
+
+.review-interaction-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1.1rem 1.1rem 0.5rem;
+}
+
+.review-interaction-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+}
+
+.review-interaction-sub {
+  margin: 0.35rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--color-on-surface-variant);
+}
+
+.review-interaction-close {
+  border: none;
+  background: transparent;
+  padding: 0.25rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  color: var(--color-on-surface-variant);
+  display: grid;
+  place-items: center;
+}
+
+.review-interaction-close:hover {
+  background: var(--color-surface-container);
+  color: var(--color-on-surface);
+}
+
+.review-interaction-body {
+  padding: 0.5rem 1.1rem 1rem;
+}
+
+.review-interaction-stars {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.review-interaction-star {
+  border: none;
+  background: transparent;
+  padding: 0.15rem;
+  cursor: pointer;
+  color: var(--color-outline, #888);
+  line-height: 0;
+  border-radius: var(--radius-sm);
+}
+
+.review-interaction-star:hover,
+.review-interaction-star:focus-visible {
+  color: var(--color-primary, #1a5f7a);
+  outline: none;
+}
+
+.review-interaction-star--on {
+  color: #ca8a04;
+}
+
+.review-interaction-star .material-symbols-outlined {
+  font-size: 1.75rem;
+}
+
+.review-interaction-label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  color: var(--color-on-surface-variant);
+}
+
+.review-interaction-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 4.5rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  font: inherit;
+  font-size: 0.875rem;
+  resize: vertical;
+}
+
+.review-interaction-error {
+  margin: 0.5rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--color-danger, #b91c1c);
+}
+
+.review-interaction-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0 1.1rem 1.1rem;
+}

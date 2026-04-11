@@ -96,6 +96,32 @@ const BorrowService = {
         }
         return { success: true, message: "Borrow request declined.", request: updatedRequest };
     },
+
+    async markBorrowReturned({ requestId, userId }) {
+        const requestDoc = await requestRepository.findRequestById({ id: requestId });
+
+        if (!requestDoc) throw new Error("The borrow request doesn't exist.");
+        if (String(requestDoc.type).toLowerCase() !== "borrow") {
+            throw new Error("The request isn't a borrow request.");
+        }
+        if (String(requestDoc.status).toLowerCase() !== "accepted") {
+            throw new Error("Only an active borrow can be marked as returned.");
+        }
+
+        const bookOwner = requestDoc.bookOwner?._id ?? requestDoc.bookOwner;
+        if (!bookOwner.equals(userId)) {
+            throw new Error("Only the book owner can mark this borrow as returned.");
+        }
+
+        const updatedRequest = await requestRepository.markBorrowReturned({ id: requestId });
+        if (!updatedRequest) throw new Error("The borrow request doesn't exist.");
+
+        return {
+            success: true,
+            message: "Borrow marked as returned.",
+            request: updatedRequest,
+        };
+    },
 };
 
 export default BorrowService;

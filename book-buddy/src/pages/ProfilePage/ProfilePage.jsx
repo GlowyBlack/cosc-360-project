@@ -7,6 +7,7 @@ import MaterialIcon from "../../components/MaterialIcon/MaterialIcon.jsx";
 import API, { authHeader, flashSessionExpired } from "../../config/api.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { getSessionUserId } from "../../commons/bookShared.js";
+import { getRatingScore } from "../../commons/profileRating.js";
 import { postTag, previewPlainContent } from "../BlogsPage/blogPostShared.jsx";
 import "./ProfilePage.css";
 
@@ -251,6 +252,11 @@ export default function ProfilePage() {
     [user?.createdAt],
   );
 
+  const ratingScore = useMemo(
+    () => getRatingScore(user),
+    [user?.totalScore, user?.reviewCounts],
+  );
+
   const hasChanges = isEditing && (
     String(bioDraft).trim() !== String(user?.bio ?? "").trim() ||
     String(photoDraft).trim() !== String(user?.profileImage ?? "").trim() ||
@@ -445,6 +451,13 @@ export default function ProfilePage() {
                   <MaterialIcon name="assignment" className="profile-stat-icon" aria-hidden />
                   <p className="profile-stat-value">{formatStatNumber(stats?.booksBorrowed)}</p>
                   <p className="profile-stat-label">Books borrowed</p>
+                </li>
+                <li className="profile-stat-card">
+                  <MaterialIcon name="star" className="profile-stat-icon" aria-hidden />
+                  <p className="profile-stat-value">
+                    {ratingScore != null ? ratingScore.toFixed(1) : "—"}
+                  </p>
+                  <p className="profile-stat-label">Avg. rating</p>
                 </li>
               </ul>
             )}

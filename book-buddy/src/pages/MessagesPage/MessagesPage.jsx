@@ -5,6 +5,7 @@ import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import ConversationBubble from "../../components/ConversationBubble/ConversationBubble.jsx";
 import MaterialIcon from "../../components/MaterialIcon/MaterialIcon.jsx";
+import ReviewInteractionModal from "../../components/ReviewInteractionModal/ReviewInteractionModal.jsx";
 import API, { authHeader, flashSessionExpired } from "../../config/api.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { getSessionUserId } from "../../commons/bookShared.js";
@@ -124,6 +125,8 @@ export default function MessagesPage() {
 
   const [composer, setComposer] = useState("");
   const [sending, setSending] = useState(false);
+  const [reviewInbox, setReviewInbox] = useState(null);
+  const [reviewModal, setReviewModal] = useState(null);
 
   const loadThreads = useCallback(async () => {
     setThreadLoading(true);
@@ -251,6 +254,48 @@ export default function MessagesPage() {
     () => threads.find((thread) => thread.requestId === activeThreadId) ?? null,
     [threads, activeThreadId],
   );
+
+  useEffect(() => {
+    if (!activeThreadId || !activeThread) {
+      setReviewInbox(null);
+      return undefined;
+    }
+    const tab = requestInboxTab(activeThread.request);
+    if (tab !== "archived") {
+      setReviewInbox(null);
+      return undefined;
+    }
+    const ty = String(activeThread.request?.type ?? "").toLowerCase();
+    const st = String(activeThread.request?.status ?? "").toLowerCase();
+    const mightReview =
+      (ty === "borrow" && st === "returned") || (ty === "exchange" && st === "accepted");
+    if (!mightReview) {
+      setReviewInbox(null);
+      return undefined;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(
+          `${API}/reviews/eligibility/${encodeURIComponent(activeThreadId)}`,
+          { headers: { ...authHeader() } },
+        );
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 401) {
+          flashSessionExpired();
+          logout();
+          return;
+        }
+        if (!cancelled && res.ok) setReviewInbox(data);
+        else if (!cancelled) setReviewInbox(null);
+      } catch {
+        if (!cancelled) setReviewInbox(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeThreadId, activeThread, logout]);
 
   const ongoingThreads = useMemo(
     () => threads.filter((t) => requestInboxTab(t.request) === "ongoing"),
@@ -469,6 +514,26 @@ export default function MessagesPage() {
                   </div>
                 </div>
 
+                {reviewInbox?.eligible ? (
+                  <div className="messages-review-cta" role="region" aria-label="Interaction review">
+                    <p className="messages-review-cta-text">
+                      This interaction is complete. You can rate it with {activeThread.partnerName}.
+                    </p>
+                    <button
+                      type="button"
+                      className="messages-review-cta-btn"
+                      onClick={() =>
+                        setReviewModal({
+                          requestId: activeThreadId,
+                          interactionLabel: activeThread.partnerName,
+                        })
+                      }
+                    >
+                      Rate interaction
+                    </button>
+                  </div>
+                ) : null}
+
                 {!canSendInActiveThread ? (
                   <p className="messages-readonly-banner" role="status">
                     {String(activeThread.request?.status ?? "").toLowerCase() === "cancelled"
@@ -507,6 +572,13 @@ export default function MessagesPage() {
         </section>
       </main>
       <Footer />
+      <ReviewInteractionModal
+        open={Boolean(reviewModal)}
+        onClose={() => setReviewModal(null)}
+        requestId={reviewModal?.requestId}
+        interactionLabel={reviewModal?.interactionLabel}
+        onSubmitted={() => void loadThreads()}
+      />
     </div>
   );
 }

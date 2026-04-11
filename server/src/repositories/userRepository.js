@@ -24,8 +24,18 @@ const UserRepository = {
 
   async findPublicById(id) {
     return User.findById(id)
-      .select("username bio profileImage location role isSuspended")
+      .select("username bio profileImage location role isSuspended totalScore reviewCounts")
       .lean();
+  },
+
+  async incrementReviewStats(userId, ratingPoints) {
+    const inc = Number(ratingPoints);
+    if (!Number.isFinite(inc) || inc < 1) return null;
+    return User.findByIdAndUpdate(
+      userId,
+      { $inc: { totalScore: inc, reviewCounts: 1 } },
+      { returnDocument: "after", runValidators: true },
+    );
   },
 
   async findOneByUsernameOrEmail(usernameNorm, emailNorm) {
