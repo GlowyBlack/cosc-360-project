@@ -157,7 +157,7 @@ describe("book routes (integration)", () => {
       title: "Old Title",
       author: "Old Author",
       description: "Old description",
-      genre: ["Drama"],
+      genre: ["Fiction"],
     });
 
     const res = await request(app)
@@ -167,7 +167,7 @@ describe("book routes (integration)", () => {
       .send({
         bookTitle: "New Title",
         description: "New description",
-        genre: ["Fantasy", "Drama"],
+        genre: ["Fantasy", "Fiction"],
         ownerNote: "Updated note",
       });
 
@@ -175,7 +175,7 @@ describe("book routes (integration)", () => {
     expect(res.body).toMatchObject({
       bookTitle: "New Title",
       description: "New description",
-      genre: ["Fantasy", "Drama"],
+      genre: ["Fantasy", "Fiction"],
       ownerNote: "Updated note",
     });
   });
@@ -275,7 +275,7 @@ describe("book routes (integration)", () => {
       ownerId: owner._id,
       title: "Cooking With Stories",
       author: "Another Writer",
-      genre: ["Drama"],
+      genre: ["Fiction"],
       isAvailable: true,
     });
 
