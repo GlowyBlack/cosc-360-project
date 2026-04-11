@@ -57,12 +57,16 @@ const BorrowService = {
         const bookOwner = request.bookOwner?._id ?? request.bookOwner;
         if (!bookOwner.equals(userId)) throw new Error("Only the book owner can accept this request.");
 
+        const bookId = request.bookId?._id ?? request.bookId;
+
         const session = await mongoose.startSession();
         let updatedRequest;
         try {
             await session.withTransaction(async () => {
                 updatedRequest = await requestRepository.acceptExchange({ id: requestId, session });
-                await bookRepository.resetRequestCount({ id: request.bookId, session });
+                await bookRepository.resetRequestCount({ id: bookId, session });
+                await bookRepository.setBookAvailability({ id: bookId, isAvailable: false, session });
+                await requestRepository.cancelAllRequestsForBook({ id: bookId, session });
             });
         } catch (err) {
             throw err;
@@ -113,8 +117,21 @@ const BorrowService = {
             throw new Error("Only the book owner can mark this borrow as returned.");
         }
 
-        const updatedRequest = await requestRepository.markBorrowReturned({ id: requestId });
-        if (!updatedRequest) throw new Error("The borrow request doesn't exist.");
+        const bookId = requestDoc.bookId?._id ?? requestDoc.bookId;
+
+        const session = await mongoose.startSession();
+        let updatedRequest;
+        try {
+            await session.withTransaction(async () => {
+                updatedRequest = await requestRepository.markBorrowReturned({ id: requestId, session });
+                if (!updatedRequest) {
+                    throw new Error("The borrow request doesn't exist.");
+                }
+                await bookRepository.setBookAvailability({ id: bookId, isAvailable: true, session });
+            });
+        } finally {
+            session.endSession();
+        }
 
         return {
             success: true,

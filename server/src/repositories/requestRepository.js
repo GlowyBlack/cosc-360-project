@@ -135,6 +135,14 @@ const RequestRepository = {
             { returnDocument: "after", session, runValidators: true },
         );
     },
+
+    async hasAcceptedBorrowForBook({ bookId, session = null }) {
+        const filter = { bookId, type: "Borrow", status: "Accepted" };
+        const n = session
+            ? await request.countDocuments(filter).session(session)
+            : await request.countDocuments(filter);
+        return n > 0;
+    },
 };
 
 export default RequestRepository;

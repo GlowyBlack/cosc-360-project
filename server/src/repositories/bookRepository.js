@@ -117,6 +117,14 @@ const BookRepository = {
         );
     },
 
+    async setBookAvailability({ id, isAvailable, session = null }) {
+        return book.findByIdAndUpdate(
+            id,
+            { $set: { isAvailable } },
+            { returnDocument: "after", session, runValidators: true },
+        );
+    },
+
     async updateBook(bookId, updates) {
         return book.findByIdAndUpdate(
             bookId,
