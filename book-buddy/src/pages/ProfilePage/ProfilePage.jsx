@@ -490,11 +490,6 @@ export default function ProfilePage() {
                   <p className="profile-stat-label">Books listed</p>
                 </li>
                 <li className="profile-stat-card">
-                  <MaterialIcon name="sync_alt" className="profile-stat-icon" aria-hidden />
-                  <p className="profile-stat-value">{formatStatNumber(stats?.exchangesCompleted)}</p>
-                  <p className="profile-stat-label">Exchanges completed</p>
-                </li>
-                <li className="profile-stat-card">
                   <MaterialIcon name="assignment" className="profile-stat-icon" aria-hidden />
                   <p className="profile-stat-value">{formatStatNumber(stats?.booksBorrowed)}</p>
                   <p className="profile-stat-label">Books borrowed</p>

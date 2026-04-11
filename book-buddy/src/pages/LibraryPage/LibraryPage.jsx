@@ -24,6 +24,48 @@ function idString(ref) {
   return String(ref);
 }
 
+function requestCreatedTime(r) {
+  const n = r.createdAt != null ? new Date(r.createdAt).getTime() : 0;
+  return Number.isFinite(n) ? n : 0;
+}
+
+function requestUpdatedTime(r) {
+  const n = r.updatedAt != null ? new Date(r.updatedAt).getTime() : 0;
+  return Number.isFinite(n) ? n : 0;
+}
+
+/** Prefer the borrow row for the current loan cycle (newest createdAt), then newest updatedAt. */
+function pickCurrentAcceptedBorrow(prev, next) {
+  const dc = requestCreatedTime(next) - requestCreatedTime(prev);
+  if (dc !== 0) return dc > 0 ? next : prev;
+  const du = requestUpdatedTime(next) - requestUpdatedTime(prev);
+  return du >= 0 ? next : prev;
+}
+
+/** One row per book: if several Accepted borrows share a bookId, keep the current loan row. */
+function dedupeAcceptedBorrowsByBookId(rows) {
+  const byBook = new Map();
+  for (const r of rows) {
+    const bid = idString(r.bookId);
+    if (!bid) continue;
+    const prev = byBook.get(bid);
+    if (!prev) {
+      byBook.set(bid, r);
+      continue;
+    }
+    byBook.set(bid, pickCurrentAcceptedBorrow(prev, r));
+  }
+  return [...byBook.values()];
+}
+
+function resolveRequestBookPayload(req, libraryBooks) {
+  const bid = idString(req.bookId);
+  const fromLibrary = libraryBooks.find((b) => idString(b._id ?? b.id) === bid);
+  if (fromLibrary) return fromLibrary;
+  if (req.bookId != null && typeof req.bookId === "object") return req.bookId;
+  return {};
+}
+
 export default function LibraryPage() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -143,9 +185,29 @@ export default function LibraryPage() {
     return () => socket.off("request_update");
   }, [sessionId, loadMyBooks]);
 
+  const lentOutBookIds = useMemo(() => {
+    const ids = new Set();
+    for (const r of requests) {
+      if (String(r.type ?? "").toLowerCase() !== "borrow") continue;
+      if (String(r.status ?? "").toLowerCase() !== "accepted") continue;
+      if (idString(r.bookOwner) !== sessionId) continue;
+      const bid = idString(r.bookId);
+      if (bid) ids.add(bid);
+    }
+    return ids;
+  }, [requests, sessionId]);
+
   const cardBooks = useMemo(
-    () => books.map((b) => toLibraryPageCardBook(b, user)),
-    [books, user],
+    () =>
+      books.map((b) => {
+        const card = toLibraryPageCardBook(b, user);
+        const bid = String(b._id ?? b.id ?? "");
+        if (bid && lentOutBookIds.has(bid)) {
+          return { ...card, onLoan: true };
+        }
+        return card;
+      }),
+    [books, user, lentOutBookIds],
   );
 
   const wishlistCardBooks = useMemo(
@@ -154,21 +216,23 @@ export default function LibraryPage() {
   );
 
   const borrowedBooks = useMemo(() => {
-    return requests.filter((r) => {
+    const rows = requests.filter((r) => {
       const type = String(r.type ?? "").toLowerCase();
       const status = String(r.status ?? "").toLowerCase();
       const requesterId = idString(r.requesterId);
       return type === "borrow" && status === "accepted" && requesterId === sessionId;
     });
+    return dedupeAcceptedBorrowsByBookId(rows);
   }, [requests, sessionId]);
 
   const lentBooks = useMemo(() => {
-    return requests.filter((r) => {
+    const rows = requests.filter((r) => {
       const type = String(r.type ?? "").toLowerCase();
       const status = String(r.status ?? "").toLowerCase();
       const ownerId = idString(r.bookOwner);
       return type === "borrow" && status === "accepted" && ownerId === sessionId;
     });
+    return dedupeAcceptedBorrowsByBookId(rows);
   }, [requests, sessionId]);
 
   if (!user) return <Navigate to="/login" replace />;
@@ -248,14 +312,14 @@ export default function LibraryPage() {
               </p>
             ) : (
               borrowedBooks.map((req) => {
-                const book = req.bookId;
-                const id = idString(req._id ?? req.id);
-                const title = book?.bookTitle ?? book?.title ?? "Untitled";
-                const author = book?.bookAuthor ?? book?.author ?? "Unknown";
-                const coverSrc = coverSrcOrFallback(book?.bookImage ?? "");
+                const raw = resolveRequestBookPayload(req, books);
+                const bookKey = idString(req.bookId) || idString(req._id ?? req.id);
+                const title = getBookTitle(raw);
+                const author = getBookAuthor(raw);
+                const coverSrc = coverSrcOrFallback(getCoverUrlFromRaw(raw));
                 return (
                   <LibraryBookCard
-                    key={id}
+                    key={bookKey}
                     title={title}
                     author={author}
                     coverSrc={coverSrc}
@@ -277,17 +341,14 @@ export default function LibraryPage() {
               </p>
             ) : (
               lentBooks.map((req) => {
-                const book = req.bookId;
-                const id = idString(req._id ?? req.id);
-                const title = book?.bookTitle ?? book?.title ?? "Untitled";
-                const author = book?.bookAuthor ?? book?.author ?? "Unknown";
-                const coverSrc = coverSrcOrFallback(book?.bookImage ?? "");
-                const borrower = req.requesterId?.username
-                  ? `@${req.requesterId.username}`
-                  : "a reader";
+                const raw = resolveRequestBookPayload(req, books);
+                const bookKey = idString(req.bookId) || idString(req._id ?? req.id);
+                const title = getBookTitle(raw);
+                const author = getBookAuthor(raw);
+                const coverSrc = coverSrcOrFallback(getCoverUrlFromRaw(raw));
                 return (
                   <LibraryBookCard
-                    key={id}
+                    key={bookKey}
                     title={title}
                     author={author}
                     coverSrc={coverSrc}

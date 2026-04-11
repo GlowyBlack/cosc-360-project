@@ -189,7 +189,6 @@ function RequestPageCard({
 
   const ownerId = idString(req.bookOwner);
   const showMarkReturned =
-    isHistory &&
     !isExchange &&
     status === "accepted" &&
     ownerId === sessionUserId &&
@@ -453,6 +452,37 @@ export default function RequestPage() {
     [filteredByType, sessionId],
   );
 
+  /** Accepted borrows you are lending (not returned yet) — same book as Incoming with mark-returned. */
+  const incomingActiveLentBorrows = useMemo(
+    () =>
+      filteredByType.filter(
+        (r) =>
+          requestTypeNorm(r.type) === "borrow" &&
+          idString(r.bookOwner) === sessionId &&
+          normalizedStatus(r.status) === "accepted",
+      ),
+    [filteredByType, sessionId],
+  );
+
+  const incomingMergedBorrow = useMemo(() => {
+    if (hubMode !== "borrow") return incomingPending;
+    const seen = new Set();
+    const out = [];
+    for (const r of incomingPending) {
+      const rid = idString(r._id ?? r.id);
+      if (!rid || seen.has(rid)) continue;
+      seen.add(rid);
+      out.push(r);
+    }
+    for (const r of incomingActiveLentBorrows) {
+      const rid = idString(r._id ?? r.id);
+      if (!rid || seen.has(rid)) continue;
+      seen.add(rid);
+      out.push(r);
+    }
+    return out;
+  }, [hubMode, incomingPending, incomingActiveLentBorrows]);
+
   const outgoingPending = useMemo(
     () =>
       filteredByType.filter(
@@ -509,7 +539,7 @@ export default function RequestPage() {
   const emptyMessage = useMemo(() => {
     if (listTab === "incoming") {
       return hubMode === "borrow"
-        ? "No pending borrow requests to you. When someone asks to borrow your book, it will appear here."
+        ? "No pending borrow requests or active loans to you. New requests and borrows you are lending appear here."
         : "No pending exchange proposals to you.";
     }
     if (listTab === "outgoing") {
@@ -703,7 +733,7 @@ export default function RequestPage() {
             className={`request-page-tab ${listTab === "incoming" ? "request-page-tab--active" : ""}`.trim()}
             onClick={() => setListTab("incoming")}
           >
-            Incoming ({incomingPending.length})
+            Incoming ({hubMode === "borrow" ? incomingMergedBorrow.length : incomingPending.length})
           </button>
           <button
             type="button"
@@ -773,7 +803,7 @@ export default function RequestPage() {
                           : (id) => void cancelOutgoingRequest(id, requestKind)
                       }
                       onMarkBorrowReturned={
-                        isHistory ? (id) => void markBorrowReturned(id) : undefined
+                        hubMode === "borrow" ? (id) => void markBorrowReturned(id) : undefined
                       }
                       onOpenReview={
                         isHistory

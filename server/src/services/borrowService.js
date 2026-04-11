@@ -114,7 +114,7 @@ const BorrowService = {
 
         const bookOwner = requestDoc.bookOwner?._id ?? requestDoc.bookOwner;
         if (!bookOwner.equals(userId)) {
-            throw new Error("Only the book owner can mark this borrow as returned.");
+            throw new Error("Only the lender can mark this borrow as returned.");
         }
 
         const bookId = requestDoc.bookId?._id ?? requestDoc.bookId;

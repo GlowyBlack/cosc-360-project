@@ -13,6 +13,8 @@ import "./MessagesPage.css";
 
 const socket = createAppSocket();
 
+const THREAD_LIST_PAGE_SIZE = 8;
+
 function idString(ref) {
   if (ref == null) return "";
   if (typeof ref === "object") return String(ref._id ?? ref.id ?? "");
@@ -48,9 +50,7 @@ function requestInboxTab(request) {
 
   if (status === "accepted") {
     if (type === "borrow") {
-      const end = request?.returnBy ? new Date(request.returnBy).getTime() : NaN;
-      if (!Number.isFinite(end)) return "ongoing";
-      return Date.now() > end ? "archived" : "ongoing";
+      return "ongoing";
     }
     return "archived";
   }
@@ -68,8 +68,7 @@ function requestAllowsSending(request) {
 
   if (status === "accepted") {
     if (type === "borrow") {
-      if (!request?.returnBy) return true;
-      return new Date() <= new Date(request.returnBy);
+      return true;
     }
     return false;
   }
@@ -129,6 +128,7 @@ export default function MessagesPage() {
   const [sending, setSending] = useState(false);
   const [reviewInbox, setReviewInbox] = useState(null);
   const [reviewModal, setReviewModal] = useState(null);
+  const [threadListPages, setThreadListPages] = useState({ ongoing: 1, archived: 1 });
 
   const loadThreads = useCallback(async () => {
     setThreadLoading(true);
@@ -324,6 +324,38 @@ export default function MessagesPage() {
     });
   }, [tabThreads, listSearch]);
 
+  const threadListPageKey = inboxTab === "ongoing" ? "ongoing" : "archived";
+  const threadListPage = threadListPages[threadListPageKey];
+  const threadTotalPages = Math.max(
+    1,
+    Math.ceil(visibleThreads.length / THREAD_LIST_PAGE_SIZE),
+  );
+  const safeThreadListPage = Math.min(
+    Math.max(1, threadListPage),
+    threadTotalPages,
+  );
+
+  const paginatedThreads = useMemo(() => {
+    const start = (safeThreadListPage - 1) * THREAD_LIST_PAGE_SIZE;
+    return visibleThreads.slice(start, start + THREAD_LIST_PAGE_SIZE);
+  }, [visibleThreads, safeThreadListPage]);
+
+  useEffect(() => {
+    setThreadListPages((prev) => ({ ongoing: 1, archived: 1 }));
+  }, [listSearch]);
+
+  useEffect(() => {
+    setThreadListPages((prev) => {
+      const key = threadListPageKey;
+      const maxP = Math.max(
+        1,
+        Math.ceil(visibleThreads.length / THREAD_LIST_PAGE_SIZE),
+      );
+      if (prev[key] <= maxP) return prev;
+      return { ...prev, [key]: maxP };
+    });
+  }, [visibleThreads.length, threadListPageKey]);
+
   useEffect(() => {
     if (visibleThreads.some((t) => t.requestId === activeThreadId)) return;
     setActiveThreadId(visibleThreads[0]?.requestId ?? "");
@@ -396,7 +428,10 @@ export default function MessagesPage() {
                   role="tab"
                   aria-selected={inboxTab === "ongoing"}
                   className={`messages-tab ${inboxTab === "ongoing" ? "messages-tab--active" : ""}`.trim()}
-                  onClick={() => setInboxTab("ongoing")}
+                  onClick={() => {
+                    setInboxTab("ongoing");
+                    setThreadListPages((p) => ({ ...p, ongoing: 1 }));
+                  }}
                 >
                   Ongoing
                   <span className="messages-tab-count">{ongoingThreads.length}</span>
@@ -406,7 +441,10 @@ export default function MessagesPage() {
                   role="tab"
                   aria-selected={inboxTab === "archived"}
                   className={`messages-tab ${inboxTab === "archived" ? "messages-tab--active" : ""}`.trim()}
-                  onClick={() => setInboxTab("archived")}
+                  onClick={() => {
+                    setInboxTab("archived");
+                    setThreadListPages((p) => ({ ...p, archived: 1 }));
+                  }}
                 >
                   Archived
                   <span className="messages-tab-count">{archivedThreads.length}</span>
@@ -427,46 +465,93 @@ export default function MessagesPage() {
             (inboxTab === "ongoing" ? ongoingThreads : archivedThreads).length === 0 ? (
               <p className="messages-hint">
                 {inboxTab === "ongoing"
-                  ? "No ongoing conversations. Finished swaps and closed borrows appear under Archived."
-                  : "Nothing archived yet. Declined requests and completed swaps appear here; accepted borrows move here after the return date."}
+                  ? "No ongoing conversations. Finished swaps and returned borrows appear under Archived."
+                  : "Nothing archived yet. Declined requests, completed exchanges, and borrows marked returned appear here."}
               </p>
             ) : null}
 
-            <ul className="messages-thread-list">
-              {visibleThreads.map((thread) => {
-                const isActive = thread.requestId === activeThreadId;
-                return (
-                  <li key={thread.requestId}>
-                    <button
-                      type="button"
-                      className={`messages-thread-item ${isActive ? "messages-thread-item--active" : ""}`.trim()}
-                      onClick={() => setActiveThreadId(thread.requestId)}
-                    >
-                      <span className="messages-thread-main">
-                        <span className="messages-thread-user">{thread.partnerName}</span>
-                        <span className="messages-thread-book">{thread.title}</span>
-                        {thread.lastMessagePreview ? (
-                          <span className="messages-thread-preview">
-                            {thread.lastMessagePreview.length > 48
-                              ? `${thread.lastMessagePreview.slice(0, 48)}…`
-                              : thread.lastMessagePreview}
-                          </span>
-                        ) : null}
+            <div className="messages-thread-panel">
+              <ul className="messages-thread-list">
+                {paginatedThreads.map((thread) => {
+                  const isActive = thread.requestId === activeThreadId;
+                  return (
+                    <li key={thread.requestId}>
+                      <button
+                        type="button"
+                        className={`messages-thread-item ${isActive ? "messages-thread-item--active" : ""}`.trim()}
+                        onClick={() => setActiveThreadId(thread.requestId)}
+                      >
+                        <span className="messages-thread-main">
+                          <span className="messages-thread-user">{thread.partnerName}</span>
+                          <span className="messages-thread-book">{thread.title}</span>
+                          {thread.lastMessagePreview ? (
+                            <span className="messages-thread-preview">
+                              {thread.lastMessagePreview.length > 48
+                                ? `${thread.lastMessagePreview.slice(0, 48)}…`
+                                : thread.lastMessagePreview}
+                            </span>
+                          ) : null}
+                        </span>
+                        <span className="messages-thread-meta">
+                          {thread.unreadCount > 0 ? (
+                            <span className="messages-thread-unread" aria-label="Unread messages">
+                              {thread.unreadCount > 99 ? "99+" : thread.unreadCount}
+                            </span>
+                          ) : null}
+                          <span>{thread.status}</span>
+                          <span>{formatRelative(thread.updatedAt)}</span>
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+              {!threadLoading && !threadError && visibleThreads.length > 0 ? (
+                <div className="messages-thread-pagination" aria-label="Conversation pages">
+                  <span className="messages-thread-pagination-meta">
+                    {visibleThreads.length <= THREAD_LIST_PAGE_SIZE
+                      ? `${visibleThreads.length} conversation${visibleThreads.length === 1 ? "" : "s"}`
+                      : `Showing ${(safeThreadListPage - 1) * THREAD_LIST_PAGE_SIZE + 1}–${Math.min(
+                          safeThreadListPage * THREAD_LIST_PAGE_SIZE,
+                          visibleThreads.length,
+                        )} of ${visibleThreads.length}`}
+                  </span>
+                  {threadTotalPages > 1 ? (
+                    <div className="messages-thread-pagination-nav">
+                      <button
+                        type="button"
+                        className="messages-thread-pagination-btn"
+                        disabled={safeThreadListPage <= 1}
+                        onClick={() =>
+                          setThreadListPages((prev) => ({
+                            ...prev,
+                            [threadListPageKey]: Math.max(1, safeThreadListPage - 1),
+                          }))
+                        }
+                      >
+                        Previous
+                      </button>
+                      <span className="messages-thread-pagination-page" aria-current="page">
+                        Page {safeThreadListPage} of {threadTotalPages}
                       </span>
-                      <span className="messages-thread-meta">
-                        {thread.unreadCount > 0 ? (
-                          <span className="messages-thread-unread" aria-label="Unread messages">
-                            {thread.unreadCount > 99 ? "99+" : thread.unreadCount}
-                          </span>
-                        ) : null}
-                        <span>{thread.status}</span>
-                        <span>{formatRelative(thread.updatedAt)}</span>
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
+                      <button
+                        type="button"
+                        className="messages-thread-pagination-btn"
+                        disabled={safeThreadListPage >= threadTotalPages}
+                        onClick={() =>
+                          setThreadListPages((prev) => ({
+                            ...prev,
+                            [threadListPageKey]: Math.min(threadTotalPages, safeThreadListPage + 1),
+                          }))
+                        }
+                      >
+                        Next
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
           </aside>
 
           <section className="messages-chat" aria-label="Conversation">
@@ -544,10 +629,7 @@ export default function MessagesPage() {
                       : inboxTab === "archived" ||
                           String(activeThread.request?.status ?? "").toLowerCase() === "declined"
                         ? "This conversation is read-only."
-                        : String(activeThread.request?.type ?? "").toLowerCase() === "borrow" &&
-                            String(activeThread.request?.status ?? "").toLowerCase() === "accepted"
-                          ? "The borrow period has ended — messaging is disabled."
-                          : "Messaging is disabled for this request."}
+                        : "Messaging is disabled for this request."}
                   </p>
                 ) : null}
 
