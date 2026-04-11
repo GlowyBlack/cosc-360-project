@@ -81,7 +81,7 @@ describe("user routes (integration)", () => {
       bookAuthor: "Author Two",
       bookImage: "https://example.com/book-2.png",
       description: "Second description",
-      genre: ["Drama"],
+      genre: ["Fiction"],
       bookOwner: owner._id,
     });
 
