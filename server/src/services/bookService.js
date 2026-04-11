@@ -1,4 +1,5 @@
-import bookRepository from "../repositories/bookRepository.js"
+import bookRepository from "../repositories/bookRepository.js";
+import requestRepository from "../repositories/requestRepository.js";
 import fs from "fs";
 
 function normalizeGenreInput(rawGenre) {
@@ -112,6 +113,16 @@ const BookService = {
 
         const ownerId = String(existing.bookOwner?._id ?? existing.bookOwner);
         if (ownerId !== String(userId)) throw new Error("You can't change availability for a book that doesn't belong to you.");
+
+        const nextAvailable = !existing.isAvailable;
+        if (
+            nextAvailable &&
+            (await requestRepository.hasAcceptedBorrowForBook({ bookId }))
+        ) {
+            throw new Error(
+                "This book is out on loan. It becomes available again when the lender marks it returned.",
+            );
+        }
 
         const updated = await bookRepository.toggleAvailability({ bookId });
         if (!updated) throw new Error("Book not found");

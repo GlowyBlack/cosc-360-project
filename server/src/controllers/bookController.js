@@ -118,6 +118,9 @@ const BookController = {
             if (msg === "Book cover image is required") {
                 return res.status(400).json({ message: msg });
             }
+            if (msg.includes("out on loan")) {
+                return res.status(400).json({ message: msg });
+            }
             return res.status(500).json({ message: "Server Error", error: msg });
         }
     },
@@ -168,6 +171,9 @@ const BookController = {
             }
             if (error.name === "CastError") {
                 return res.status(400).json({ message: "Invalid book id" });
+            }
+            if (msg.includes("out on loan")) {
+                return res.status(400).json({ message: msg });
             }
             return res.status(500).json({ message: "Server Error", error: msg });
         }
