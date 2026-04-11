@@ -67,8 +67,9 @@ io.on("connection", (socket) => {
         }
     });
 
-    socket.on("message_sent", ({ requestId, message }) => {
+    socket.on("message_sent", ({ requestId, message, recipientId }) => {
         io.to(requestId).emit("receive_message", message);
+        if (recipientId) io.to(recipientId).emit("new_message_notification");
     });
 
     socket.on("join_user_room", (userId) => {

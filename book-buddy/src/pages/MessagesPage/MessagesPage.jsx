@@ -85,6 +85,7 @@ function threadFromRequest(request, sessionUserId) {
   const otherUser = isOwner ? request.requesterId : request.bookOwner;
   const otherUsername = otherUser?.username ? String(otherUser.username) : "reader";
   const selfUsername = isOwner ? request.bookOwner?.username : request.requesterId?.username;
+  const partnerId = isOwner ? requesterId : ownerId;
   return {
     requestId,
     request,
@@ -93,6 +94,7 @@ function threadFromRequest(request, sessionUserId) {
     selfName: selfUsername ? `@${String(selfUsername).replace(/^@/, "")}` : "@you",
     status: String(request.status ?? "Pending"),
     updatedAt: request.updatedAt ?? request.createdAt,
+    partnerId,
   };
 }
 
@@ -109,7 +111,7 @@ function threadFromInboxRow(row, sessionUserId) {
 }
 
 export default function MessagesPage() {
-  const { user, logout } = useAuth();
+  const { user, logout, clearMessageUnread } = useAuth();
   const sessionUserId = getSessionUserId(user);
 
   const [threads, setThreads] = useState([]);
@@ -194,7 +196,8 @@ export default function MessagesPage() {
 
   useEffect(() => {
     void loadThreads();
-  }, [loadThreads]);
+    clearMessageUnread();
+  }, [loadThreads, clearMessageUnread]);
 
   useEffect(() => {
     void loadMessages(activeThreadId);
@@ -357,7 +360,7 @@ export default function MessagesPage() {
       }
       setComposer("");
       setMessages((previous) => [...previous, data]);
-      socket.emit("message_sent", { requestId: activeThreadId, message: data });
+      socket.emit("message_sent", { requestId: activeThreadId, message: data, recipientId: activeThread?.partnerId ?? "" });
       void loadThreads();
     } catch (error) {
       setMessagesError(error.message ?? "Could not send message");
