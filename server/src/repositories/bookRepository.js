@@ -133,9 +133,10 @@ const BookRepository = {
         );
     },
 
-    async deleteBook(bookId) {
-        return book.findByIdAndDelete(bookId);
-        // TODO: Delete anything refering to that bookid in other services
+    async deleteBook(bookId, { session = null } = {}) {
+        let q = book.findByIdAndDelete(bookId);
+        if (session) q = q.session(session);
+        return q;
     },
 
     async searchBook(searchTerm){

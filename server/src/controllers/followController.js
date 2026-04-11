@@ -1,4 +1,5 @@
 import followService from "../services/followService.js";
+import { sendServiceError } from "../utils/httpError.js";
 
 const FollowController = {
     async followUser(req, res) {
@@ -10,18 +11,7 @@ const FollowController = {
             const result = await followService.follow(followerId, followingId);
             return res.status(201).json(result);
         } catch (error) {
-            const msg = error.message ?? "Internal server error";
-            if (
-                msg === "followerId and followingId are required" ||
-                msg === "Invalid user id" ||
-                msg === "You can't follow yourself"
-            ) {
-                return res.status(400).json({ message: msg, error: msg });
-            }
-            if (msg === "You're already following this user") {
-                return res.status(409).json({ message: msg, error: msg });
-            }
-            return res.status(500).json({ message: "Internal server error", error: msg });
+            return sendServiceError(res, error);
         }
     },
 
@@ -34,18 +24,7 @@ const FollowController = {
             const result = await followService.unFollow(followerId, followingId);
             return res.status(200).json(result);
         } catch (error) {
-            const msg = error.message ?? "Internal server error";
-            if (
-                msg === "followerId and followingId are required" ||
-                msg === "Invalid user id" ||
-                msg === "You can't unfollow yourself"
-            ) {
-                return res.status(400).json({ message: msg, error: msg });
-            }
-            if (msg === "You're not following this user") {
-                return res.status(404).json({ message: msg, error: msg });
-            }
-            return res.status(500).json({ message: "Internal server error", error: msg });
+            return sendServiceError(res, error);
         }
     },
 
@@ -56,14 +35,7 @@ const FollowController = {
             const result = await followService.getMyFollowings(viewerId);
             return res.status(200).json({ success: true, data: result });
         } catch (error) {
-            const msg = error.message ?? "Internal server error";
-            if (msg === "Invalid user id") {
-                return res.status(400).json({ message: msg, error: msg });
-            }
-            if (msg === "Unauthorized") {
-                return res.status(401).json({ message: msg, error: msg });
-            }
-            return res.status(500).json({ message: "Internal server error", error: msg });
+            return sendServiceError(res, error);
         }
     },
 
@@ -79,14 +51,7 @@ const FollowController = {
             });
             return res.status(200).json({ success: true, data: result });
         } catch (error) {
-            const msg = error.message ?? "Internal server error";
-            if (
-                msg === "targetUserId and viewerUserId are required" ||
-                msg === "Invalid user id"
-            ) {
-                return res.status(400).json({ message: msg, error: msg });
-            }
-            return res.status(500).json({ message: "Internal server error", error: msg });
+            return sendServiceError(res, error);
         }
     },
 
@@ -96,11 +61,7 @@ const FollowController = {
             const result = await followService.getFollowStats(targetUserId);
             return res.status(200).json({ success: true, data: result });
         } catch (error) {
-            const msg = error.message ?? "Internal server error";
-            if (msg === "targetUserId is required" || msg === "Invalid user id") {
-                return res.status(400).json({ message: msg, error: msg });
-            }
-            return res.status(500).json({ message: "Internal server error", error: msg });
+            return sendServiceError(res, error);
         }
     },
 
@@ -116,14 +77,7 @@ const FollowController = {
             });
             return res.status(200).json({ success: true, data: result });
         } catch (error) {
-            const msg = error.message ?? "Internal server error";
-            if (
-                msg === "targetUserId and viewerUserId are required" ||
-                msg === "Invalid user id"
-            ) {
-                return res.status(400).json({ message: msg, error: msg });
-            }
-            return res.status(500).json({ message: "Internal server error", error: msg });
+            return sendServiceError(res, error);
         }
     },
 
@@ -134,14 +88,7 @@ const FollowController = {
             const result = await followService.getMyFollowers(viewerId);
             return res.status(200).json({ success: true, data: result });
         } catch (error) {
-            const msg = error.message ?? "Internal server error";
-            if (msg === "Invalid user id") {
-                return res.status(400).json({ message: msg, error: msg });
-            }
-            if (msg === "Unauthorized") {
-                return res.status(401).json({ message: msg, error: msg });
-            }
-            return res.status(500).json({ message: "Internal server error", error: msg });
+            return sendServiceError(res, error);
         }
     },
 
@@ -157,16 +104,9 @@ const FollowController = {
             });
             return res.status(200).json({ success: true, data: result });
         } catch (error) {
-            const msg = error.message ?? "Internal server error";
-            if (
-                msg === "targetUserId and viewerUserId are required" ||
-                msg === "Invalid user id"
-            ) {
-                return res.status(400).json({ message: msg, error: msg });
-            }
-            return res.status(500).json({ message: "Internal server error", error: msg });
+            return sendServiceError(res, error);
         }
     },
-}
+};
 
 export default FollowController;

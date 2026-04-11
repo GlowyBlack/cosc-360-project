@@ -1,7 +1,7 @@
 import messageService from "../services/messageService.js";
- 
+import { sendServiceError } from "../utils/httpError.js";
+
 const messageController = {
-    // GET /messages/inbox
     async getInbox(req, res) {
         try {
             const userId = req.user?._id ?? req.user?.id;
@@ -9,11 +9,10 @@ const messageController = {
             const inbox = await messageService.getInbox(userId);
             return res.status(200).json(inbox);
         } catch (e) {
-            return res.status(500).json({ message: e.message });
+            return sendServiceError(res, e);
         }
     },
 
-    // GET /messages/:requestId
     async getThread(req, res) {
         try {
             const userId = req.user?._id ?? req.user?.id;
@@ -21,16 +20,10 @@ const messageController = {
             const messages = await messageService.getThread(requestId, userId);
             return res.status(200).json(messages);
         } catch (e) {
-            const code = e.statusCode ?? 500;
-            if (code === 404 || code === 403) {
-                return res.status(code).json({ message: e.message });
-            }
-            return res.status(500).json({ message: e.message });
+            return sendServiceError(res, e);
         }
     },
 
-    // POST /messages
-    // body: { requestId, content }
     async send(req, res) {
         try {
             const { requestId, content } = req.body;
@@ -38,20 +31,10 @@ const messageController = {
             const message = await messageService.send({ requestId, senderId, content });
             return res.status(201).json(message);
         } catch (e) {
-            if (e.message.toLowerCase().includes("not found"))
-                return res.status(404).json({message: e.message})
-            if (e.message.toLowerCase().includes("not allowed"))
-                return res.status(403).json({message: e.message})
-            
-            const code = e.statusCode;
-            if (code === 404 || code === 403) {
-                return res.status(code).json({ message: e.message });
-            }
-            return res.status(400).json({ message: e.message });
+            return sendServiceError(res, e);
         }
     },
 
-    // PATCH /messages/:requestId/read
     async markAsRead(req, res) {
         try {
             const userId = req.user?._id ?? req.user?.id;
@@ -59,11 +42,7 @@ const messageController = {
             await messageService.markAsRead(requestId, userId);
             return res.status(200).json({ success: true });
         } catch (e) {
-            const code = e.statusCode ?? 500;
-            if (code === 404 || code === 403) {
-                return res.status(code).json({ message: e.message });
-            }
-            return res.status(500).json({ message: e.message });
+            return sendServiceError(res, e);
         }
     },
 };

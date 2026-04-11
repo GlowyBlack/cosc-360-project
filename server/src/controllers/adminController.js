@@ -1,12 +1,10 @@
 import adminService from "../services/adminService.js";
 import reportService from "../services/reportService.js";
 import { getIO } from "../socket.js";
+import { sendServiceError } from "../utils/httpError.js";
 
 function handleError(res, err) {
-  if (err && typeof err.status === "number") {
-    return res.status(err.status).json({ message: err.message });
-  }
-  return res.status(500).json({ message: "Server Error" });
+  return sendServiceError(res, err);
 }
 
 const AdminController = {
@@ -146,11 +144,7 @@ const AdminController = {
       });
       return res.json(reports);
     } catch (err) {
-      const msg = err?.message ?? "Server Error";
-      if (msg === "Invalid status" || msg === "Invalid target type") {
-        return res.status(400).json({ message: msg });
-      }
-      return res.status(500).json({ message: "Server Error" });
+      return sendServiceError(res, err);
     }
   },
 
@@ -159,14 +153,7 @@ const AdminController = {
       const report = await reportService.getByIdForAdmin(req.params.reportId);
       return res.json(report);
     } catch (err) {
-      const msg = err?.message ?? "Server Error";
-      if (msg === "Invalid report id") {
-        return res.status(400).json({ message: msg });
-      }
-      if (msg === "Report not found") {
-        return res.status(404).json({ message: msg });
-      }
-      return res.status(500).json({ message: "Server Error" });
+      return sendServiceError(res, err);
     }
   },
 
@@ -179,14 +166,7 @@ const AdminController = {
       );
       return res.json(report);
     } catch (err) {
-      const msg = err?.message ?? "Server Error";
-      if (msg === "Invalid report id" || msg === "Status must be Open, Reviewed, or Dismissed") {
-        return res.status(400).json({ message: msg });
-      }
-      if (msg === "Report not found") {
-        return res.status(404).json({ message: msg });
-      }
-      return res.status(500).json({ message: "Server Error" });
+      return sendServiceError(res, err);
     }
   },
 
@@ -195,14 +175,7 @@ const AdminController = {
       const report = await reportService.resolveReportForAdmin(req.params.reportId);
       return res.json(report);
     } catch (err) {
-      const msg = err?.message ?? "Server Error";
-      if (msg === "Invalid report id") {
-        return res.status(400).json({ message: msg });
-      }
-      if (msg === "Report not found") {
-        return res.status(404).json({ message: msg });
-      }
-      return res.status(500).json({ message: "Server Error" });
+      return sendServiceError(res, err);
     }
   },
 
@@ -211,14 +184,7 @@ const AdminController = {
       const report = await reportService.unresolveReportForAdmin(req.params.reportId);
       return res.json(report);
     } catch (err) {
-      const msg = err?.message ?? "Server Error";
-      if (msg === "Invalid report id") {
-        return res.status(400).json({ message: msg });
-      }
-      if (msg === "Report not found") {
-        return res.status(404).json({ message: msg });
-      }
-      return res.status(500).json({ message: "Server Error" });
+      return sendServiceError(res, err);
     }
   },
 };

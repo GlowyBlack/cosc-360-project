@@ -1,12 +1,13 @@
 import postRepository from "../repositories/postRepository.js";
 import commentRepository from "../repositories/commentRepository.js";
+import { httpError } from "../utils/httpError.js";
 
 function isOwner(postDoc, userId) {
     return String(postDoc.authorId?._id ?? postDoc.authorId) === String(userId);
 }
 
 const PostService = {
-     async getAllPosts({ genre, bookTag, q }) {
+    async getAllPosts({ genre, bookTag, q }) {
         return await postRepository.findAll({ genre, bookTag, q });
     },
 
@@ -25,8 +26,8 @@ const PostService = {
     async createPost({ authorId, title, content, genre, bookTag }) {
         const cleanTitle = String(title ?? "").trim();
         const cleanContent = String(content ?? "").trim();
-        if (!cleanTitle) throw new Error("Title is required");
-        if (!cleanContent) throw new Error("Content is required");
+        if (!cleanTitle) throw httpError(400, "Title is required");
+        if (!cleanContent) throw httpError(400, "Content is required");
 
         const normalizedGenre = Array.isArray(genre)
             ? genre.map((g) => String(g).trim()).filter(Boolean)
@@ -54,18 +55,18 @@ const PostService = {
 
     async updatePost(postId, userId, body) {
         const post = await postRepository.findById(postId);
-        if (!post || post.isRemoved) throw new Error("Post not found");
-        if (!isOwner(post, userId)) throw new Error("You can't edit this post");
+        if (!post || post.isRemoved) throw httpError(404, "Post not found");
+        if (!isOwner(post, userId)) throw httpError(403, "You can't edit this post");
 
         const updates = {};
         if (body.title != null) {
             const t = String(body.title).trim();
-            if (!t) throw new Error("Title cannot be empty");
+            if (!t) throw httpError(400, "Title cannot be empty");
             updates.title = t;
         }
         if (body.content != null) {
             const c = String(body.content).trim();
-            if (!c) throw new Error("Content cannot be empty");
+            if (!c) throw httpError(400, "Content cannot be empty");
             updates.content = c;
         }
         if (Array.isArray(body.genre)) {
@@ -90,11 +91,11 @@ const PostService = {
 
     async deletePost(postId, user) {
         const post = await postRepository.findById(postId);
-        if (!post || post.isRemoved) throw new Error("Post not found");
+        if (!post || post.isRemoved) throw httpError(404, "Post not found");
 
         const isAdmin = String(user?.role ?? "") === "Admin";
         if (!isOwner(post, user?._id ?? user?.id) && !isAdmin) {
-            throw new Error("You can't delete this post");
+            throw httpError(403, "You can't delete this post");
         }
 
         return await postRepository.softDeleteById(postId);
@@ -102,7 +103,7 @@ const PostService = {
 
     async toggleLike(postId, userId) {
         const post = await postRepository.findById(postId);
-        if (!post || post.isRemoved) throw new Error("Post not found");
+        if (!post || post.isRemoved) throw httpError(404, "Post not found");
 
         const hasLiked = (post.likes ?? []).some((id) => String(id) === String(userId));
         if (hasLiked) {
@@ -119,7 +120,7 @@ const PostService = {
 
     async toggleDislike(postId, userId) {
         const post = await postRepository.findById(postId);
-        if (!post || post.isRemoved) throw new Error("Post not found");
+        if (!post || post.isRemoved) throw httpError(404, "Post not found");
 
         const hasDisliked = (post.dislikes ?? []).some((id) => String(id) === String(userId));
         if (hasDisliked) {

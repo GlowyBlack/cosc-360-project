@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import UserRepository from "../repositories/userRepository.js";
 import bookRepository from "../repositories/bookRepository.js";
 import requestRepository from "../repositories/requestRepository.js";
+import { httpError } from "../utils/httpError.js";
 
 function isAllowedRegistrationEmail(email) {
   const value = String(email ?? "").trim().toLowerCase();
@@ -39,30 +40,27 @@ const AuthService = {
     const provinceTrim = String(provinceState || "").trim();
 
     if (!first || !last || !emailNorm || !passwordRaw) {
-      throw new Error("registration_fields_required");
+      throw httpError(400, "registration_fields_required");
     }
     if (!isAllowedRegistrationEmail(emailNorm)) {
-      throw new Error("invalid_email_domain");
+      throw httpError(400, "invalid_email_domain");
     }
     if (!cityTrim || !provinceTrim) {
-      throw new Error("location_required");
+      throw httpError(400, "location_required");
     }
     const cleanProfileImage = String(profileImage || "").trim();
     if (!cleanProfileImage) {
-      throw new Error("profile_image_required");
+      throw httpError(400, "profile_image_required");
     }
     const location = `${cityTrim}, ${provinceTrim}`;
 
     const usernameNorm = `${first} ${last}`;
 
-    const existing = await UserRepository.findOneByUsernameOrEmail(
-      usernameNorm,
-      emailNorm
-    );
+    const existing = await UserRepository.findOneByUsernameOrEmail(usernameNorm, emailNorm);
     if (existing) {
-      if (existing.username === usernameNorm) throw new Error("username_taken");
-      if (existing.email === emailNorm) throw new Error("email_taken");
-      throw new Error("user_exists");
+      if (existing.username === usernameNorm) throw httpError(409, "username_taken");
+      if (existing.email === emailNorm) throw httpError(409, "email_taken");
+      throw httpError(409, "user_exists");
     }
 
     const passwordHash = await bcrypt.hash(passwordRaw, 10);
@@ -83,20 +81,20 @@ const AuthService = {
     const passwordRaw = String(password || "");
 
     if (!emailNorm || !passwordRaw) {
-      throw new Error("email_password_required");
+      throw httpError(400, "email_password_required");
     }
 
     const user = await UserRepository.findByEmail(emailNorm);
-    if (!user) throw new Error("invalid_credentials");
+    if (!user) throw httpError(401, "invalid_credentials");
 
     const isValid = await bcrypt.compare(passwordRaw, user.passwordHash);
-    if (!isValid) throw new Error("invalid_credentials");
+    if (!isValid) throw httpError(401, "invalid_credentials");
 
     if (user.isSuspended) {
-      throw new Error("account_suspended");
+      throw httpError(403, "account_suspended");
     }
     if (user.isBanned) {
-      throw new Error("account_suspended");
+      throw httpError(403, "account_suspended");
     }
 
     return sanitizeUser(user);
@@ -115,7 +113,7 @@ const AuthService = {
     const updates = {};
     if (bio !== undefined) {
       const cleanBio = String(bio ?? "").trim();
-      if (cleanBio.length > 600) throw new Error("bio_too_long");
+      if (cleanBio.length > 600) throw httpError(400, "bio_too_long");
       updates.bio = cleanBio;
     }
     if (profileImage !== undefined) {
@@ -135,7 +133,7 @@ const AuthService = {
     const booksListed = await bookRepository.countByOwner(userId);
     const exchangesCompleted = await requestRepository.countCompletedExchangesForUser(userId);
     const booksBorrowed = await requestRepository.countCompletedBorrowsAsBorrower(userId);
-   
+
     return { booksListed, exchangesCompleted, booksBorrowed };
   },
 };

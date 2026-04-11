@@ -1,6 +1,7 @@
+import mongoose from "mongoose";
 import bookRepository from "../repositories/bookRepository.js";
 import requestRepository from "../repositories/requestRepository.js";
-import fs from "fs";
+import { httpError } from "../utils/httpError.js";
 
 function normalizeGenreInput(rawGenre) {
     if (Array.isArray(rawGenre)) {
@@ -23,21 +24,21 @@ const BookService = {
     async createBook(data) {
         const bookTitle = String(data.bookTitle ?? "").trim();
         const bookAuthor = String(data.bookAuthor ?? "").trim();
-        if (!bookTitle || !bookAuthor) throw new Error("Title and author are required");
+        if (!bookTitle || !bookAuthor) throw httpError(400, "Title and author are required");
 
         const description = String(data.description ?? "").trim();
-        if (!description) throw new Error("Please provide the summary of the book");
-        
+        if (!description) throw httpError(400, "Please provide the summary of the book");
+
         const rawGenre = data.genre ?? data.genres;
         const genre = normalizeGenreInput(rawGenre);
 
-        if (genre.length < 1) throw new Error("Select at least one genre");
+        if (genre.length < 1) throw httpError(400, "Select at least one genre");
 
         const bookOwner = data.bookOwner;
-        if (!bookOwner) throw new Error("Book owner is required");
+        if (!bookOwner) throw httpError(400, "Book owner is required");
 
         const image = String(data.bookImage ?? "").trim();
-        if (!image) throw new Error("Book cover image is required");
+        if (!image) throw httpError(400, "Book cover image is required");
 
         const doc = {
             bookTitle,
@@ -55,27 +56,28 @@ const BookService = {
     },
 
     async findBooksByUserId(userID) {
-        if (!userID) throw new Error("User ID is required");
+        if (!userID) throw httpError(400, "User ID is required");
 
         return await bookRepository.findUserBooks(userID);
     },
 
-
     async getBookByBookId(bookId) {
-        if (!bookId) throw new Error("Book ID is required");
+        if (!bookId) throw httpError(400, "Book ID is required");
 
-        return await bookRepository.findByID({id: bookId, lean: true });
+        return await bookRepository.findByID({ id: bookId, lean: true });
     },
 
     async updateDetails(bookId, userId, body) {
-        if (!bookId) throw new Error("Book ID is required.");
-        if (!userId) throw new Error("User ID is required");
+        if (!bookId) throw httpError(400, "Book ID is required.");
+        if (!userId) throw httpError(400, "User ID is required");
 
-        const existing = await bookRepository.findByID({id: bookId});
-        if (!existing) throw new Error("Book not found");
+        const existing = await bookRepository.findByID({ id: bookId });
+        if (!existing) throw httpError(404, "Book not found");
 
         const ownerId = String(existing.bookOwner?._id ?? existing.bookOwner);
-        if (ownerId !== String(userId)) throw new Error("You can't edit a book that doesn't belong to you.");
+        if (ownerId !== String(userId)) {
+            throw httpError(403, "You can't edit a book that doesn't belong to you.");
+        }
 
         const updates = {};
         if (body.bookTitle != null) updates.bookTitle = String(body.bookTitle).trim();
@@ -90,76 +92,86 @@ const BookService = {
 
         if (body.bookImage !== undefined) {
             const nextImage = String(body.bookImage ?? "").trim();
-            if (!nextImage) throw new Error("Book cover image is required");
+            if (!nextImage) throw httpError(400, "Book cover image is required");
             updates.bookImage = nextImage;
         }
         if (body.isAvailable !== undefined) {
-            updates.isAvailable = String(body.isAvailable) !== "false";
+            const wantAvailable = String(body.isAvailable) !== "false";
+            if (
+                wantAvailable &&
+                (await requestRepository.hasAcceptedBorrowForBook({ bookId }))
+            ) {
+                throw httpError(
+                    400,
+                    "This book is out on loan. It becomes available again when the lender marks it returned.",
+                );
+            }
+            updates.isAvailable = wantAvailable;
         }
         if (updates.bookImage === undefined) {
             const existingImage = String(existing.bookImage ?? "").trim();
-            if (!existingImage) throw new Error("Book cover image is required");
+            if (!existingImage) throw httpError(400, "Book cover image is required");
         }
         return await bookRepository.updateBook(bookId, updates);
     },
-    
 
     async toggleAvailability(bookId, userId) {
-        if (!bookId) throw new Error("Book ID is required.");
-        if (!userId) throw new Error("User ID is required");
+        if (!bookId) throw httpError(400, "Book ID is required.");
+        if (!userId) throw httpError(400, "User ID is required");
 
         const existing = await bookRepository.findByID({ id: bookId });
-        if (!existing) throw new Error("Book not found");
+        if (!existing) throw httpError(404, "Book not found");
 
         const ownerId = String(existing.bookOwner?._id ?? existing.bookOwner);
-        if (ownerId !== String(userId)) throw new Error("You can't change availability for a book that doesn't belong to you.");
+        if (ownerId !== String(userId)) {
+            throw httpError(403, "You can't change availability for a book that doesn't belong to you.");
+        }
 
         const nextAvailable = !existing.isAvailable;
         if (
             nextAvailable &&
             (await requestRepository.hasAcceptedBorrowForBook({ bookId }))
         ) {
-            throw new Error(
+            throw httpError(
+                400,
                 "This book is out on loan. It becomes available again when the lender marks it returned.",
             );
         }
 
         const updated = await bookRepository.toggleAvailability({ bookId });
-        if (!updated) throw new Error("Book not found");
+        if (!updated) throw httpError(404, "Book not found");
         return updated;
     },
 
-
     async deleteBook(bookId, userId) {
-        if (!bookId) throw new Error("Book ID is required");
-        const book = await bookRepository.findByID({id: bookId});
-        if (!book) throw new Error("Book not found");
+        if (!bookId) throw httpError(400, "Book ID is required");
+        const book = await bookRepository.findByID({ id: bookId });
+        if (!book) throw httpError(404, "Book not found");
 
         const ownerId = String(book.bookOwner?._id ?? book.bookOwner);
-        if (ownerId !== String(userId)  /* or if not admin */) {
-            throw new Error("You can't delete a book that doesn't belong to you.");
+        if (ownerId !== String(userId)) {
+            throw httpError(403, "You can't delete a book that doesn't belong to you.");
         }
 
         const session = await mongoose.startSession();
-        try{
+        try {
             await session.withTransaction(async () => {
-                await bookRepository.deleteBook(bookId, session);
-
-                await requestRepository.cancelAllRequestsForBook(bookId, session);
+                await bookRepository.deleteBook(bookId, { session });
+                await requestRepository.cancelAllRequestsForBook({ id: bookId, session });
             });
             return { success: true, message: "Book and associated requests cancelled." };
-        }catch{
+        } catch (error) {
             console.error("Deletion/Cancellation transaction failed:", error);
             throw error;
-        }finally{
+        } finally {
             session.endSession();
         }
     },
 
     async searchBooks(searchTerm) {
-        const raw = String(searchTerm ?? "").trim()
-        if(!raw) return this.getAllBooks();
-        
+        const raw = String(searchTerm ?? "").trim();
+        if (!raw) return this.getAllBooks();
+
         return await bookRepository.searchBook(raw);
     },
 };

@@ -1,6 +1,7 @@
 import reviewRepository from "../repositories/reviewRepository.js";
 import requestRepository from "../repositories/requestRepository.js";
 import userRepository from "../repositories/userRepository.js";
+import { httpError } from "../utils/httpError.js";
 
 function isParticipant(request, userId) {
     if (!request || userId == null) return false;
@@ -55,19 +56,15 @@ const ReviewService = {
             revieweeId,
             requestStatus: status,
         };
-    }, 
+    },
 
     async createReview({ requestId, reviewerId, rating, comment }) {
         const request = await requestRepository.findRequestById({ id: requestId });
         if (!request) {
-            const err = new Error("Request not found");
-            err.statusCode = 404;
-            throw err;
+            throw httpError(404, "Request not found");
         }
         if (!isParticipant(request, reviewerId)) {
-            const err = new Error("Not allowed to review this request");
-            err.statusCode = 403;
-            throw err;
+            throw httpError(403, "Not allowed to review this request");
         }
         const rt = String(request.type ?? "").toLowerCase();
         const st = String(request.status ?? "");
@@ -75,30 +72,22 @@ const ReviewService = {
             (rt === "borrow" && st === "Returned") ||
             (rt === "exchange" && st === "Accepted");
         if (!canReview) {
-            const err = new Error("Request is not in a state that allows reviews");
-            err.statusCode = 400;
-            throw err;
+            throw httpError(400, "Request is not in a state that allows reviews");
         }
         const revieweeId = otherPartyId(request, reviewerId);
         if (!revieweeId) {
-            const err = new Error("Could not determine reviewee");
-            err.statusCode = 400;
-            throw err;
+            throw httpError(400, "Could not determine reviewee");
         }
         const existing = await reviewRepository.findByRequestAndReviewer(
             requestId,
             reviewerId,
         );
         if (existing) {
-            const err = new Error("You already submitted a review for this request");
-            err.statusCode = 409;
-            throw err;
+            throw httpError(409, "You already submitted a review for this request");
         }
         const r = Number(rating);
         if (!Number.isFinite(r) || r < 1 || r > 5) {
-            const err = new Error("Rating must be between 1 and 5");
-            err.statusCode = 400;
-            throw err;
+            throw httpError(400, "Rating must be between 1 and 5");
         }
         const created = await reviewRepository.create({
             requestId,

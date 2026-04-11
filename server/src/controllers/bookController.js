@@ -1,4 +1,5 @@
 import bookService from "../services/bookService.js";
+import { sendServiceError } from "../utils/httpError.js";
 
 const BookController = {
     async getBookGenres(req, res) {
@@ -6,7 +7,7 @@ const BookController = {
             const { BOOK_GENRES } = await import("../constants/bookGenres.js");
             return res.status(200).json({ genres: [...BOOK_GENRES] });
         } catch (error) {
-            return res.status(500).json({ message: "Server Error", error: error.message });
+            return sendServiceError(res, error);
         }
     },
 
@@ -15,7 +16,7 @@ const BookController = {
             const books = await bookService.getAllBooks();
             return res.status(200).json(books);
         } catch (error) {
-            return res.status(500).json({ message: "Server Error", error: error.message });
+            return sendServiceError(res, error);
         }
     },
 
@@ -33,18 +34,7 @@ const BookController = {
             const book = await bookService.createBook(data);
             res.status(201).json(book);
         } catch (error) {
-            const msg = error.message;
-            const badRequest = [
-                "Title and author are required",
-                "Please provide the summary of the book",
-                "Select at least one genre",
-                "Book owner is required",
-                "Book cover image is required",
-            ];
-            if (badRequest.includes(msg)) {
-                return res.status(400).json({ message: msg });
-            }
-            return res.status(500).json({ message: "Server Error", error: msg });
+            return sendServiceError(res, error);
         }
     },
 
@@ -58,7 +48,7 @@ const BookController = {
             const books = await bookService.findBooksByUserId(userId);
             return res.status(200).json(books);
         } catch (error) {
-            return res.status(500).json({ message: "Server Error", error: error.message });
+            return sendServiceError(res, error);
         }
     },
 
@@ -68,7 +58,7 @@ const BookController = {
             const results = await bookService.searchBooks(String(q));
             return res.status(200).json(results);
         } catch (error) {
-            return res.status(500).json({ message: "Server Error", error: error.message });
+            return sendServiceError(res, error);
         }
     },
 
@@ -81,13 +71,7 @@ const BookController = {
             }
             res.status(200).json(book);
         } catch (error) {
-            if (error.name === "CastError") {
-                return res.status(400).json({ message: "Invalid book id" });
-            }
-            if (error.message === "Book ID is required") {
-                return res.status(400).json({ message: error.message });
-            }
-            return res.status(500).json({ message: "Server Error", error: error.message });
+            return sendServiceError(res, error);
         }
     },
 
@@ -105,23 +89,7 @@ const BookController = {
             const book = await bookService.updateDetails(bookId, userId, payload);
             return res.status(200).json(book);
         } catch (error) {
-            const msg = error.message;
-            if (msg === "Book not found") {
-                return res.status(404).json({ message: msg });
-            }
-            if (msg.includes("can't edit")) {
-                return res.status(403).json({ message: msg });
-            }
-            if (msg === "Book ID is required." || msg === "User ID is required") {
-                return res.status(400).json({ message: msg });
-            }
-            if (msg === "Book cover image is required") {
-                return res.status(400).json({ message: msg });
-            }
-            if (msg.includes("out on loan")) {
-                return res.status(400).json({ message: msg });
-            }
-            return res.status(500).json({ message: "Server Error", error: msg });
+            return sendServiceError(res, error);
         }
     },
 
@@ -135,20 +103,10 @@ const BookController = {
             await bookService.deleteBook(bookId, userId);
             return res.status(204).send();
         } catch (error) {
-            const msg = error.message;
-            if (msg === "Book not found") {
-                return res.status(404).json({ message: msg });
-            }
-            if (msg.includes("can't delete")) {
-                return res.status(403).json({ message: msg });
-            }
-            if (msg === "Book ID is required") {
-                return res.status(400).json({ message: msg });
-            }
-            return res.status(500).json({ message: "Server Error", error: msg });
+            return sendServiceError(res, error);
         }
     },
-    
+
     async toggleAvailability(req, res) {
         try {
             const { bookId } = req.params;
@@ -159,27 +117,9 @@ const BookController = {
             const book = await bookService.toggleAvailability(bookId, userId);
             return res.status(200).json(book);
         } catch (error) {
-            const msg = error.message;
-            if (msg === "Book not found") {
-                return res.status(404).json({ message: msg });
-            }
-            if (msg.includes("doesn't belong")) {
-                return res.status(403).json({ message: msg });
-            }
-            if (msg === "Book ID is required." || msg === "User ID is required") {
-                return res.status(400).json({ message: msg });
-            }
-            if (error.name === "CastError") {
-                return res.status(400).json({ message: "Invalid book id" });
-            }
-            if (msg.includes("out on loan")) {
-                return res.status(400).json({ message: msg });
-            }
-            return res.status(500).json({ message: "Server Error", error: msg });
+            return sendServiceError(res, error);
         }
     },
 };
-
-
 
 export default BookController;

@@ -12,6 +12,7 @@ import {
     increaseRequestCount: jest.fn(),
     resetRequestCount: jest.fn(),
     decreaseRequestCount: jest.fn(),
+    setBookAvailability: jest.fn().mockResolvedValue({}),
   };
   
   const mockRequestRepo = {
@@ -21,6 +22,7 @@ import {
     acceptExchange: jest.fn(),
     declineExchange: jest.fn(),
     markBorrowReturned: jest.fn(),
+    cancelAllRequestsForBook: jest.fn().mockResolvedValue({}),
   };
   
   jest.unstable_mockModule("mongoose", () => {

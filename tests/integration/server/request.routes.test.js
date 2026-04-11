@@ -164,7 +164,7 @@ import {
         .post(`/requests/borrow/${requestId}/accept`)
         .set("Authorization", `Bearer ${requesterToken}`);
   
-      expect(acceptRes.status).toBe(400);
+      expect(acceptRes.status).toBe(403);
     });
   
     it("POST /requests/borrow/:id/decline — owner can decline", async () => {
