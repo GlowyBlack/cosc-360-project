@@ -16,8 +16,8 @@ import { signAccessToken } from "../../../server/src/middleware/auth.js";
 jest.unstable_mockModule("../../../server/src/middleware/uploadImage.js", () => ({
   default: (req, _res, next) => {
     req.file = {
-      path: "https://example.com/mock-book-cover.png",
-      secure_url: "https://example.com/mock-book-cover.png",
+      path: "https://tmm.chicagodistributioncenter.com/IsbnImages/9780226822952.jpg",
+      secure_url: "https://tmm.chicagodistributioncenter.com/IsbnImages/9780226822952.jpg",
     };
     next();
   },
@@ -42,7 +42,7 @@ async function createUser({
   location = "Kelowna, BC",
   role = "Registered",
   wishlist = [],
-  profileImage = "https://example.com/avatar.png",
+  profileImage = "https://img.freepik.com/free-vector/smiling-young-man-illustration_1308-174669.jpg?semt=ais_hybrid&w=740&q=80",
 } = {}) {
   const { default: User } = await import("../../../server/src/models/user.js");
   return User.create({
@@ -65,7 +65,7 @@ async function createBook({
   condition = "Good",
   ownerNote = "",
   isAvailable = true,
-  image = "https://example.com/book.png",
+  image = "https://tmm.chicagodistributioncenter.com/IsbnImages/9780226822952.jpg",
 } = {}) {
   const { default: Book } = await import("../../../server/src/models/book.js");
   return Book.create({
@@ -138,7 +138,7 @@ describe("book routes (integration)", () => {
       condition: "Like New",
       ownerNote: "Handled carefully",
     });
-    expect(res.body.bookImage).toBe("https://example.com/mock-book-cover.png");
+    expect(res.body.bookImage).toBe("https://tmm.chicagodistributioncenter.com/IsbnImages/9780226822952.jpg");
 
     const { default: Book } = await import("../../../server/src/models/book.js");
     const saved = await Book.findById(res.body._id).lean();
