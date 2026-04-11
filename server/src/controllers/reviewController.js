@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import reviewService from "../services/reviewService.js";
-
+import { sendServiceError } from "../utils/httpError.js";
 
 const reviewController = {
     async getReviewsForUser(req, res) {
@@ -12,7 +12,7 @@ const reviewController = {
             const reviews = await reviewService.getReviewsForUser(userId);
             return res.status(200).json(reviews);
         } catch (error) {
-            return res.status(500).json({ message: "Server Error", error: error.message });
+            return sendServiceError(res, error);
         }
     },
 
@@ -25,7 +25,7 @@ const reviewController = {
             const reviews = await reviewService.getReviewsForRequest(requestId);
             return res.status(200).json(reviews);
         } catch (error) {
-            return res.status(500).json({ message: "Server Error", error: error.message });
+            return sendServiceError(res, error);
         }
     },
 
@@ -40,18 +40,7 @@ const reviewController = {
             const result = await reviewService.getEligibility(requestId, userId);
             return res.status(200).json(result);
         } catch (error) {
-            return res.status(500).json({ message: "Server Error", error: error.message });
-        }
-    },
-
-    async getEligibilitySummary(req, res) {
-        try {
-            const userId = req.user?._id ?? req.user?.id;
-            if (!userId) return res.status(401).json({ message: "Not authenticated" });
-            const summary = await reviewService.getEligibilitySummaryForUser(userId);
-            return res.status(200).json(summary);
-        } catch (error) {
-            return res.status(500).json({ message: "Server Error", error: error.message });
+            return sendServiceError(res, error);
         }
     },
 
@@ -71,14 +60,10 @@ const reviewController = {
             });
             return res.status(201).json(review);
         } catch (error) {
-            const code = error.statusCode ?? 500;
-            if (code === 400 || code === 403 || code === 404 || code === 409) {
-                return res.status(code).json({ message: error.message });
-            }
             if (error.code === 11000) {
                 return res.status(409).json({ message: "You already submitted a review for this request" });
             }
-            return res.status(500).json({ message: "Server Error", error: error.message });
+            return sendServiceError(res, error);
         }
     },
 };

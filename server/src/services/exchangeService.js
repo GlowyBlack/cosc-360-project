@@ -1,31 +1,35 @@
-import mongoose from 'mongoose';
-import bookRepository from '../repositories/bookRepository.js';
-import requestRepository from '../repositories/requestRepository.js';
-/* 
+import mongoose from "mongoose";
+import bookRepository from "../repositories/bookRepository.js";
+import requestRepository from "../repositories/requestRepository.js";
+import { httpError } from "../utils/httpError.js";
+/*
 TODO:
     - Potential ExchangeLog to keep track of exchange histories
 */
 
 const ExchangeService = {
     async initiateExchange({ requesterId, ownerId, bookId, offeredBookId }) {
-        const targetBook = await bookRepository.findByID({id: bookId});
-        const offeredBook = await bookRepository.findByID({id: offeredBookId});
+        const targetBook = await bookRepository.findByID({ id: bookId });
+        const offeredBook = await bookRepository.findByID({ id: offeredBookId });
 
-        if (!targetBook) throw new Error("The requested book was not found.");
-        if(!targetBook.isAvailable) throw new Error("The requested book is currently not available.");
-        if (!offeredBook) throw new Error("The book you are offering does not exist.");
+        if (!targetBook) throw httpError(404, "The requested book was not found.");
+        if (!targetBook.isAvailable) throw httpError(400, "The requested book is currently not available.");
+        if (!offeredBook) throw httpError(404, "The book you are offering does not exist.");
 
-        
         const offeredOwner = offeredBook.bookOwner?._id ?? offeredBook.bookOwner;
-        if (!offeredOwner || !offeredOwner.equals(requesterId)) throw new Error("The book you are offering does not belong to you.");
+        if (!offeredOwner || !offeredOwner.equals(requesterId)) {
+            throw httpError(403, "The book you are offering does not belong to you.");
+        }
 
         const targetOwner = targetBook.bookOwner?._id ?? targetBook.bookOwner;
-        if (!targetOwner || !targetOwner.equals(ownerId)) throw new Error("The specified owner does not own the requested book.");
-        if (requesterId.equals(ownerId)) throw new Error("You cannot exchange a book with yourself.")
+        if (!targetOwner || !targetOwner.equals(ownerId)) {
+            throw httpError(400, "The specified owner does not own the requested book.");
+        }
+        if (requesterId.equals(ownerId)) throw httpError(400, "You cannot exchange a book with yourself.");
 
         let response;
         const session = await mongoose.startSession();
-        try{
+        try {
             await session.withTransaction(async () => {
                 const existing = await requestRepository.findPendingByBookAndRequester({
                     bookId,
@@ -33,25 +37,25 @@ const ExchangeService = {
                     session,
                 });
                 if (existing) {
-                    throw new Error("You've already requested this book.");
+                    throw httpError(409, "You've already requested this book.");
                 }
-                response = await requestRepository.createExchange({ 
+                response = await requestRepository.createExchange({
                     book: bookId,
                     owner: ownerId,
                     requester: requesterId,
-                    offeredBook: offeredBookId, 
-                    session
+                    offeredBook: offeredBookId,
+                    session,
                 });
-                await bookRepository.increaseRequestCount({id: bookId, session})
+                await bookRepository.increaseRequestCount({ id: bookId, session });
             });
             return response;
-        } catch(err){
+        } catch (err) {
             if (err?.code === 11000) {
-                throw new Error("You've already requested this book.");
+                throw httpError(409, "You've already requested this book.");
             }
             console.error("Transaction failed:", err);
             throw err;
-        } finally{
+        } finally {
             session.endSession();
         }
     },
@@ -59,14 +63,18 @@ const ExchangeService = {
     async editExchangeOfferedBook({ requestId, userId, offeredBookId }) {
         let request = await requestRepository.findRequestById({ id: requestId });
 
-        if (!request) throw new Error("The exchange request doesn't exist.");
+        if (!request) throw httpError(404, "The exchange request doesn't exist.");
         if (String(request.type).toLowerCase() !== "exchange") {
-            throw new Error("The request isn't an exchange request.");
+            throw httpError(400, "The request isn't an exchange request.");
         }
-        if (String(request.status).toLowerCase() !== "pending") throw new Error("Only pending exchange requests can be edited.");
+        if (String(request.status).toLowerCase() !== "pending") {
+            throw httpError(400, "Only pending exchange requests can be edited.");
+        }
 
         const requesterRaw = request.requesterId?._id ?? request.requesterId;
-        if (String(requesterRaw) !== String(userId)) throw new Error("Only the person who proposed the exchange can change the offered book.");
+        if (String(requesterRaw) !== String(userId)) {
+            throw httpError(403, "Only the person who proposed the exchange can change the offered book.");
+        }
         if (String(offeredBookId) === String(request.offeredBookId)) {
             return {
                 success: true,
@@ -76,11 +84,15 @@ const ExchangeService = {
         }
 
         const newOffered = await bookRepository.findByID({ id: offeredBookId });
-        if (!newOffered) throw new Error("The book you are offering does not exist.");
+        if (!newOffered) throw httpError(404, "The book you are offering does not exist.");
 
         const newOfferedOwner = newOffered.bookOwner?._id ?? newOffered.bookOwner;
-        if (!newOfferedOwner || !newOfferedOwner.equals(requesterRaw)) throw new Error("The book you are offering does not belong to you.");
-        if (!newOffered.isAvailable) throw new Error("The book you are offering is not available for trade.");
+        if (!newOfferedOwner || !newOfferedOwner.equals(requesterRaw)) {
+            throw httpError(403, "The book you are offering does not belong to you.");
+        }
+        if (!newOffered.isAvailable) {
+            throw httpError(400, "The book you are offering is not available for trade.");
+        }
 
         const session = await mongoose.startSession();
         try {
@@ -91,7 +103,7 @@ const ExchangeService = {
                     session,
                 });
                 if (!updated) {
-                    throw new Error("Could not update the exchange request.");
+                    throw httpError(500, "Could not update the exchange request.");
                 }
             });
         } finally {
@@ -106,55 +118,59 @@ const ExchangeService = {
         };
     },
 
-    async acceptExchange({requestId, userId}){
-        const request = await requestRepository.findRequestById({id: requestId});
-        
-        if(!request) throw new Error("The exchange request doesn't exist.");
-        if(request.type.toLowerCase() != "exchange") throw new Error("The request isn't an exchange request.");
-        if(request.status.toLowerCase() != 'pending') throw new Error("The exchange request isn't a pending request.");
-        if(!request.bookOwner.equals(userId)) throw new Error("Unauthorized Access");
-        if(userId.equals(request.requesterId)) throw new Error("You cannot accept an exchange with yourself.");
+    async acceptExchange({ requestId, userId }) {
+        const request = await requestRepository.findRequestById({ id: requestId });
+
+        if (!request) throw httpError(404, "The exchange request doesn't exist.");
+        if (request.type.toLowerCase() != "exchange") throw httpError(400, "The request isn't an exchange request.");
+        if (request.status.toLowerCase() != "pending") {
+            throw httpError(400, "The exchange request isn't a pending request.");
+        }
+        if (!request.bookOwner.equals(userId)) throw httpError(403, "Unauthorized Access");
+        if (userId.equals(request.requesterId)) throw httpError(400, "You cannot accept an exchange with yourself.");
 
         const session = await mongoose.startSession();
         let book;
         let offeredBook;
-        try{
+        try {
             await session.withTransaction(async () => {
-                book = await bookRepository.findByID({id: request.bookId});
-                const bookId =  request.bookId;
+                book = await bookRepository.findByID({ id: request.bookId });
+                const bookId = request.bookId;
 
-                offeredBook = await bookRepository.findByID({id: request.offeredBookId});
+                offeredBook = await bookRepository.findByID({ id: request.offeredBookId });
                 const offeredBookId = request.offeredBookId;
 
-                if(!book || !offeredBook) throw new Error("One of the book no longer exists in database.");
-                if(!book.isAvailable || !offeredBook.isAvailable) throw new Error("One of the book is currently not available for trade.");
-                    
-                if(!offeredBook.bookOwner.equals(request.requesterId)) throw new Error("The offered book doesn't belong to the requester anymore.");
-                const requester = request.requesterId; // switch
-                const owner = request.bookOwner; //  switch offeredBookId to owner
+                if (!book || !offeredBook) {
+                    throw httpError(404, "One of the book no longer exists in database.");
+                }
+                if (!book.isAvailable || !offeredBook.isAvailable) {
+                    throw httpError(400, "One of the book is currently not available for trade.");
+                }
 
-                // Change Exchange to Accepted
-                await requestRepository.acceptExchange({id: requestId, session: session});
+                if (!offeredBook.bookOwner.equals(request.requesterId)) {
+                    throw httpError(400, "The offered book doesn't belong to the requester anymore.");
+                }
+                const requester = request.requesterId;
+                const owner = request.bookOwner;
 
-                // Drop every other pending request that references either book (borrow or exchange)
-                await requestRepository.cancelAllRequestsForBook({ id: request.bookId, session, });
-                await requestRepository.cancelAllRequestsForBook({ id: request.offeredBookId, session, });
+                await requestRepository.acceptExchange({ id: requestId, session: session });
 
-                // Change book bookOwnerId to requesterId
-                await bookRepository.updateBookOwner({id: request.bookId, newOwner: requester, session: session});
+                await requestRepository.cancelAllRequestsForBook({ id: request.bookId, session });
+                await requestRepository.cancelAllRequestsForBook({ id: request.offeredBookId, session });
 
-                // Change offeredBook bookOwnerId to ownerId
-                await bookRepository.updateBookOwner({id: request.offeredBookId, newOwner: owner, session: session});
-                
-                await bookRepository.toggleAvailability({ bookId: bookId, session: session })
-                await bookRepository.toggleAvailability({ bookId:  offeredBookId, session: session })
+                await bookRepository.updateBookOwner({ id: request.bookId, newOwner: requester, session: session });
+
+                await bookRepository.updateBookOwner({ id: request.offeredBookId, newOwner: owner, session: session });
+
+                await bookRepository.toggleAvailability({ bookId: bookId, session: session });
+                await bookRepository.toggleAvailability({ bookId: offeredBookId, session: session });
             });
             console.log("Transaction successful");
-        }catch(error){
+        } catch (error) {
             console.error("Transaction failed:", error);
-            throw error
-        }finally{
-            session.endSession()
+            throw error;
+        } finally {
+            session.endSession();
         }
         return {
             success: true,
@@ -162,41 +178,47 @@ const ExchangeService = {
             request: request,
             books: {
                 receivedBook: offeredBook,
-                sentBook: book
-            }
+                sentBook: book,
+            },
         };
     },
 
-    async declineExchange({requestId, userId}){
-        let request = await requestRepository.findRequestById({id: requestId});
-        
-        if(!request) throw new Error("The exchange request doesn't exist.");
-        if(request.type.toLowerCase() != "exchange") throw new Error("The request isn't an exchange request.");
-        if(request.status.toLowerCase() != 'pending') throw new Error("The exchange request isn't a pending request.");
-        if(!request.bookOwner.equals(userId))throw new Error("Unauthorized Access");
+    async declineExchange({ requestId, userId }) {
+        let request = await requestRepository.findRequestById({ id: requestId });
 
-        if(userId == request.requesterId) throw new Error("You cannot reject an exchange with yourself.");
+        if (!request) throw httpError(404, "The exchange request doesn't exist.");
+        if (request.type.toLowerCase() != "exchange") throw httpError(400, "The request isn't an exchange request.");
+        if (request.status.toLowerCase() != "pending") {
+            throw httpError(400, "The exchange request isn't a pending request.");
+        }
+        if (!request.bookOwner.equals(userId)) throw httpError(403, "Unauthorized Access");
+
+        if (userId == request.requesterId) throw httpError(400, "You cannot reject an exchange with yourself.");
         let book;
         let offeredBook;
-        
+
         const session = await mongoose.startSession();
-        try{
+        try {
             await session.withTransaction(async () => {
-                book = await bookRepository.findByID({id: request.bookId});
-                offeredBook = await bookRepository.findByID({id: request.offeredBookId});
-                if(!book || !offeredBook) throw new Error("One of the book no longer exists in database.");
-                
-                if(!offeredBook.bookOwner.equals(request.requesterId)) throw new Error("The offered book doesn't belong to the requester anymore.");
-            
+                book = await bookRepository.findByID({ id: request.bookId });
+                offeredBook = await bookRepository.findByID({ id: request.offeredBookId });
+                if (!book || !offeredBook) {
+                    throw httpError(404, "One of the book no longer exists in database.");
+                }
+
+                if (!offeredBook.bookOwner.equals(request.requesterId)) {
+                    throw httpError(400, "The offered book doesn't belong to the requester anymore.");
+                }
+
                 request = await requestRepository.declineExchange({ id: requestId, session: session });
                 book = await bookRepository.decreaseRequestCount({ id: request.bookId, session: session });
             });
             console.log("Transaction successful");
-        }catch(error){
+        } catch (error) {
             console.error("Transaction failed:", error);
-            throw error
-        }finally{
-            session.endSession()
+            throw error;
+        } finally {
+            session.endSession();
         }
         return {
             success: true,
@@ -204,45 +226,50 @@ const ExchangeService = {
             request: request,
             books: {
                 requestedBook: book,
-                offeredBook: offeredBook
-            }
+                offeredBook: offeredBook,
+            },
         };
-        
     },
 
-    async cancelExchange({requestId, userId}){
-        let request = await requestRepository.findRequestById({id: requestId});
-        
-        if(!request) throw new Error("The exchange request doesn't exist.");
-        if(request.type.toLowerCase() != "exchange") throw new Error("The request isn't an exchange request.");
-        if(request.status.toLowerCase() != 'pending') throw new Error("The exchange request isn't a pending request.");
+    async cancelExchange({ requestId, userId }) {
+        let request = await requestRepository.findRequestById({ id: requestId });
+
+        if (!request) throw httpError(404, "The exchange request doesn't exist.");
+        if (request.type.toLowerCase() != "exchange") throw httpError(400, "The request isn't an exchange request.");
+        if (request.status.toLowerCase() != "pending") {
+            throw httpError(400, "The exchange request isn't a pending request.");
+        }
 
         const requesterRaw = request.requesterId?._id ?? request.requesterId;
         if (String(requesterRaw) !== String(userId)) {
-            throw new Error("Only the person who proposed the exchange can cancel it.");
+            throw httpError(403, "Only the person who proposed the exchange can cancel it.");
         }
 
         let book;
         let offeredBook;
-        
+
         const session = await mongoose.startSession();
-        try{
+        try {
             await session.withTransaction(async () => {
-                book = await bookRepository.findByID({id: request.bookId});
-                offeredBook = await bookRepository.findByID({id: request.offeredBookId});
-                if(!book || !offeredBook) throw new Error("One of the book no longer exists in database.");
-                
-                if(!offeredBook.bookOwner.equals(request.requesterId)) throw new Error("The offered book doesn't belong to the requester anymore.");
-            
+                book = await bookRepository.findByID({ id: request.bookId });
+                offeredBook = await bookRepository.findByID({ id: request.offeredBookId });
+                if (!book || !offeredBook) {
+                    throw httpError(404, "One of the book no longer exists in database.");
+                }
+
+                if (!offeredBook.bookOwner.equals(request.requesterId)) {
+                    throw httpError(400, "The offered book doesn't belong to the requester anymore.");
+                }
+
                 request = await requestRepository.cancelRequest({ id: requestId, session: session });
                 book = await bookRepository.decreaseRequestCount({ id: request.bookId, session: session });
             });
             console.log("Transaction successful");
-        }catch(error){
+        } catch (error) {
             console.error("Transaction failed:", error);
-            throw error
-        }finally{
-            session.endSession()
+            throw error;
+        } finally {
+            session.endSession();
         }
         return {
             success: true,
@@ -250,12 +277,10 @@ const ExchangeService = {
             request: request,
             books: {
                 requestedBook: book,
-                offeredBook: offeredBook
-            }
+                offeredBook: offeredBook,
+            },
         };
     },
-
-
-}
+};
 
 export default ExchangeService;

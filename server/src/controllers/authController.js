@@ -1,5 +1,6 @@
 import authService from "../services/authService.js";
 import { signAccessToken } from "../middleware/auth.js";
+import { serviceErrorStatus } from "../utils/httpError.js";
 
 const AuthController = {
   async register(req, res) {
@@ -11,31 +12,17 @@ const AuthController = {
       const user = await authService.register(payload);
       return res.status(201).json(user);
     } catch (e) {
-      const status =
-        e.message === "registration_fields_required" ||
-        e.message === "invalid_email_domain" ||
-        e.message === "location_required" ||
-        e.message === "profile_image_required" ||
-        e.message === "username_taken" ||
-        e.message === "email_taken"
-          ? 400
-          : 500;
-
-      const detail =
-        e.message === "registration_fields_required"
-          ? "First name, last name, email, and password are required"
-          : e.message === "invalid_email_domain"
-          ? "Use a valid email from example.com, gmail.com, or outlook.com"
-          : e.message === "location_required"
-          ? "City and province or state are required"
-          : e.message === "profile_image_required"
-          ? "Profile picture is required"
-          : e.message === "username_taken"
-          ? "That display name is already taken"
-          : e.message === "email_taken"
-          ? "Email is taken"
-          : "Server Error";
-
+      const status = serviceErrorStatus(e);
+      const detailMap = {
+        registration_fields_required: "First name, last name, email, and password are required",
+        invalid_email_domain: "Use a valid email from example.com, gmail.com, or outlook.com",
+        location_required: "City and province or state are required",
+        profile_image_required: "Profile picture is required",
+        username_taken: "That display name is already taken",
+        email_taken: "Email is taken",
+        user_exists: "An account with this information already exists",
+      };
+      const detail = detailMap[e.message] ?? (status < 500 ? e.message : "Server Error");
       return res.status(status).json({ detail });
     }
   },
@@ -49,22 +36,13 @@ const AuthController = {
       });
       return res.json({ access_token: token, token_type: "bearer", user });
     } catch (e) {
-      const status =
-        e.message === "invalid_credentials" || e.message === "email_password_required"
-          ? 401
-          : e.message === "account_suspended"
-          ? 403
-          : 500;
-
-      const detail =
-        e.message === "email_password_required"
-          ? "Email and password are required"
-          : e.message === "invalid_credentials"
-          ? "Wrong email or password"
-          : e.message === "account_suspended"
-          ? "Account is suspended"
-          : "Server Error";
-
+      const status = serviceErrorStatus(e);
+      const detailMap = {
+        email_password_required: "Email and password are required",
+        invalid_credentials: "Wrong email or password",
+        account_suspended: "Account is suspended",
+      };
+      const detail = detailMap[e.message] ?? (status < 500 ? e.message : "Server Error");
       return res.status(status).json({ detail });
     }
   },
@@ -83,10 +61,14 @@ const AuthController = {
       if (!updated) return res.status(404).json({ detail: "User not found" });
       return res.status(200).json(updated);
     } catch (e) {
-      if (e.message === "bio_too_long") {
-        return res.status(400).json({ detail: "Bio must be 600 characters or less" });
-      }
-      return res.status(500).json({ detail: "Server Error" });
+      const status = serviceErrorStatus(e);
+      const detail =
+        e.message === "bio_too_long"
+          ? "Bio must be 600 characters or less"
+          : status < 500
+            ? e.message
+            : "Server Error";
+      return res.status(status).json({ detail });
     }
   },
 

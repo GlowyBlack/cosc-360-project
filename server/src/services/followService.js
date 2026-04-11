@@ -1,16 +1,17 @@
 import mongoose from "mongoose";
 import followRepository from "../repositories/followingRepository.js";
+import { httpError } from "../utils/httpError.js";
 
 const FollowService = {
     async follow(followerId, followingId) {
         if (!followerId || !followingId) {
-            throw new Error("followerId and followingId are required");
+            throw httpError(400, "followerId and followingId are required");
         }
         if (!mongoose.isValidObjectId(followerId) || !mongoose.isValidObjectId(followingId)) {
-            throw new Error("Invalid user id");
+            throw httpError(400, "Invalid user id");
         }
         if (String(followerId) === String(followingId)) {
-            throw new Error("You can't follow yourself");
+            throw httpError(400, "You can't follow yourself");
         }
 
         try {
@@ -22,7 +23,7 @@ const FollowService = {
             };
         } catch (error) {
             if (error?.code === 11000) {
-                throw new Error("You're already following this user");
+                throw httpError(409, "You're already following this user");
             }
             throw error;
         }
@@ -30,17 +31,17 @@ const FollowService = {
 
     async unFollow(followerId, followingId) {
         if (!followerId || !followingId) {
-            throw new Error("followerId and followingId are required");
+            throw httpError(400, "followerId and followingId are required");
         }
         if (!mongoose.isValidObjectId(followerId) || !mongoose.isValidObjectId(followingId)) {
-            throw new Error("Invalid user id");
+            throw httpError(400, "Invalid user id");
         }
         if (String(followerId) === String(followingId)) {
-            throw new Error("You can't unfollow yourself");
+            throw httpError(400, "You can't unfollow yourself");
         }
 
         const removedFollow = await followRepository.removeFollow({ followerId, followingId });
-        if (!removedFollow) throw new Error("You're not following this user");
+        if (!removedFollow) throw httpError(404, "You're not following this user");
         return {
             success: true,
             message: "Unfollowed user.",
@@ -49,8 +50,8 @@ const FollowService = {
     },
 
     async getMyFollowings(userId) {
-        if (!userId) throw new Error("Unauthorized");
-        if (!mongoose.isValidObjectId(userId)) throw new Error("Invalid user id");
+        if (!userId) throw httpError(401, "Unauthorized");
+        if (!mongoose.isValidObjectId(userId)) throw httpError(400, "Invalid user id");
 
         const rows = await followRepository.findFollowingsByUser({ userId });
         return rows.map((row) => ({
@@ -66,9 +67,11 @@ const FollowService = {
     },
 
     async getUserFollowingsForViewer({ targetUserId, viewerUserId }) {
-        if (!targetUserId || !viewerUserId) throw new Error("targetUserId and viewerUserId are required");
+        if (!targetUserId || !viewerUserId) {
+            throw httpError(400, "targetUserId and viewerUserId are required");
+        }
         if (!mongoose.isValidObjectId(targetUserId) || !mongoose.isValidObjectId(viewerUserId)) {
-            throw new Error("Invalid user id");
+            throw httpError(400, "Invalid user id");
         }
 
         const rows = await followRepository.findFollowingsByUser({ userId: targetUserId });
@@ -103,8 +106,8 @@ const FollowService = {
     },
 
     async getFollowStats(targetUserId) {
-        if (!targetUserId) throw new Error("targetUserId is required");
-        if (!mongoose.isValidObjectId(targetUserId)) throw new Error("Invalid user id");
+        if (!targetUserId) throw httpError(400, "targetUserId is required");
+        if (!mongoose.isValidObjectId(targetUserId)) throw httpError(400, "Invalid user id");
 
         const [followersCount, followingsCount] = await Promise.all([
             followRepository.countFollowersByUser({ userId: targetUserId }),
@@ -119,9 +122,11 @@ const FollowService = {
     },
 
     async isFollowing({ viewerUserId, targetUserId }) {
-        if (!viewerUserId || !targetUserId) throw new Error("targetUserId and viewerUserId are required");
+        if (!viewerUserId || !targetUserId) {
+            throw httpError(400, "targetUserId and viewerUserId are required");
+        }
         if (!mongoose.isValidObjectId(targetUserId) || !mongoose.isValidObjectId(viewerUserId)) {
-            throw new Error("Invalid user id");
+            throw httpError(400, "Invalid user id");
         }
 
         const relation = await followRepository.findFollow({
@@ -136,8 +141,8 @@ const FollowService = {
     },
 
     async getMyFollowers(userId) {
-        if (!userId) throw new Error("Unauthorized");
-        if (!mongoose.isValidObjectId(userId)) throw new Error("Invalid user id");
+        if (!userId) throw httpError(401, "Unauthorized");
+        if (!mongoose.isValidObjectId(userId)) throw httpError(400, "Invalid user id");
 
         const rows = await followRepository.findFollowersByUser({ userId });
         return rows.map((row) => ({
@@ -153,9 +158,11 @@ const FollowService = {
     },
 
     async getUserFollowersForViewer({ targetUserId, viewerUserId }) {
-        if (!targetUserId || !viewerUserId) throw new Error("targetUserId and viewerUserId are required");
+        if (!targetUserId || !viewerUserId) {
+            throw httpError(400, "targetUserId and viewerUserId are required");
+        }
         if (!mongoose.isValidObjectId(targetUserId) || !mongoose.isValidObjectId(viewerUserId)) {
-            throw new Error("Invalid user id");
+            throw httpError(400, "Invalid user id");
         }
 
         const rows = await followRepository.findFollowersByUser({ userId: targetUserId });
@@ -188,6 +195,6 @@ const FollowService = {
             };
         });
     },
-}
+};
 
 export default FollowService;

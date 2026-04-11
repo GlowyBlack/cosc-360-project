@@ -113,7 +113,7 @@ describe("auth routes (integration)", () => {
         }),
       );
 
-    expect(second.status).toBe(400);
+    expect(second.status).toBe(409);
     expect(second.body.detail).toMatch(/Email is taken/i);
   });
 

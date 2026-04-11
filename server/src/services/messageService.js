@@ -1,5 +1,6 @@
 import messageRepository from "../repositories/messageRepository.js";
 import requestRepository from "../repositories/requestRepository.js";
+import { httpError } from "../utils/httpError.js";
 
 function isRequestParticipant(requestDoc, userId) {
     if (!requestDoc || userId == null) return false;
@@ -13,12 +14,10 @@ const messageService = {
     async assertThreadAccess(requestId, userId) {
         const request = await requestRepository.findRequestById({ id: requestId });
         if (!request) {
-            throw new Error("Request not found");
-            
+            throw httpError(404, "Request not found");
         }
         if (!isRequestParticipant(request, userId)) {
-            throw new Error("Not allowed to access this thread");
-            
+            throw httpError(403, "Not allowed to access this thread");
         }
         return request;
     },
@@ -30,7 +29,7 @@ const messageService = {
 
     async send({ requestId, senderId, content }) {
         if (!content || !content.trim()) {
-            throw new Error("Message content cannot be empty");
+            throw httpError(400, "Message content cannot be empty");
         }
         await this.assertThreadAccess(requestId, senderId);
         const created = await messageRepository.create({ requestId, senderId, content });
@@ -43,7 +42,7 @@ const messageService = {
     },
 
     async getInbox(userId) {
-        if (!userId) throw new Error("User ID is required");
+        if (!userId) throw httpError(400, "User ID is required");
         const requests = await requestRepository.findUserRequests(userId);
         const requestIds = requests.map((r) => r._id);
         const summaries = await messageRepository.findLastMessageAndUnreadCountPerRequest(
