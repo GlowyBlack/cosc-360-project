@@ -22,6 +22,24 @@ import "./BlogsPage.css";
 
 const socket = createAppSocket();
 
+function commentRowId(raw) {
+  if (raw == null || raw === "") return "";
+  if (typeof raw === "object" && raw !== null) {
+    const inner = raw._id ?? raw.id ?? raw;
+    if (inner != null && typeof inner === "object" && typeof inner.toString === "function") {
+      return String(inner.toString());
+    }
+    return String(inner ?? "");
+  }
+  return String(raw);
+}
+
+function listIncludesUserId(list, userId) {
+  const uid = commentRowId(userId);
+  if (!uid) return false;
+  return (list ?? []).some((v) => commentRowId(v?._id ?? v?.id ?? v) === uid);
+}
+
 function since(value) {
   const t = new Date(value).getTime();
   if (!Number.isFinite(t)) return "";
@@ -114,8 +132,8 @@ export default function BlogPostPage() {
     socket.emit("join_post_room", postId);
     socket.on("new_comment", (comment) => {
       setComments((prev) => {
-        const id = String(comment?._id ?? comment?.id ?? "");
-        const exists = prev.some((c) => String(c?._id ?? c?.id ?? "") === id);
+        const id = commentRowId(comment?._id ?? comment?.id);
+        const exists = prev.some((c) => commentRowId(c?._id ?? c?.id) === id);
         if (exists) return prev;
         return [...prev, comment];
       });
@@ -140,7 +158,7 @@ export default function BlogPostPage() {
   const commentsByParent = useMemo(() => {
     const map = new Map();
     for (const c of comments) {
-      const key = String(c?.parentId ?? "");
+      const key = commentRowId(c?.parentId) || "";
       if (!map.has(key)) map.set(key, []);
       map.get(key).push(c);
     }
@@ -198,14 +216,16 @@ export default function BlogPostPage() {
   };
 
   const upsertComment = (updated) => {
-    const id = String(updated?._id ?? updated?.id ?? "");
+    const id = commentRowId(updated?._id ?? updated?.id);
     if (!id) return;
     setComments((prev) => {
-      const idx = prev.findIndex((c) => String(c?._id ?? c?.id ?? "") === id);
-      if (idx < 0) return prev;
-      const next = [...prev];
-      next[idx] = updated;
-      return next;
+      let hit = false;
+      const next = prev.map((c) => {
+        if (commentRowId(c?._id ?? c?.id) !== id) return c;
+        hit = true;
+        return { ...c, ...updated };
+      });
+      return hit ? next : prev;
     });
   };
 
@@ -282,17 +302,13 @@ export default function BlogPostPage() {
 
   const renderCommentTree = (items, depth = 0) =>
     items.map((comment) => {
-      const id = String(comment?._id ?? comment?.id ?? "");
+      const id = commentRowId(comment?._id ?? comment?.id);
       const replies = commentsByParent.get(id) ?? [];
       const visibleCount = replyVisibleCount[id] ?? 2;
       const shownReplies = replies.slice(0, visibleCount);
       const remainingReplies = Math.max(0, replies.length - shownReplies.length);
-      const likedByMe = (comment?.likes ?? []).some(
-        (v) => String(v?._id ?? v?.id ?? v) === sessionUserId,
-      );
-      const dislikedByMe = (comment?.dislikes ?? []).some(
-        (v) => String(v?._id ?? v?.id ?? v) === sessionUserId,
-      );
+      const likedByMe = listIncludesUserId(comment?.likes, sessionUserId);
+      const dislikedByMe = listIncludesUserId(comment?.dislikes, sessionUserId);
       const score =
         Number(comment?.likeCount ?? comment?.likes?.length ?? 0) -
         Number(comment?.dislikeCount ?? comment?.dislikes?.length ?? 0);

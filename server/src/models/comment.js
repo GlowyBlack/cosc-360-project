@@ -6,6 +6,9 @@ const CommentSchema = new mongoose.Schema({
     content:  { type: String, required: true, trim: true },
     parentId: { type: mongoose.Schema.Types.ObjectId, ref: "Comment", default: null },
     likes:    [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    dislikes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    likeCount: { type: Number, default: 0, min: 0 },
+    dislikeCount: { type: Number, default: 0, min: 0 },
     isRemoved: { type: Boolean, default: false },
 }, { timestamps: true });
 
