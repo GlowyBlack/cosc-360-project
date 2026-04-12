@@ -180,6 +180,31 @@ describe("book routes (integration)", () => {
     });
   });
 
+  it("PATCH /books/:bookId rejects edits from a non-owner → 403", async () => {
+    const owner = await createUser({
+      username: "Real Owner",
+      email: "real-owner@gmail.com",
+    });
+    const otherUser = await createUser({
+      username: "Other User",
+      email: "other-user@gmail.com",
+    });
+    const token = signAccessToken({ id: otherUser._id, role: otherUser.role });
+    const book = await createBook({
+      ownerId: owner._id,
+      title: "Owner Book",
+    });
+
+    const res = await request(app)
+      .patch(`/books/${book._id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .set("Content-Type", "application/json")
+      .send({ bookTitle: "Stolen Edit" });
+
+    expect(res.status).toBe(403);
+    expect(res.body.message).toMatch(/can't edit/i);
+  });
+
   it("DELETE /books/:bookId removes a book", async () => {
     const owner = await createUser({
       username: "Delete Owner",
@@ -201,6 +226,20 @@ describe("book routes (integration)", () => {
 
     expect(res.status).toBe(204);
     expect(deleteSpy).toHaveBeenCalledWith(String(book._id), expect.anything());
+  });
+
+  it("POST /books returns 401 without auth", async () => {
+    const res = await request(app)
+      .post("/books")
+      .set("Content-Type", "application/json")
+      .send({
+        bookTitle: "No Auth Book",
+        bookAuthor: "Anon",
+        description: "Missing auth",
+        genre: ["Fantasy"],
+      });
+
+    expect(res.status).toBe(401);
   });
 
   it("POST /books/:bookId/toggle-availability flips availability for the owner", async () => {
@@ -249,6 +288,15 @@ describe("book routes (integration)", () => {
       username: "Detail Owner",
       location: "Vancouver, BC",
     });
+  });
+
+  it("GET /books/:bookId with an invalid id → 400", async () => {
+    const res = await request(app).get("/books/not-a-valid-id");
+
+    expect(res.status).toBe(400);
+    expect(String(res.body.message ?? res.body.error ?? "")).toMatch(
+      /invalid book id|cast to objectid failed/i,
+    );
   });
 
   it("GET /books and GET /books/search browse and filter available books", async () => {
