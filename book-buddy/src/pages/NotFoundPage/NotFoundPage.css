@@ -1,0 +1,76 @@
+.not-found-page {
+  flex: 1 1 auto;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-background);
+  color: var(--color-on-surface);
+}
+
+.not-found-page--admin {
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+}
+
+.not-found-admin-inner {
+  width: 100%;
+  max-width: 28rem;
+}
+
+.not-found-main {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+}
+
+.not-found-card {
+  text-align: center;
+  max-width: 22rem;
+}
+
+.not-found-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: 1rem;
+  border-radius: 50%;
+  background: var(--color-surface-container);
+  color: var(--color-on-surface-variant);
+  font-size: 1.75rem;
+}
+
+.not-found-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-on-surface);
+}
+
+.not-found-lede {
+  margin: 0 0 1.75rem;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--color-on-surface-variant);
+}
+
+.not-found-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.not-found-btn:hover {
+  text-decoration: none;
+  color: #fff;
+}

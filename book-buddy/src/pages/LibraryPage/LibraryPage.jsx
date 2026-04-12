@@ -4,7 +4,14 @@ import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import API, { authHeader, flashSessionExpired } from "../../config/api.js";
 import { createAppSocket } from "../../config/socket.js";
-import { toLibraryPageCardBook, getSessionUserId, coverSrcOrFallback } from "../../commons/bookShared.js";
+import {
+  toLibraryPageCardBook,
+  getSessionUserId,
+  coverSrcOrFallback,
+  getBookTitle,
+  getBookAuthor,
+  getCoverUrlFromRaw,
+} from "../../commons/bookShared.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import LibraryBookCard from "./LibraryBookCard.jsx";
 import "./LibraryPage.css";
