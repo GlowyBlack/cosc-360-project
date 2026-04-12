@@ -116,6 +116,57 @@ describe("BookDetailPage", () => {
     expect(screen.getByRole("button", { name: /request to borrow/i })).toBeDisabled();
   });
 
+  it("shows a server error state when the book fetch fails", async () => {
+    mockUseAuth.mockReturnValue({
+      user: null,
+      logout: jest.fn(),
+    });
+
+    global.fetch.mockResolvedValue({
+      ok: false,
+      json: async () => ({ message: "Could not load this book" }),
+    });
+
+    renderPage("/book/507f1f77bcf86cd799439011");
+
+    expect(await screen.findByText(/could not load this book/i)).toBeInTheDocument();
+  });
+
+  it("shows fallback text when summary and owner note are empty", async () => {
+    mockUseAuth.mockReturnValue({
+      user: null,
+      logout: jest.fn(),
+    });
+
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        _id: "507f1f77bcf86cd799439011",
+        bookTitle: "Sparse Book",
+        bookAuthor: "Minimal Author",
+        bookImage: "https://example.com/sparse.png",
+        description: "",
+        ownerNote: "",
+        condition: "Good",
+        isAvailable: true,
+        bookOwner: {
+          _id: "507f1f77bcf86cd799439012",
+          username: "Quiet Owner",
+        },
+      }),
+    });
+
+    renderPage("/book/507f1f77bcf86cd799439011");
+
+    expect(await screen.findByText("Sparse Book")).toBeInTheDocument();
+    expect(
+      screen.getByText(/no summary has been added for this listing yet/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/the owner has not added extra condition notes/i),
+    ).toBeInTheDocument();
+  });
+
   it("submits a borrow request for a signed-in user", async () => {
     const logout = jest.fn();
     mockUseAuth.mockReturnValue({

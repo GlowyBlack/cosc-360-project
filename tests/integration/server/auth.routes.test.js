@@ -134,6 +134,20 @@ describe("auth routes (integration)", () => {
     );
   });
 
+  it("POST /auth/register invalid email domain → 400", async () => {
+    const res = await request(app)
+      .post("/auth/register")
+      .set("Content-Type", "application/json")
+      .send(
+        registerPayload({
+          email: "newuser@yahoo.com",
+        }),
+      );
+
+    expect(res.status).toBe(400);
+    expect(res.body.detail).toMatch(/example\.com, gmail\.com, or outlook\.com/i);
+  });
+
   it("POST /auth/login correct credentials → 200 + token", async () => {
     const { default: User } = await import("../../../server/src/models/user.js");
     await User.create({
@@ -169,6 +183,44 @@ describe("auth routes (integration)", () => {
 
     expect(res.status).toBe(401);
     expect(res.body.detail).toMatch(/Wrong email or password/i);
+  });
+
+  it("POST /auth/login suspended user → 403", async () => {
+    const { default: User } = await import("../../../server/src/models/user.js");
+    await User.create({
+      username: "Suspended User",
+      email: "suspended@gmail.com",
+      passwordHash: await bcrypt.hash("Correct1!", 10),
+      location: "Kelowna, BC",
+      profileImage: "https://example.com/p.png",
+      isSuspended: true,
+    });
+
+    const res = await request(app)
+      .post("/auth/login")
+      .send({ email: "suspended@gmail.com", password: "Correct1!" });
+
+    expect(res.status).toBe(403);
+    expect(res.body.detail).toMatch(/account is suspended/i);
+  });
+
+  it("POST /auth/login banned user → 403", async () => {
+    const { default: User } = await import("../../../server/src/models/user.js");
+    await User.create({
+      username: "Banned User",
+      email: "banned@gmail.com",
+      passwordHash: await bcrypt.hash("Correct1!", 10),
+      location: "Kelowna, BC",
+      profileImage: "https://example.com/p.png",
+      isBanned: true,
+    });
+
+    const res = await request(app)
+      .post("/auth/login")
+      .send({ email: "banned@gmail.com", password: "Correct1!" });
+
+    expect(res.status).toBe(403);
+    expect(res.body.detail).toMatch(/account is suspended/i);
   });
 
   it("GET /auth/me no token → 401", async () => {
