@@ -207,4 +207,69 @@ describe("LibraryPage", () => {
     });
     expect(socketMock.emit).toHaveBeenCalledWith("book_update");
   });
+
+  it("shows empty states when the library lists are empty", async () => {
+    mockUseAuth.mockReturnValue({
+      user: {
+        id: "507f1f77bcf86cd799439099",
+        username: "Reader",
+        location: "Kelowna, BC",
+      },
+      logout: jest.fn(),
+    });
+
+    global.fetch.mockImplementation((url) => {
+      const u = String(url);
+      if (u.includes("/books/me")) {
+        return Promise.resolve({ ok: true, json: async () => [] });
+      }
+      if (u.includes("/requests/me")) {
+        return Promise.resolve({ ok: true, json: async () => [] });
+      }
+      if (u.includes("/user/wishlist")) {
+        return Promise.resolve({ ok: true, json: async () => [] });
+      }
+      throw new Error(`Unhandled fetch: ${u}`);
+    });
+
+    renderPage();
+
+    expect(await screen.findByText(/you haven't added any books yet/i)).toBeInTheDocument();
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("tab", { name: /wishlist/i }));
+    expect(await screen.findByText(/your wishlist is empty/i)).toBeInTheDocument();
+  });
+
+  it("shows an API error state when loading the library fails", async () => {
+    mockUseAuth.mockReturnValue({
+      user: {
+        id: "507f1f77bcf86cd799439099",
+        username: "Reader",
+        location: "Kelowna, BC",
+      },
+      logout: jest.fn(),
+    });
+
+    global.fetch.mockImplementation((url) => {
+      const u = String(url);
+      if (u.includes("/books/me")) {
+        return Promise.resolve({
+          ok: false,
+          json: async () => ({ message: "Failed to load your books" }),
+        });
+      }
+      if (u.includes("/requests/me")) {
+        return Promise.resolve({ ok: true, json: async () => [] });
+      }
+      if (u.includes("/user/wishlist")) {
+        return Promise.resolve({ ok: true, json: async () => [] });
+      }
+      throw new Error(`Unhandled fetch: ${u}`);
+    });
+
+    renderPage();
+
+    expect(await screen.findByText(/failed to load your books/i)).toBeInTheDocument();
+  });
 });
