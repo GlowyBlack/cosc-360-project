@@ -108,4 +108,16 @@ describe("BlogsPage", () => {
     await user.click(screen.getByRole("button", { name: /report-success/i }));
     expect(await screen.findByText(/moderators will review your report/i)).toBeInTheDocument();
   });
+
+  it("shows an API error state when posts fail to load", async () => {
+    mockUseAuth.mockReturnValue({ user: null, logout: jest.fn() });
+    global.fetch.mockResolvedValue({
+      ok: false,
+      json: async () => ({ message: "Could not load posts" }),
+    });
+
+    render(<MemoryRouter><BlogsPage /></MemoryRouter>);
+
+    expect(await screen.findByText(/could not load posts/i)).toBeInTheDocument();
+  });
 });
