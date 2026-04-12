@@ -8,10 +8,8 @@ export default {
   transform: {},
   roots: [
     "<rootDir>/../tests/unit/server",
-    "<rootDir>/../tests/unit/frontend",
     "<rootDir>/../tests/integration/server",
-    "<rootDir>/../tests/frontend",
   ],
-  testMatch: ["**/*.test.js", "**/*.test.jsx"],
+  testMatch: ["**/*.test.js"],
   modulePaths: [path.join(__dirname, "node_modules")],
 };

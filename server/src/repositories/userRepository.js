@@ -10,7 +10,6 @@ const UserRepository = {
       .select("wishlist")
       .populate({
         path: "wishlist",
-        options: { sort: { createdAt: -1 } },
         populate: {
           path: "bookOwner",
           select: "username location profileImage",
@@ -19,7 +18,13 @@ const UserRepository = {
       .lean();
 
     if (!user) return null;
-    return Array.isArray(user.wishlist) ? user.wishlist : [];
+    const wishlist = Array.isArray(user.wishlist) ? user.wishlist : [];
+    return [...wishlist].sort((left, right) => {
+      const leftTime = new Date(left?.createdAt ?? 0).getTime();
+      const rightTime = new Date(right?.createdAt ?? 0).getTime();
+
+      return rightTime - leftTime;
+    });
   },
 
   async findPublicById(id) {
