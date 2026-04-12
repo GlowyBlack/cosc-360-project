@@ -3,14 +3,15 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-/** Tests live under repo-root tests/; resolve npm deps from this package. */
 export default {
   testEnvironment: "node",
   transform: {},
   roots: [
     "<rootDir>/../tests/unit/server",
+    "<rootDir>/../tests/unit/frontend",
     "<rootDir>/../tests/integration/server",
+    "<rootDir>/../tests/frontend",
   ],
-  testMatch: ["**/*.test.js"],
+  testMatch: ["**/*.test.js", "**/*.test.jsx"],
   modulePaths: [path.join(__dirname, "node_modules")],
 };
