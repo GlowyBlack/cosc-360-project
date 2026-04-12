@@ -17,8 +17,16 @@ const mockBookRepository = {
   searchBook: jest.fn(),
 };
 
+const mockRequestRepository = {
+  hasAcceptedBorrowForBook: jest.fn(),
+};
+
 jest.unstable_mockModule("../../../server/src/repositories/bookRepository.js", () => ({
   default: mockBookRepository,
+}));
+
+jest.unstable_mockModule("../../../server/src/repositories/requestRepository.js", () => ({
+  default: mockRequestRepository,
 }));
 
 let bookService;
@@ -30,6 +38,7 @@ beforeAll(async () => {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockRequestRepository.hasAcceptedBorrowForBook.mockResolvedValue(false);
 });
 
 describe("bookService", () => {
