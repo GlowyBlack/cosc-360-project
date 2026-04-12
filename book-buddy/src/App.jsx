@@ -1,11 +1,10 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import AddBookPage from "./pages/AddBookPage/AddBookPage.jsx";
 import AdminLayout from "./pages/AdminLayout/AdminLayout.jsx";
 import AdminCommentsPage from "./pages/admin/AdminCommentsPage/AdminCommentsPage.jsx";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage/AdminDashboardPage.jsx";
 import AdminListingsPage from "./pages/admin/AdminListingsPage/AdminListingsPage.jsx";
 import AdminPostsPage from "./pages/admin/AdminPostsPage/AdminPostsPage.jsx";
-import AdminReportsPage from "./pages/admin/AdminReportsPage/AdminReportsPage.jsx";
 import AdminUsersPage from "./pages/admin/AdminUsersPage/AdminUsersPage.jsx";
 import BlogsPage from "./pages/BlogsPage/BlogsPage.jsx";
 import BlogPostPage from "./pages/BlogsPage/BlogPostPage.jsx";
@@ -15,6 +14,7 @@ import EditBookPage from "./pages/EditBookPage/EditBookPage.jsx";
 import LibraryPage from "./pages/LibraryPage/LibraryPage.jsx";
 import LoginPage from "./pages/LoginPage/LoginPage.jsx";
 import MessagesPage from "./pages/MessagesPage/MessagesPage.jsx";
+import NotFoundPage from "./pages/NotFoundPage/NotFoundPage.jsx";
 import ProfilePage from "./pages/ProfilePage/ProfilePage.jsx";
 import RegisterPage from "./pages/RegisterPage/RegisterPage.jsx";
 import RequestPage from "./pages/RequestPage/RequestPage.jsx";
@@ -45,8 +45,10 @@ function App() {
           <Route path="listings" element={<AdminListingsPage />} />
           <Route path="posts" element={<AdminPostsPage />} />
           <Route path="comments" element={<AdminCommentsPage />} />
-          <Route path="reports" element={<AdminReportsPage />} />
+          <Route path="reports" element={<Navigate to="/admin" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </>
   );

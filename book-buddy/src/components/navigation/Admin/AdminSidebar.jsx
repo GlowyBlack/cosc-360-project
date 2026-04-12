@@ -9,7 +9,6 @@ const items = [
   { to: "/admin/listings", label: "Listings Management", icon: "inventory_2" },
   { to: "/admin/posts", label: "Posts Management", icon: "feed" },
   { to: "/admin/comments", label: "Comments Management", icon: "mode_comment" },
-  { to: "/admin/reports", label: "Reports", icon: "assessment" },
 ];
 
 export default function AdminSidebar({ onLogout }) {
