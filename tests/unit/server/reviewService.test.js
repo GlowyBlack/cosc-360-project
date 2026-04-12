@@ -107,7 +107,7 @@ describe("reviewService", () => {
         rating: 5,
         comment: "Nice",
       }),
-    ).rejects.toMatchObject({ statusCode: 400 });
+    ).rejects.toMatchObject({ status: 400 });
 
     mockRequestRepository.findRequestById.mockResolvedValue({
       _id: "req-1",
@@ -125,7 +125,7 @@ describe("reviewService", () => {
         rating: 7,
         comment: "",
       }),
-    ).rejects.toMatchObject({ statusCode: 400 });
+    ).rejects.toMatchObject({ status: 400 });
   });
 
   it("createReview creates the review and updates review stats", async () => {
