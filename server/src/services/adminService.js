@@ -1,10 +1,5 @@
 import adminRepository from "../repositories/adminRepository.js";
-
-function httpError(status, message) {
-  const err = new Error(message);
-  err.status = status;
-  return err;
-}
+import { httpError } from "../utils/httpError.js";
 
 function parseIncludeRemoved(query) {
   return (

@@ -1,4 +1,5 @@
 import borrowService from "../services/borrowService.js";
+import { sendServiceError } from "../utils/httpError.js";
 
 const BorrowController = {
     async createBorrow(req, res) {
@@ -13,7 +14,7 @@ const BorrowController = {
             const result = await borrowService.initiateBorrow({ requesterId, ownerId, bookId, returnBy });
             return res.status(201).json({ success: true, data: result });
         } catch (error) {
-            return res.status(400).json({ message: error.message });
+            return sendServiceError(res, error);
         }
     },
 
@@ -28,7 +29,7 @@ const BorrowController = {
             const result = await borrowService.acceptBorrow({ requestId, userId });
             return res.status(200).json({ success: true, data: result });
         } catch (error) {
-            return res.status(400).json({ message: error.message });
+            return sendServiceError(res, error);
         }
     },
 
@@ -43,7 +44,7 @@ const BorrowController = {
             const result = await borrowService.declineBorrow({ requestId, userId });
             return res.status(200).json({ success: true, data: result });
         } catch (error) {
-            return res.status(400).json({ message: error.message });
+            return sendServiceError(res, error);
         }
     },
 
@@ -58,11 +59,7 @@ const BorrowController = {
             const result = await borrowService.markBorrowReturned({ requestId, userId });
             return res.status(200).json({ success: true, data: result });
         } catch (error) {
-            const msg = error.message;
-            if (msg.includes("Only the lender")) {
-                return res.status(403).json({ message: msg });
-            }
-            return res.status(400).json({ message: msg });
+            return sendServiceError(res, error);
         }
     },
 };

@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import postService from "../services/postService.js";
+import { sendServiceError } from "../utils/httpError.js";
 
 const PostController = {
     async getAllPosts(req, res) {
@@ -10,7 +11,7 @@ const PostController = {
             const posts = await postService.getAllPosts({ genre, bookTag, q });
             return res.status(200).json(posts);
         } catch (error) {
-            return res.status(500).json({ message: "Server Error", error: error.message });
+            return sendServiceError(res, error);
         }
     },
 
@@ -25,7 +26,7 @@ const PostController = {
             if (!result) return res.status(404).json({ message: "Post not found" });
             return res.status(200).json(result);
         } catch (error) {
-            return res.status(500).json({ message: "Server Error", error: error.message });
+            return sendServiceError(res, error);
         }
     },
 
@@ -38,13 +39,13 @@ const PostController = {
             const posts = await postService.getPostsByUserId(userId);
             return res.status(200).json(posts);
         } catch (error) {
-            return res.status(500).json({ message: "Server Error", error: error.message });
+            return sendServiceError(res, error);
         }
     },
 
     async createPost(req, res) {
         try {
-            const authorId =  req.user?._id ?? req.user?.id;;
+            const authorId = req.user?._id ?? req.user?.id;
             if (!authorId) return res.status(401).json({ message: "Not authenticated" });
 
             const { title, content, genre, bookTag } = req.body;
@@ -57,17 +58,14 @@ const PostController = {
             });
             return res.status(201).json(post);
         } catch (error) {
-            if (error.message === "Title is required" || error.message === "Content is required") {
-                return res.status(400).json({ message: error.message });
-            }
-            return res.status(500).json({ message: "Server Error", error: error.message });
+            return sendServiceError(res, error);
         }
     },
 
     async updatePost(req, res) {
         try {
             const { postId } = req.params;
-            const userId =  req.user?._id ?? req.user?.id;;
+            const userId = req.user?._id ?? req.user?.id;
             if (!userId) return res.status(401).json({ message: "Not authenticated" });
             if (!mongoose.Types.ObjectId.isValid(postId)) {
                 return res.status(400).json({ message: "Invalid post id" });
@@ -76,17 +74,7 @@ const PostController = {
             const post = await postService.updatePost(postId, userId, req.body);
             return res.status(200).json(post);
         } catch (error) {
-            if (error.message === "Post not found") {
-                return res.status(404).json({ message: error.message });
-            }
-            if (
-                error.message === "You can't edit this post" ||
-                error.message === "Title cannot be empty" ||
-                error.message === "Content cannot be empty"
-            ) {
-                return res.status(400).json({ message: error.message });
-            }
-            return res.status(500).json({ message: "Server Error", error: error.message });
+            return sendServiceError(res, error);
         }
     },
 
@@ -102,20 +90,14 @@ const PostController = {
             await postService.deletePost(postId, user);
             return res.status(200).json({ success: true });
         } catch (error) {
-            if (error.message === "Post not found") {
-                return res.status(404).json({ message: error.message });
-            }
-            if (error.message === "You can't delete this post") {
-                return res.status(403).json({ message: error.message });
-            }
-            return res.status(500).json({ message: "Server Error", error: error.message });
+            return sendServiceError(res, error);
         }
     },
 
     async toggleLike(req, res) {
         try {
             const { postId } = req.params;
-            const userId =  req.user?._id ?? req.user?.id;
+            const userId = req.user?._id ?? req.user?.id;
             if (!userId) return res.status(401).json({ message: "Not authenticated" });
             if (!mongoose.Types.ObjectId.isValid(postId)) {
                 return res.status(400).json({ message: "Invalid post id" });
@@ -124,10 +106,7 @@ const PostController = {
             const post = await postService.toggleLike(postId, userId);
             return res.status(200).json(post);
         } catch (error) {
-            if (error.message === "Post not found") {
-                return res.status(404).json({ message: error.message });
-            }
-            return res.status(500).json({ message: "Server Error", error: error.message });
+            return sendServiceError(res, error);
         }
     },
 
@@ -143,10 +122,7 @@ const PostController = {
             const post = await postService.toggleDislike(postId, userId);
             return res.status(200).json(post);
         } catch (error) {
-            if (error.message === "Post not found") {
-                return res.status(404).json({ message: error.message });
-            }
-            return res.status(500).json({ message: "Server Error", error: error.message });
+            return sendServiceError(res, error);
         }
     },
 };

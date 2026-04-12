@@ -63,6 +63,7 @@ import {
       username,
       email,
       passwordHash: await bcrypt.hash("Password1!", 10),
+      location: "Kelowna, BC",
       profileImage: "https://example.com/avatar.png",
     });
   }

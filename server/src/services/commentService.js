@@ -1,5 +1,6 @@
 import commentRepository from "../repositories/commentRepository.js";
 import postRepository from "../repositories/postRepository.js";
+import { httpError } from "../utils/httpError.js";
 
 function isOwner(commentDoc, userId) {
     return String(commentDoc.authorId?._id ?? commentDoc.authorId) === String(userId);
@@ -7,37 +8,36 @@ function isOwner(commentDoc, userId) {
 
 const CommentService = {
     async getMyCommentHistory({ userId, limit, skip }) {
-        if (!userId) throw new Error("Not authenticated");
+        if (!userId) throw httpError(401, "Not authenticated");
         return await commentRepository.findByAuthorPaginated(userId, { limit, skip });
     },
 
     async getComments({ postId, showRemoved = false, userRole = "Registered" }) {
-        if (!postId) throw new Error("postId is required");
+        if (!postId) throw httpError(400, "postId is required");
 
         const includeRemoved = Boolean(showRemoved) && String(userRole) === "Admin";
         return await commentRepository.findByPostId({ postId, includeRemoved });
     },
 
     async createComment({ authorId, postId, content, parentId = null }) {
-        if (!authorId) throw new Error("Not authenticated");
-        if (!postId) throw new Error("postId is required");
+        if (!authorId) throw httpError(401, "Not authenticated");
+        if (!postId) throw httpError(400, "postId is required");
 
         const cleanContent = String(content ?? "").trim();
-        if (!cleanContent) throw new Error("Comment content cannot be empty");
+        if (!cleanContent) throw httpError(400, "Comment content cannot be empty");
 
         const targetPost = await postRepository.findById(postId);
-        if (!targetPost || targetPost.isRemoved) throw new Error("Post not found");
+        if (!targetPost || targetPost.isRemoved) throw httpError(404, "Post not found");
         const isPostAuthor = isOwner(targetPost, authorId);
 
         if (parentId != null) {
             const parent = await commentRepository.findById(parentId);
-            if (!parent || parent.isRemoved) throw new Error("Parent comment not found");
+            if (!parent || parent.isRemoved) throw httpError(404, "Parent comment not found");
             if (String(parent.postId) !== String(postId)) {
-                throw new Error("Comment and reply must belong to the same post");
+                throw httpError(400, "Comment and reply must belong to the same post");
             }
         } else if (isPostAuthor) {
-            
-            throw new Error("You can't comment on your own post");
+            throw httpError(400, "You can't comment on your own post");
         }
 
         return await commentRepository.create({
@@ -50,25 +50,25 @@ const CommentService = {
 
     async editComment({ commentId, userId, content }) {
         const comment = await commentRepository.findById(commentId);
-        if (!comment) throw new Error("Comment not found");
-        if (comment.isRemoved) throw new Error("Removed comments cannot be edited");
-        if (!isOwner(comment, userId)) throw new Error("You can't edit this comment");
+        if (!comment) throw httpError(404, "Comment not found");
+        if (comment.isRemoved) throw httpError(400, "Removed comments cannot be edited");
+        if (!isOwner(comment, userId)) throw httpError(403, "You can't edit this comment");
 
         const cleanContent = String(content ?? "").trim();
-        if (!cleanContent) throw new Error("Comment content cannot be empty");
+        if (!cleanContent) throw httpError(400, "Comment content cannot be empty");
 
         return await commentRepository.updateContentById(commentId, cleanContent);
     },
 
     async deleteComment({ commentId, user }) {
         const comment = await commentRepository.findById(commentId);
-        if (!comment) throw new Error("Comment not found");
+        if (!comment) throw httpError(404, "Comment not found");
         if (comment.isRemoved) return comment;
 
         const requesterId = user?._id ?? user?.id;
         const isAdmin = String(user?.role ?? "") === "Admin";
         if (!isOwner(comment, requesterId) && !isAdmin) {
-            throw new Error("You can't delete this comment");
+            throw httpError(403, "You can't delete this comment");
         }
 
         return await commentRepository.softDeleteById(commentId);
@@ -76,8 +76,8 @@ const CommentService = {
 
     async toggleLike({ commentId, userId }) {
         const comment = await commentRepository.findById(commentId);
-        if (!comment) throw new Error("Comment not found");
-        if (comment.isRemoved) throw new Error("Removed comments cannot be liked");
+        if (!comment) throw httpError(404, "Comment not found");
+        if (comment.isRemoved) throw httpError(400, "Removed comments cannot be liked");
 
         const hasLiked = (comment.likes ?? []).some((id) => String(id) === String(userId));
         if (hasLiked) {
@@ -94,8 +94,8 @@ const CommentService = {
 
     async toggleDislike({ commentId, userId }) {
         const comment = await commentRepository.findById(commentId);
-        if (!comment) throw new Error("Comment not found");
-        if (comment.isRemoved) throw new Error("Removed comments cannot be disliked");
+        if (!comment) throw httpError(404, "Comment not found");
+        if (comment.isRemoved) throw httpError(400, "Removed comments cannot be disliked");
 
         const hasDisliked = (comment.dislikes ?? []).some((id) => String(id) === String(userId));
         if (hasDisliked) {
